@@ -1,4 +1,4 @@
-package com.start3a.ishowyou.viewmodel
+package com.start3a.ishowyou.main
 
 import androidx.lifecycle.ViewModel
 

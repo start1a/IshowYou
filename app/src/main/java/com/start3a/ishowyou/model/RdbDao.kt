@@ -1,6 +1,7 @@
 package com.start3a.ishowyou.model
 
 import android.util.Log
+import com.google.android.gms.tasks.OnSuccessListener
 import com.google.firebase.database.DataSnapshot
 import com.google.firebase.database.DatabaseError
 import com.google.firebase.database.DatabaseReference
@@ -11,15 +12,13 @@ class RdbDao(private val db: DatabaseReference) {
 
     private val TAG = "mRdbDao"
 
-    fun checkUserExist(userEmail: String, startMainListener: () -> Unit) {
-        db.child("users/$userEmail").addListenerForSingleValueEvent(object : ValueEventListener {
+    fun checkUserExist(userName: String, existListener: () -> Unit, notExistListener: () -> Unit) {
+        db.child("users/$userName").addListenerForSingleValueEvent(object : ValueEventListener {
             override fun onDataChange(snapshot: DataSnapshot) {
-                // 신규 유저일 경우
-                if (!snapshot.exists()) {
-                    val userId = userEmail.split("@")[0]
-                    signUpUser(userEmail, userId)
-                }
-                startMainListener()
+                if (snapshot.exists())
+                    existListener()
+                else
+                    notExistListener()
             }
 
             override fun onCancelled(error: DatabaseError) {
@@ -28,11 +27,22 @@ class RdbDao(private val db: DatabaseReference) {
         })
     }
 
-    fun signUpUser(userEmail: String, userId: String) {
-        db.child("users/$userEmail")
-            .setValue(
-                User(userId, userEmail)
-            )
-    }
+//    fun signUpUser(
+//        userName: String,
+//        password: String,
+//        phoneNumber: String,
+//        successListener: () -> Unit,
+//        failListener: () -> Unit
+//    ) {
+//        checkUserExist(userName,
+//            // 아이디 중복
+//            { failListener() },
+//            // 가입 성공
+//            {
+//                db.child("users/$userName").setValue(User(userName, password))
+//                successListener()
+//            }
+//        )
+//    }
 
 }

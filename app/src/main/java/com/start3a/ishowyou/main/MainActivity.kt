@@ -1,12 +1,13 @@
-package com.start3a.ishowyou
+package com.start3a.ishowyou.main
 
 import android.content.Intent
 import android.os.Bundle
 import androidx.appcompat.app.AppCompatActivity
 import androidx.lifecycle.ViewModelProvider
 import com.firebase.ui.auth.AuthUI
-import com.start3a.ishowyou.view.SigninActivity
-import com.start3a.ishowyou.viewmodel.MainViewModel
+import com.start3a.ishowyou.R
+import com.start3a.ishowyou.signin.PhoneSignInActivity
+import com.start3a.ishowyou.signin.SigninActivity
 import kotlinx.android.synthetic.main.activity_main.*
 
 class MainActivity : AppCompatActivity() {

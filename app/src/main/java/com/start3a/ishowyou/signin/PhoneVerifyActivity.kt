@@ -90,8 +90,6 @@ class PhoneVerifyActivity : AppCompatActivity() {
 
         override fun onVerificationFailed(p0: FirebaseException) {
             Toast.makeText(applicationContext, p0.toString(), Toast.LENGTH_SHORT).show()
-            Log.d("TAGG", p0.toString())
         }
-
     }
 }

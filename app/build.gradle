@@ -51,4 +51,7 @@ dependencies {
     // Material Design
     def ver_materialdesign = "1.2.1"
     implementation "com.google.android.material:material:$ver_materialdesign"
+
+    // Youtube Player
+    implementation 'com.pierfrancescosoffritti.androidyoutubeplayer:core:10.0.5'
 }

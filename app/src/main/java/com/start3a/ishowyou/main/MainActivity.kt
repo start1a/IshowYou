@@ -6,9 +6,7 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.lifecycle.ViewModelProvider
 import com.firebase.ui.auth.AuthUI
 import com.start3a.ishowyou.R
-import com.start3a.ishowyou.signin.PhoneSignInActivity
 import com.start3a.ishowyou.signin.SigninActivity
-import kotlinx.android.synthetic.main.activity_main.*
 
 class MainActivity : AppCompatActivity() {
 
@@ -17,6 +15,7 @@ class MainActivity : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
+        supportActionBar?.hide()
 
         viewModel = application!!.let {
             ViewModelProvider(viewModelStore, ViewModelProvider.AndroidViewModelFactory(it))
@@ -24,14 +23,18 @@ class MainActivity : AppCompatActivity() {
         }
 
         viewModel!!.let { vm ->
-            // 로그아웃
-            btnSignOut.setOnClickListener {
-                AuthUI.getInstance().signOut(applicationContext).addOnSuccessListener {
-                    val intent = Intent(applicationContext, SigninActivity::class.java)
-                    startActivity(intent)
-                    finish()
-                }
+            supportFragmentManager.beginTransaction().run {
+                add(R.id.contentViewFrame, YoutubePlayerFragment()).commit()
             }
+        }
+    }
+
+    override fun onBackPressed() {
+        super.onBackPressed()
+        AuthUI.getInstance().signOut(applicationContext).addOnSuccessListener {
+            val intent = Intent(applicationContext, SigninActivity::class.java)
+            startActivity(intent)
+            finish()
         }
     }
 }

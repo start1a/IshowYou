@@ -12,21 +12,6 @@ class RdbDao(private val db: DatabaseReference) {
     private val TAG = "mRdbDao"
     private var seekbarChangedListener: ValueEventListener? = null
 
-    fun checkUserExist(userName: String, existListener: () -> Unit, notExistListener: () -> Unit) {
-        db.child("users/$userName").addListenerForSingleValueEvent(object : ValueEventListener {
-            override fun onDataChange(snapshot: DataSnapshot) {
-                if (snapshot.exists())
-                    existListener()
-                else
-                    notExistListener()
-            }
-
-            override fun onCancelled(error: DatabaseError) {
-                Log.d(TAG, "check User Exist is Cancelled.")
-            }
-        })
-    }
-
     fun seekBarYoutubeClicked(time: Double) {
         db.child("seekbar").setValue(time)
     }

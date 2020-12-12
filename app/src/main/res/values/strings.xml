@@ -18,4 +18,6 @@
     <string name="title_activity_phone_verify">PhoneVerifyActivity</string>
     <string name="done">확인</string>
     <string name="enter_code">Enter Code</string>
+    <string name="send_message">메세지 입력</string>
+    <string name="send">전송</string>
 </resources>

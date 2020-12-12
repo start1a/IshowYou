@@ -6,7 +6,6 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.LinearLayout
-import android.widget.Toast
 import androidx.constraintlayout.widget.ConstraintLayout
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.ViewModelProvider
@@ -21,7 +20,6 @@ import kotlinx.android.synthetic.main.fragment_youtube_player.*
 class YoutubePlayerFragment : Fragment() {
 
     private var viewModel: MainViewModel? = null
-    private var isHost = false
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
@@ -45,6 +43,7 @@ class YoutubePlayerFragment : Fragment() {
         viewModel!!.let { vm ->
             // 화면이 중지되면 자동 재생 중지
             lifecycle.addObserver(youtubePlayerView)
+            vm.createChatRoomViewListener()
 
             youtubePlayerView.addYouTubePlayerListener(object : AbstractYouTubePlayerListener() {
 
@@ -81,9 +80,8 @@ class YoutubePlayerFragment : Fragment() {
                     youtube_player_seekbar.youtubePlayerSeekBarListener =
                         object : YouTubePlayerSeekBarListener {
                             override fun seekTo(time: Float) {
-                                Toast.makeText(activity!!, "SeekTo222!!", Toast.LENGTH_SHORT).show()
                                 youTubePlayer.seekTo(time)
-                                if (isHost) {
+                                if (vm.isHost) {
                                     vm.seekBarYoutubeClicked(time)
                                 }
                             }
@@ -91,7 +89,7 @@ class YoutubePlayerFragment : Fragment() {
 
                     btnSet.setOnClickListener {
                         // Seekbar 감지 리스너
-                        if (!isHost) {
+                        if (!vm.isHost) {
                             vm.setYoutubeSeekbarChangedListener {
                                 youTubePlayer.seekTo(it)
                             }
@@ -99,10 +97,6 @@ class YoutubePlayerFragment : Fragment() {
                     }
                 }
             })
-
-            btnHost.setOnClickListener {
-                isHost = true
-            }
         }
     }
 

@@ -23,8 +23,15 @@ class MainActivity : AppCompatActivity() {
         }
 
         viewModel!!.let { vm ->
-            supportFragmentManager.beginTransaction().run {
-                add(R.id.contentViewFrame, YoutubePlayerFragment()).commit()
+            supportFragmentManager.beginTransaction()
+                .replace(R.id.contentViewFrame, YoutubePlayerFragment()).commit()
+
+            vm.createChatRoomViewListener = {
+                val fragManager = supportFragmentManager.beginTransaction()
+                if (vm.isJoinRoom)
+                    fragManager.replace(R.id.talkViewFrame, RealTimeChatFragment()).commit()
+                else
+                    fragManager.replace(R.id.talkViewFrame, NoRoomFragment()).commit()
             }
         }
     }

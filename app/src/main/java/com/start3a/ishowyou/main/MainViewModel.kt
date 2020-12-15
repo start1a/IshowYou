@@ -2,6 +2,7 @@ package com.start3a.ishowyou.main
 
 import androidx.lifecycle.ViewModel
 import com.google.firebase.database.FirebaseDatabase
+import com.start3a.ishowyou.data.ChatMessage
 import com.start3a.ishowyou.data.ChatRoom
 import com.start3a.ishowyou.model.ChatDao
 import com.start3a.ishowyou.model.YoutubeDao
@@ -13,6 +14,8 @@ class MainViewModel : ViewModel() {
     private var chatroomCode: String? = null
     var isHost = false
     var isJoinRoom = false
+
+    val listMessage = mutableListOf<ChatMessage>()
 
     // 채팅방 유무 뷰 전환
     lateinit var createChatRoomViewListener: (() -> Unit)
@@ -50,5 +53,11 @@ class MainViewModel : ViewModel() {
         createChatRoomViewListener()
     }
 
+    fun notifyChatMessage(messageAddedListener: (ChatMessage) -> Unit) {
+        dbChat.notifyChatMessage(chatroomCode!!, messageAddedListener)
+    }
 
+    fun sendChatMessage(message: String) {
+        dbChat.sendChatMessage(chatroomCode!!, message)
+    }
 }

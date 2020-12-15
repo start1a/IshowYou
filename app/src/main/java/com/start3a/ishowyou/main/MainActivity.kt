@@ -6,6 +6,9 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.lifecycle.ViewModelProvider
 import com.firebase.ui.auth.AuthUI
 import com.start3a.ishowyou.R
+import com.start3a.ishowyou.main.chat.NoRoomFragment
+import com.start3a.ishowyou.main.chat.RealTimeChatFragment
+import com.start3a.ishowyou.main.content.YoutubePlayerFragment
 import com.start3a.ishowyou.signin.SigninActivity
 
 class MainActivity : AppCompatActivity() {
@@ -27,11 +30,12 @@ class MainActivity : AppCompatActivity() {
                 .replace(R.id.contentViewFrame, YoutubePlayerFragment()).commit()
 
             vm.createChatRoomViewListener = {
-                val fragManager = supportFragmentManager.beginTransaction()
-                if (vm.isJoinRoom)
-                    fragManager.replace(R.id.talkViewFrame, RealTimeChatFragment()).commit()
-                else
-                    fragManager.replace(R.id.talkViewFrame, NoRoomFragment()).commit()
+                supportFragmentManager.beginTransaction().let {
+                    if (vm.isJoinRoom)
+                        it.replace(R.id.talkViewFrame, RealTimeChatFragment()).commit()
+                    else
+                        it.replace(R.id.talkViewFrame, NoRoomFragment()).commit()
+                }
             }
         }
     }

@@ -5,7 +5,7 @@
     android:id="@+id/youtube_player_fragment"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    tools:context=".main.YoutubePlayerFragment">
+    tools:context=".main.content.YoutubePlayerFragment">
 
     <com.pierfrancescosoffritti.androidyoutubeplayer.core.player.views.YouTubePlayerView
         android:id="@+id/youtubePlayerView"
@@ -16,7 +16,7 @@
         app:layout_constraintTop_toTopOf="parent"
         app:showFullScreenButton="true"
         app:showYouTubeButton="true"
-        app:videoId="MHCmO-bjIPw" />
+        app:videoId="ydqla2glb44" />
 
     <com.pierfrancescosoffritti.androidyoutubeplayer.core.ui.views.YouTubePlayerSeekBar
         android:id="@+id/youtube_player_seekbar"
@@ -28,17 +28,10 @@
         app:layout_constraintTop_toBottomOf="@+id/youtubePlayerView" />
 
     <Button
-        android:id="@+id/btnHost"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:text="호스트"
-        app:layout_constraintTop_toBottomOf="@+id/youtubePlayerView" />
-
-    <Button
         android:id="@+id/btnSet"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:text="감지"
-        app:layout_constraintTop_toBottomOf="@+id/btnHost" />
+        app:layout_constraintTop_toBottomOf="@+id/youtubePlayerView" />
 
 </androidx.constraintlayout.widget.ConstraintLayout>

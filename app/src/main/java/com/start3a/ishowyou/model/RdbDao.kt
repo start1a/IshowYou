@@ -1,9 +1,12 @@
 package com.start3a.ishowyou.model
 
 import android.util.Log
+import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.database.*
 import com.google.firebase.database.ktx.getValue
+import com.start3a.ishowyou.data.ChatMessage
 import com.start3a.ishowyou.data.ChatRoom
+import java.util.*
 
 class YoutubeDao(private val db: DatabaseReference) {
 
@@ -15,17 +18,17 @@ class YoutubeDao(private val db: DatabaseReference) {
     }
 
     fun setSeekbarChangedListener(changeListener: (Float) -> Unit) {
-        seekbarChangedListener = object : ValueEventListener {
-            override fun onDataChange(snapshot: DataSnapshot) {
-                val time = snapshot.getValue<Double>()!!
-                changeListener(time.toFloat())
-            }
+        seekbarChangedListener =
+            db.child("seekbar").addValueEventListener(object : ValueEventListener {
+                override fun onDataChange(snapshot: DataSnapshot) {
+                    val time = snapshot.getValue<Double>()!!
+                    changeListener(time.toFloat())
+                }
 
-            override fun onCancelled(error: DatabaseError) {
-                Log.d(TAG, "Youtube Seek is Cancelled.")
-            }
-        }
-        db.child("seekbar").addValueEventListener(seekbarChangedListener!!)
+                override fun onCancelled(error: DatabaseError) {
+                    Log.d(TAG, "Youtube Seek is Cancelled.")
+                }
+            })
     }
 
     fun removeSeekbarChangedListener() {
@@ -37,6 +40,7 @@ class ChatDao(private val db: DatabaseReference) {
 
     private val TAG = "ChatDao"
     private var roomInfoChildChangedListener: ChildEventListener? = null
+    private var messageNotifyListener: ChildEventListener? = null
 
     fun createChatRoom(
         roomCode: String,
@@ -66,9 +70,41 @@ class ChatDao(private val db: DatabaseReference) {
     }
 
     fun leaveRoom(roomCode: String) {
-        db.child("chat/$roomCode").let {  dbr ->
+        db.child("chat/$roomCode").let { dbr ->
+            roomInfoChildChangedListener?.let { dbr.removeEventListener(it) }
             dbr.removeValue()
-            roomInfoChildChangedListener?.let {  dbr.removeEventListener(it) }
         }
+        db.child("message/$roomCode").let { dbr ->
+            messageNotifyListener?.let { dbr.removeEventListener(it) }
+            dbr.removeValue()
+        }
+    }
+
+    fun notifyChatMessage(roomCode: String, messageAdded: (ChatMessage) -> Unit) {
+        messageNotifyListener =
+            db.child("message/$roomCode").addChildEventListener(object : ChildEventListener {
+
+                override fun onChildAdded(snapshot: DataSnapshot, previousChildName: String?) {
+                    snapshot.getValue<ChatMessage>()?.let {
+                        messageAdded(it)
+                    }
+                }
+
+                override fun onChildChanged(snapshot: DataSnapshot, previousChildName: String?) {}
+                override fun onChildRemoved(snapshot: DataSnapshot) {}
+                override fun onChildMoved(snapshot: DataSnapshot, previousChildName: String?) {}
+
+                override fun onCancelled(error: DatabaseError) {
+                    Log.d(TAG, "Notifying Chat Message is Cancelled.")
+                }
+            })
+    }
+
+    fun sendChatMessage(roomCode: String, message: String) {
+        val curUserId = FirebaseAuth.getInstance().currentUser!!.email!!.split("@")[0]
+        val time = Date().time
+        db.child("message/$roomCode/$time").setValue(
+            ChatMessage(curUserId, message, time)
+        )
     }
 }

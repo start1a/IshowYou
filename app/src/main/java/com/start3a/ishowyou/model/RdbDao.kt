@@ -39,34 +39,37 @@ class YoutubeDao(private val db: DatabaseReference) {
 class ChatDao(private val db: DatabaseReference) {
 
     private val TAG = "ChatDao"
-    private var roomInfoChildChangedListener: ChildEventListener? = null
+    private var roomInfoChildChangedListener: ValueEventListener? = null
     private var messageNotifyListener: ChildEventListener? = null
 
     fun createChatRoom(
         roomCode: String,
-        title: String,
+        chatRoom: ChatRoom,
         successListener: () -> Unit,
-        roomInfoChangedListener: () -> Unit
+        roomInfoChangedListener: (ChatRoom) -> Unit
     ) {
-        db.child("chat/$roomCode").setValue(ChatRoom(title))
+        val roomRef = db.child("chat/$roomCode")
 
-        roomInfoChildChangedListener = object : ChildEventListener {
-            override fun onChildAdded(snapshot: DataSnapshot, previousChildName: String?) {
+        roomRef.setValue(chatRoom)
+            .addOnSuccessListener {
+                // 방 정보 리스너 저장
+                roomInfoChildChangedListener =
+                    roomRef.addValueEventListener(object : ValueEventListener {
+                        override fun onDataChange(snapshot: DataSnapshot) {
+                            val room = snapshot.getValue<ChatRoom>()!!
+                            roomInfoChangedListener(room)
+                        }
+
+                        override fun onCancelled(error: DatabaseError) {
+                            Log.d(TAG, "Changing Room Info is Cancelled.")
+                        }
+                    })
+                // 방으로 화면 이동
                 successListener()
             }
-
-            override fun onChildChanged(snapshot: DataSnapshot, previousChildName: String?) {
-                roomInfoChangedListener()
+            .addOnFailureListener {
+                Log.d(TAG, "Creating ChatRoom is Failed.")
             }
-
-            override fun onChildRemoved(snapshot: DataSnapshot) {}
-            override fun onChildMoved(snapshot: DataSnapshot, previousChildName: String?) {}
-
-            override fun onCancelled(error: DatabaseError) {
-                Log.d(TAG, "Creating Chatroom is Cancelled.")
-            }
-        }
-        db.child("chat/$roomCode").addChildEventListener(roomInfoChildChangedListener!!)
     }
 
     fun leaveRoom(roomCode: String) {

@@ -38,11 +38,11 @@ class MainViewModel : ViewModel() {
     fun createChatRoom(
         title: String,
         successListener: () -> Unit,
-        roomInfoChangedListener: () -> Unit
+        roomInfoChangedListener: (ChatRoom) -> Unit
     ) {
         chatroomCode = UUID.randomUUID().toString()
         isHost = true
-        dbChat.createChatRoom(chatroomCode!!, title, successListener, roomInfoChangedListener)
+        dbChat.createChatRoom(chatroomCode!!, ChatRoom(title), successListener, roomInfoChangedListener)
     }
 
     fun leaveRoom() {

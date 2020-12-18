@@ -13,7 +13,6 @@ import java.util.*
 class MainViewModel : ViewModel() {
 
     // 채팅방 정보
-    private var chatroomCode: String? = null
     var isHost = false
     var isJoinRoom = false
     lateinit var openChatRoomMenu: () -> Unit
@@ -46,29 +45,27 @@ class MainViewModel : ViewModel() {
         successListener: () -> Unit,
         roomInfoChangedListener: (ChatRoom) -> Unit
     ) {
-        chatroomCode = UUID.randomUUID().toString()
         isHost = true
-        dbChat.createChatRoom(chatroomCode!!, ChatRoom(title), successListener, roomInfoChangedListener)
+        dbChat.createChatRoom(ChatRoom(title), successListener, roomInfoChangedListener)
     }
 
     fun leaveRoom() {
-        dbChat.leaveRoom(chatroomCode!!)
-        chatroomCode = null
+        dbChat.leaveRoom()
         isJoinRoom = false
         isHost = false
         createChatRoomViewListener()
     }
 
     fun notifyChatInfo() {
-        dbChat.notifyChatMessage(chatroomCode!!) {
+        dbChat.notifyChatMessage {
             listMessage.value!!.add(it)
         }
-        dbChat.notifyChatMember(chatroomCode!!) {
+        dbChat.notifyChatMember {
             listMember.add(it)
         }
     }
 
     fun sendChatMessage(message: String) {
-        dbChat.sendChatMessage(chatroomCode!!, message)
+        dbChat.sendChatMessage(message)
     }
 }

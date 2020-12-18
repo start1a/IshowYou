@@ -27,7 +27,7 @@ class YoutubeDao(private val db: DatabaseReference) {
                 }
 
                 override fun onCancelled(error: DatabaseError) {
-                    Log.d(TAG, "Youtube Seek is Cancelled.")
+                    Log.d(TAG, "Youtube Seek is Cancelled.\n$error")
                 }
             })
     }
@@ -40,16 +40,18 @@ class YoutubeDao(private val db: DatabaseReference) {
 class ChatDao(private val db: DatabaseReference) {
 
     private val TAG = "ChatDao"
+    private var roomCode: String? = null
+
     private var roomInfoChildChangedListener: ValueEventListener? = null
     private var messageNotifyListener: ChildEventListener? = null
     private var memberNotifyListener: ChildEventListener? = null
 
     fun createChatRoom(
-        roomCode: String,
         chatRoom: ChatRoom,
         successListener: () -> Unit,
         roomInfoChangedListener: (ChatRoom) -> Unit
     ) {
+        roomCode = UUID.randomUUID().toString()
         val roomRef = db.child("chat/$roomCode")
 
         roomRef.setValue(chatRoom)
@@ -63,7 +65,7 @@ class ChatDao(private val db: DatabaseReference) {
                         }
 
                         override fun onCancelled(error: DatabaseError) {
-                            Log.d(TAG, "Changing Room Info is Cancelled.")
+                            Log.d(TAG, "Changing Room Info is Cancelled.\n$error")
                         }
                     })
                 // 방으로 화면 이동
@@ -77,7 +79,7 @@ class ChatDao(private val db: DatabaseReference) {
         db.child("member/$roomCode/$hostName").setValue(ChatMember(hostName, true))
     }
 
-    fun leaveRoom(roomCode: String) {
+    fun leaveRoom() {
         db.child("chat/$roomCode").let { dbr ->
             roomInfoChildChangedListener?.let { dbr.removeEventListener(it) }
             dbr.removeValue()
@@ -90,9 +92,10 @@ class ChatDao(private val db: DatabaseReference) {
             memberNotifyListener?.let { dbr.removeEventListener(it) }
             dbr.removeValue()
         }
+        roomCode = null
     }
 
-    fun notifyChatMessage(roomCode: String, messageAdded: (ChatMessage) -> Unit) {
+    fun notifyChatMessage(messageAdded: (ChatMessage) -> Unit) {
         messageNotifyListener =
             db.child("message/$roomCode").addChildEventListener(object : ChildEventListener {
 
@@ -107,12 +110,12 @@ class ChatDao(private val db: DatabaseReference) {
                 override fun onChildMoved(snapshot: DataSnapshot, previousChildName: String?) {}
 
                 override fun onCancelled(error: DatabaseError) {
-                    Log.d(TAG, "Notifying Chat Message is Cancelled.")
+                    Log.d(TAG, "Notifying Chat Message is Cancelled.\n$error")
                 }
             })
     }
 
-    fun notifyChatMember(roomCode: String, memberAdded: (ChatMember) -> Unit) {
+    fun notifyChatMember(memberAdded: (ChatMember) -> Unit) {
         memberNotifyListener =
             db.child("member/$roomCode").addChildEventListener(object : ChildEventListener {
                 override fun onChildAdded(snapshot: DataSnapshot, previousChildName: String?) {
@@ -126,13 +129,13 @@ class ChatDao(private val db: DatabaseReference) {
                 override fun onChildMoved(snapshot: DataSnapshot, previousChildName: String?) {}
 
                 override fun onCancelled(error: DatabaseError) {
-                    Log.d(TAG, "Notifying Chat Member is Cancelled.")
+                    Log.d(TAG, "Notifying Chat Member is Cancelled.\n$error")
                 }
 
             })
     }
 
-    fun sendChatMessage(roomCode: String, message: String) {
+    fun sendChatMessage(message: String) {
         val curUserId = FirebaseAuth.getInstance().currentUser!!.email!!.split("@")[0]
         val time = Date().time
         db.child("message/$roomCode/$time").setValue(

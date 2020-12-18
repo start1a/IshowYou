@@ -2,13 +2,18 @@ package com.start3a.ishowyou.main
 
 import android.app.AlertDialog
 import android.content.Intent
+import android.graphics.Color
 import android.os.Bundle
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.view.GravityCompat
 import androidx.lifecycle.ViewModelProvider
+import androidx.recyclerview.widget.LinearLayoutManager
 import com.firebase.ui.auth.AuthUI
+import com.google.firebase.database.collection.LLRBNode
 import com.start3a.ishowyou.R
+import com.start3a.ishowyou.data.ChatMember
+import com.start3a.ishowyou.main.chat.ChatMemberAdapter
 import com.start3a.ishowyou.main.chat.NoRoomFragment
 import com.start3a.ishowyou.main.chat.RealTimeChatFragment
 import com.start3a.ishowyou.main.content.YoutubePlayerFragment
@@ -19,6 +24,7 @@ import kotlinx.android.synthetic.main.info_chatroom.*
 class MainActivity : AppCompatActivity() {
 
     private var viewModel: MainViewModel? = null
+    private var listMemberAdapter: ChatMemberAdapter? = null
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -43,8 +49,11 @@ class MainActivity : AppCompatActivity() {
                 }
             }
 
+            listMemberAdapter = ChatMemberAdapter(vm.listMember)
             vm.openChatRoomMenu = {
                 main_drawer_layout.openDrawer(GravityCompat.START)
+                memberRecyclerView.adapter = listMemberAdapter
+                memberRecyclerView.layoutManager = LinearLayoutManager(this)
             }
 
             btnLeaveRoom.setOnClickListener {
@@ -72,7 +81,11 @@ class MainActivity : AppCompatActivity() {
 
         builder.setMessage("채팅방에서 나가시겠습니까?")
             .setPositiveButton("확인") { _, _ ->
-                viewModel!!.leaveRoom()
+                viewModel!!.run {
+                    leaveRoom()
+                    listMessage.value?.clear()
+                    listMember.clear()
+                }
                 main_drawer_layout.closeDrawer(GravityCompat.START)
             }
             .setNegativeButton("취소", null)

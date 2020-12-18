@@ -11,3 +11,8 @@ data class ChatMessage(
     var content: String = "",
     var timeStamp: Long = 0
 )
+
+data class ChatMember(
+    var userName: String = "",
+    var isHost: Boolean = false
+)

@@ -40,14 +40,9 @@ class RealTimeChatFragment : Fragment() {
         }
 
         viewModel!!.let { vm ->
-            // 초기화
-            listChatAdapter = ChatMessageAdapter(vm.listMessage)
-            messageRecyclerView.adapter = listChatAdapter
-            messageRecyclerView.layoutManager = LinearLayoutManager(activity)
-
-            // 새 메세지
-            vm.notifyChatMessage {
-                vm.listMessage.add(it)
+            initAdapter()
+            vm.notifyChatInfo()
+            vm.listMessage.observe(viewLifecycleOwner) {
                 listChatAdapter?.notifyDataSetChanged()
             }
 
@@ -60,15 +55,22 @@ class RealTimeChatFragment : Fragment() {
             })
 
             // 채팅방 메뉴
-            btnChatRoomMenu.setOnClickListener {
-                vm.openChatRoomMenu()
-            }
+            btnChatRoomMenu.setOnClickListener { vm.openChatRoomMenu() }
 
             btnSendMessage.setOnClickListener {
                 val message = editSendMessage.text.toString()
                 vm.sendChatMessage(message)
                 editSendMessage.text.clear()
             }
+        }
+    }
+
+    private fun initAdapter() {
+        viewModel!!.let { vm ->
+            // 메세지 리스트
+            listChatAdapter = ChatMessageAdapter(vm.listMessage.value!!)
+            messageRecyclerView.adapter = listChatAdapter
+            messageRecyclerView.layoutManager = LinearLayoutManager(activity)
         }
     }
 }

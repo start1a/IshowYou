@@ -1,6 +1,5 @@
 package com.start3a.ishowyou.main.chat
 
-import android.app.AlertDialog
 import android.os.Bundle
 import android.text.Editable
 import android.text.TextWatcher
@@ -61,7 +60,9 @@ class RealTimeChatFragment : Fragment() {
             })
 
             // 채팅방 메뉴
-            btnExtra.setOnClickListener { leaveRoom() }
+            btnChatRoomMenu.setOnClickListener {
+                vm.openChatRoomMenu()
+            }
 
             btnSendMessage.setOnClickListener {
                 val message = editSendMessage.text.toString()
@@ -69,16 +70,5 @@ class RealTimeChatFragment : Fragment() {
                 editSendMessage.text.clear()
             }
         }
-    }
-
-    private fun leaveRoom() {
-        val builder = AlertDialog.Builder(activity!!)
-
-        builder.setMessage("채팅방에서 나가시겠습니까?")
-            .setPositiveButton("확인") { _, _ ->
-                viewModel!!.leaveRoom()
-            }
-            .setNegativeButton("취소", null)
-            .create().show()
     }
 }

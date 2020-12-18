@@ -2,6 +2,7 @@ package com.start3a.ishowyou.main
 
 import androidx.lifecycle.ViewModel
 import com.google.firebase.database.FirebaseDatabase
+import com.start3a.ishowyou.data.ChatMember
 import com.start3a.ishowyou.data.ChatMessage
 import com.start3a.ishowyou.data.ChatRoom
 import com.start3a.ishowyou.model.ChatDao
@@ -14,8 +15,12 @@ class MainViewModel : ViewModel() {
     private var chatroomCode: String? = null
     var isHost = false
     var isJoinRoom = false
+    lateinit var openChatRoomMenu: () -> Unit
 
-    val listMessage = mutableListOf<ChatMessage>()
+    // 메세지
+    val listMessage: MutableList<ChatMessage> by lazy {
+        mutableListOf()
+    }
 
     // 채팅방 유무 뷰 전환
     lateinit var createChatRoomViewListener: (() -> Unit)

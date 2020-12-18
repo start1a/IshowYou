@@ -1,9 +1,9 @@
 package com.start3a.ishowyou.signin
 
 import android.content.Intent
-import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import android.widget.Toast
+import androidx.appcompat.app.AppCompatActivity
 import com.google.firebase.auth.FirebaseAuth
 import com.start3a.ishowyou.R
 import com.start3a.ishowyou.main.MainActivity

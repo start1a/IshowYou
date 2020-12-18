@@ -21,7 +21,7 @@
         app:layout_constraintTop_toTopOf="parent" />
 
     <ImageButton
-        android:id="@+id/btnExtra"
+        android:id="@+id/btnChatRoomMenu"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginStart="8dp"
@@ -42,7 +42,7 @@
         android:inputType="textPersonName"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toStartOf="@+id/btnSendMessage"
-        app:layout_constraintStart_toEndOf="@+id/btnExtra" />
+        app:layout_constraintStart_toEndOf="@+id/btnChatRoomMenu" />
 
     <Button
         android:id="@+id/btnSendMessage"

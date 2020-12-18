@@ -1,8 +1,11 @@
 package com.start3a.ishowyou.main
 
+import android.app.AlertDialog
 import android.content.Intent
 import android.os.Bundle
+import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
+import androidx.core.view.GravityCompat
 import androidx.lifecycle.ViewModelProvider
 import com.firebase.ui.auth.AuthUI
 import com.start3a.ishowyou.R
@@ -10,6 +13,8 @@ import com.start3a.ishowyou.main.chat.NoRoomFragment
 import com.start3a.ishowyou.main.chat.RealTimeChatFragment
 import com.start3a.ishowyou.main.content.YoutubePlayerFragment
 import com.start3a.ishowyou.signin.SigninActivity
+import kotlinx.android.synthetic.main.activity_main.*
+import kotlinx.android.synthetic.main.info_chatroom.*
 
 class MainActivity : AppCompatActivity() {
 
@@ -37,15 +42,40 @@ class MainActivity : AppCompatActivity() {
                         it.replace(R.id.talkViewFrame, NoRoomFragment()).commit()
                 }
             }
+
+            vm.openChatRoomMenu = {
+                main_drawer_layout.openDrawer(GravityCompat.START)
+            }
+
+            btnLeaveRoom.setOnClickListener {
+                if (vm.isJoinRoom)
+                    leaveRoom()
+            }
         }
     }
 
     override fun onBackPressed() {
-        super.onBackPressed()
-        AuthUI.getInstance().signOut(applicationContext).addOnSuccessListener {
-            val intent = Intent(applicationContext, SigninActivity::class.java)
-            startActivity(intent)
-            finish()
+        if (main_drawer_layout.isDrawerOpen(GravityCompat.START)) {
+            main_drawer_layout.closeDrawer(GravityCompat.START)
+        } else {
+            super.onBackPressed()
+            AuthUI.getInstance().signOut(applicationContext).addOnSuccessListener {
+                val intent = Intent(applicationContext, SigninActivity::class.java)
+                startActivity(intent)
+                finish()
+            }
         }
+    }
+
+    private fun leaveRoom() {
+        val builder = AlertDialog.Builder(this)
+
+        builder.setMessage("채팅방에서 나가시겠습니까?")
+            .setPositiveButton("확인") { _, _ ->
+                viewModel!!.leaveRoom()
+                main_drawer_layout.closeDrawer(GravityCompat.START)
+            }
+            .setNegativeButton("취소", null)
+            .create().show()
     }
 }

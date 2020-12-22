@@ -41,7 +41,9 @@ class ChatDao(private val db: DatabaseReference) {
 
     private val TAG = "ChatDao"
     private var roomCode: String? = null
+    private val curUserId = FirebaseAuth.getInstance().currentUser!!.email!!.split("@")[0]
 
+    private var newRoomNotifyListener: ValueEventListener? = null
     private var roomInfoChildChangedListener: ValueEventListener? = null
     private var messageNotifyListener: ChildEventListener? = null
     private var memberNotifyListener: ChildEventListener? = null
@@ -51,7 +53,11 @@ class ChatDao(private val db: DatabaseReference) {
         successListener: () -> Unit,
         roomInfoChangedListener: (ChatRoom) -> Unit
     ) {
-        roomCode = UUID.randomUUID().toString()
+        Date().time.let {
+            roomCode = it.toString()
+            chatRoom.timeCreated = it
+        }
+
         val roomRef = db.child("chat/$roomCode")
 
         roomRef.setValue(chatRoom)
@@ -72,26 +78,26 @@ class ChatDao(private val db: DatabaseReference) {
                 successListener()
             }
             .addOnFailureListener {
-                Log.d(TAG, "Creating ChatRoom is Failed.")
+                Log.d(TAG, "Creating ChatRoom is Failed\n$it")
             }
 
-        val hostName = FirebaseAuth.getInstance().currentUser!!.email!!.split("@")[0]
-        db.child("member/$roomCode/$hostName").setValue(ChatMember(hostName, true))
+        db.child("member/$roomCode/$curUserId").setValue(ChatMember(curUserId, true))
     }
 
-    fun leaveRoom() {
-        db.child("chat/$roomCode").let { dbr ->
-            roomInfoChildChangedListener?.let { dbr.removeEventListener(it) }
-            dbr.removeValue()
+    fun leaveRoom(isHost: Boolean) {
+        if (isHost) {
+            db.child("chat/$roomCode").removeValue()
+            db.child("message/$roomCode").removeValue()
+            db.child("member/$roomCode").removeValue()
         }
-        db.child("message/$roomCode").let { dbr ->
-            messageNotifyListener?.let { dbr.removeEventListener(it) }
-            dbr.removeValue()
+        else {
+            db.child("member/$roomCode/$curUserId").removeValue()
         }
-        db.child("member/$roomCode").let { dbr ->
-            memberNotifyListener?.let { dbr.removeEventListener(it) }
-            dbr.removeValue()
-        }
+
+        removeListener(roomInfoChildChangedListener, "chat/$roomCode")
+        removeListener(messageNotifyListener, "message/$roomCode")
+        removeListener(memberNotifyListener, "member/$roomCode")
+
         roomCode = null
     }
 
@@ -115,7 +121,7 @@ class ChatDao(private val db: DatabaseReference) {
             })
     }
 
-    fun notifyChatMember(memberAdded: (ChatMember) -> Unit) {
+    fun notifyChatMember(memberAdded: (ChatMember) -> Unit, memberRemoved: (String) -> Unit) {
         memberNotifyListener =
             db.child("member/$roomCode").addChildEventListener(object : ChildEventListener {
                 override fun onChildAdded(snapshot: DataSnapshot, previousChildName: String?) {
@@ -125,7 +131,11 @@ class ChatDao(private val db: DatabaseReference) {
                 }
 
                 override fun onChildChanged(snapshot: DataSnapshot, previousChildName: String?) {}
-                override fun onChildRemoved(snapshot: DataSnapshot) {}
+                override fun onChildRemoved(snapshot: DataSnapshot) {
+                    snapshot.getValue(ChatMember::class.java)?.let {
+                        memberRemoved(it.userName)
+                    }
+                }
                 override fun onChildMoved(snapshot: DataSnapshot, previousChildName: String?) {}
 
                 override fun onCancelled(error: DatabaseError) {
@@ -136,10 +146,100 @@ class ChatDao(private val db: DatabaseReference) {
     }
 
     fun sendChatMessage(message: String) {
-        val curUserId = FirebaseAuth.getInstance().currentUser!!.email!!.split("@")[0]
         val time = Date().time
         db.child("message/$roomCode/$time").setValue(
             ChatMessage(curUserId, message, time)
         )
+    }
+
+    fun requestUserChatRoomList(
+        firstRequestRoomListSucceed: (MutableList<ChatRoom>) -> Unit,
+        newRoomCreated: (ChatRoom) -> Unit
+    ) {
+        Log.d("TAGG", "requestUserChatRoomList")
+
+        // 최초 리스트 출력
+        db.child("chat").addListenerForSingleValueEvent(object : ValueEventListener {
+            override fun onDataChange(snapshot: DataSnapshot) {
+                val rooms = mutableListOf<ChatRoom>()
+                snapshot.children.forEach { ref ->
+                    ref.getValue<ChatRoom>()?.let {
+                        rooms.add(it)
+                    }
+                }
+                firstRequestRoomListSucceed(rooms)
+
+                notifyNewRoomCreated(newRoomCreated)
+            }
+
+            override fun onCancelled(error: DatabaseError) {
+                Log.d(TAG, "Initializing Chat Room List is Cancelled.\n$error")
+            }
+        })
+    }
+
+    private fun notifyNewRoomCreated(newRoomCreated: (ChatRoom) -> Unit) {
+        // 새 방이 생성될 때마다 실행
+        newRoomNotifyListener =
+            db.child("chat").addValueEventListener(object : ValueEventListener {
+                override fun onDataChange(snapshot: DataSnapshot) {
+                    Log.d("TAGG", "notifyNewRoomCreated")
+                    snapshot.getValue(ChatRoom::class.java)?.let {
+                        // 리스너가 처음 연결될 때 빈 방이 리턴됨
+                        // 빈 방인지 체크
+                        if (it.timeCreated != 0L)
+                            newRoomCreated(it)
+                    }
+                }
+
+                override fun onCancelled(error: DatabaseError) {
+                    Log.d(TAG, "Requesting Chat Room List is Cancelled.\n$error")
+                }
+
+            })
+    }
+
+    fun requestJoinRoom(
+        requestedRoomCode: String,
+        successJoined: (String) -> Unit,
+        failJoined: () -> Unit
+    ) {
+        // 방 입장
+        db.child("chat/$requestedRoomCode")
+            .addListenerForSingleValueEvent(object : ValueEventListener {
+                override fun onDataChange(snapshot: DataSnapshot) {
+                    if (snapshot.exists())
+                        successJoined(requestedRoomCode)
+                    else failJoined()
+                }
+
+                override fun onCancelled(error: DatabaseError) {
+                    Log.d(TAG, "Request Join Room is Cancelled.\n$error")
+                }
+            })
+
+        // 방 멤버 저장
+        db.child("member/$requestedRoomCode/$curUserId").setValue(ChatMember(curUserId, false))
+    }
+
+    fun joinRoom(code: String) {
+        roomCode = code
+    }
+
+    fun closeJoinRoom() {
+        removeListener(newRoomNotifyListener, "chat")
+    }
+
+
+    private fun removeListener(listener: ChildEventListener?, path: String) {
+        db.child(path).let { dbr ->
+            listener?.let { dbr.removeEventListener(it) }
+        }
+    }
+
+    private fun removeListener(listener: ValueEventListener?, path: String) {
+        db.child(path).let { dbr ->
+            listener?.let { dbr.removeEventListener(it) }
+        }
     }
 }

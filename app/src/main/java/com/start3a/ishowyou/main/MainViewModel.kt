@@ -8,7 +8,6 @@ import com.start3a.ishowyou.data.ChatMessage
 import com.start3a.ishowyou.data.ChatRoom
 import com.start3a.ishowyou.model.ChatDao
 import com.start3a.ishowyou.model.YoutubeDao
-import java.util.*
 
 class MainViewModel : ViewModel() {
 
@@ -50,7 +49,7 @@ class MainViewModel : ViewModel() {
     }
 
     fun leaveRoom() {
-        dbChat.leaveRoom()
+        dbChat.leaveRoom(isHost)
         isJoinRoom = false
         isHost = false
         createChatRoomViewListener()
@@ -58,14 +57,36 @@ class MainViewModel : ViewModel() {
 
     fun notifyChatInfo() {
         dbChat.notifyChatMessage {
-            listMessage.value!!.add(it)
+            // 메시지 감지
+            val list = listMessage.value!!
+            list.add(it)
+            listMessage.value = list
         }
-        dbChat.notifyChatMember {
+        dbChat.notifyChatMember({
+            // 멤버 추가
             listMember.add(it)
-        }
+        },{
+            // 멤버 삭제
+            var removeIndex = -1
+            for (i in 0 until listMember.size) {
+                if (listMember[i].userName == it) {
+                    removeIndex = i
+                    break
+                }
+            }
+            if (removeIndex != -1)
+                listMember.removeAt(removeIndex)
+        })
     }
 
     fun sendChatMessage(message: String) {
         dbChat.sendChatMessage(message)
+    }
+
+    fun joinRoom(roomCode: String) {
+        isJoinRoom = true
+        isHost = false
+        dbChat.joinRoom(roomCode)
+        createChatRoomViewListener()
     }
 }

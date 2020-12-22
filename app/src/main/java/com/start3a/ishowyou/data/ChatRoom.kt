@@ -3,7 +3,8 @@ package com.start3a.ishowyou.data
 data class ChatRoom(
     var title: String = "",
     var contentName: String = "NONE",
-    var countMember: Int = 1
+    var countMember: Int = 1,
+    var timeCreated: Long = 0
 )
 
 data class ChatMessage(

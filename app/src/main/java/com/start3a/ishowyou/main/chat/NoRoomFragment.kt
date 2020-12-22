@@ -1,6 +1,8 @@
 package com.start3a.ishowyou.main.chat
 
+import android.app.Activity
 import android.app.AlertDialog
+import android.content.Intent
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
@@ -17,6 +19,8 @@ import kotlinx.android.synthetic.main.fragment_no_room.*
 class NoRoomFragment : Fragment() {
 
     private var viewModel: MainViewModel? = null
+
+    private val REQUEST_JOIN_ROOM = 0
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
@@ -80,6 +84,24 @@ class NoRoomFragment : Fragment() {
     }
 
     private fun joinRoom() {
+        val intent = Intent(activity, JoinChatRoomActivity::class.java)
+        startActivityForResult(intent, REQUEST_JOIN_ROOM)
+    }
 
+    override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
+        super.onActivityResult(requestCode, resultCode, data)
+
+        viewModel!!.let { vm ->
+
+            when (requestCode) {
+                REQUEST_JOIN_ROOM -> {
+                    if (resultCode == Activity.RESULT_OK && data != null) {
+                        val roomCode = data.getStringExtra("roomCode")!!
+                        vm.joinRoom(roomCode)
+                    }
+                }
+            }
+
+        }
     }
 }

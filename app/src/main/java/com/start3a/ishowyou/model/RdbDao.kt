@@ -47,6 +47,7 @@ class ChatDao(private val db: DatabaseReference) {
     private var roomInfoChildChangedListener: ValueEventListener? = null
     private var messageNotifyListener: ChildEventListener? = null
     private var memberNotifyListener: ChildEventListener? = null
+    private var hostDeleteRoomNotifyListener: ValueEventListener? = null
 
     fun createChatRoom(
         chatRoom: ChatRoom,
@@ -92,6 +93,7 @@ class ChatDao(private val db: DatabaseReference) {
         }
         else {
             db.child("member/$roomCode/$curUserId").removeValue()
+            removeListener(hostDeleteRoomNotifyListener, "member/$roomCode")
         }
 
         removeListener(roomInfoChildChangedListener, "chat/$roomCode")
@@ -156,8 +158,6 @@ class ChatDao(private val db: DatabaseReference) {
         firstRequestRoomListSucceed: (MutableList<ChatRoom>) -> Unit,
         newRoomCreated: (ChatRoom) -> Unit
     ) {
-        Log.d("TAGG", "requestUserChatRoomList")
-
         // 최초 리스트 출력
         db.child("chat").addListenerForSingleValueEvent(object : ValueEventListener {
             override fun onDataChange(snapshot: DataSnapshot) {
@@ -182,8 +182,8 @@ class ChatDao(private val db: DatabaseReference) {
         // 새 방이 생성될 때마다 실행
         newRoomNotifyListener =
             db.child("chat").addValueEventListener(object : ValueEventListener {
+
                 override fun onDataChange(snapshot: DataSnapshot) {
-                    Log.d("TAGG", "notifyNewRoomCreated")
                     snapshot.getValue(ChatRoom::class.java)?.let {
                         // 리스너가 처음 연결될 때 빈 방이 리턴됨
                         // 빈 방인지 체크
@@ -207,12 +207,13 @@ class ChatDao(private val db: DatabaseReference) {
         // 방 입장
         db.child("chat/$requestedRoomCode")
             .addListenerForSingleValueEvent(object : ValueEventListener {
+
                 override fun onDataChange(snapshot: DataSnapshot) {
-                    if (snapshot.exists())
+                    if (snapshot.exists()) {
                         successJoined(requestedRoomCode)
+                    }
                     else failJoined()
                 }
-
                 override fun onCancelled(error: DatabaseError) {
                     Log.d(TAG, "Request Join Room is Cancelled.\n$error")
                 }
@@ -220,6 +221,22 @@ class ChatDao(private val db: DatabaseReference) {
 
         // 방 멤버 저장
         db.child("member/$requestedRoomCode/$curUserId").setValue(ChatMember(curUserId, false))
+    }
+
+    // 방 제거 여부
+    // 방장이 방을 나가면 삭제됨
+    fun notifyIsRoomDeleted(roomDeleted: () -> Unit) {
+        hostDeleteRoomNotifyListener =
+            db.child("chat/$roomCode").addValueEventListener(object : ValueEventListener {
+
+            override fun onDataChange(snapshot: DataSnapshot) {
+                if (!snapshot.exists())
+                    roomDeleted()
+            }
+            override fun onCancelled(error: DatabaseError) {
+                Log.d(TAG, "Notifying Chat Room List is Cancelled.\n$error")
+            }
+        })
     }
 
     fun joinRoom(code: String) {

@@ -3,6 +3,7 @@ package com.start3a.ishowyou.main
 import android.app.AlertDialog
 import android.content.Intent
 import android.os.Bundle
+import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.view.GravityCompat
 import androidx.lifecycle.ViewModelProvider
@@ -45,6 +46,10 @@ class MainActivity : AppCompatActivity() {
                 }
             }
 
+            vm.messageView = { text ->
+                Toast.makeText(this, text, Toast.LENGTH_LONG).show()
+            }
+
             listMemberAdapter = ChatMemberAdapter(vm.listMember)
             vm.openChatRoomMenu = {
                 main_drawer_layout.openDrawer(GravityCompat.START)
@@ -79,8 +84,6 @@ class MainActivity : AppCompatActivity() {
             .setPositiveButton("확인") { _, _ ->
                 viewModel!!.run {
                     leaveRoom()
-                    listMessage.value?.clear()
-                    listMember.clear()
                 }
                 main_drawer_layout.closeDrawer(GravityCompat.START)
             }

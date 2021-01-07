@@ -1,17 +1,16 @@
 package com.start3a.ishowyou.main.chat
 
-import android.util.Log
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import com.google.firebase.database.FirebaseDatabase
 import com.start3a.ishowyou.data.ChatRoom
-import com.start3a.ishowyou.model.ChatDao
+import com.start3a.ishowyou.model.RdbDao
 
 class JoinChatRoomViewModel : ViewModel() {
 
     var listRoom = MutableLiveData<MutableList<ChatRoom>>().apply { value = mutableListOf() }
 
-    private val dbChat = ChatDao(FirebaseDatabase.getInstance().reference)
+    private val dbChat = RdbDao(FirebaseDatabase.getInstance().reference).ChatDao()
 
     fun loadRoomList() {
         dbChat.requestUserChatRoomList(

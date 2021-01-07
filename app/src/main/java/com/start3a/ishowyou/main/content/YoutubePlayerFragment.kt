@@ -82,18 +82,13 @@ class YoutubePlayerFragment : Fragment() {
                         object : YouTubePlayerSeekBarListener {
                             override fun seekTo(time: Float) {
                                 youTubePlayer.seekTo(time)
-                                if (vm.isHost) {
-                                    vm.seekBarYoutubeClicked(time)
-                                }
+                                vm.seekBarYoutubeClicked(time)
                             }
                         }
 
                     btnSet.setOnClickListener {
-                        // Seekbar 감지 리스너
-                        if (!vm.isHost) {
-                            vm.setYoutubeSeekbarChangedListener {
-                                youTubePlayer.seekTo(it)
-                            }
+                        vm.initContent_Youtube {
+                            youTubePlayer.seekTo(it)
                         }
                     }
                 }
@@ -112,10 +107,5 @@ class YoutubePlayerFragment : Fragment() {
 
     private fun showSystemUi(mDecorView: View) {
         mDecorView.systemUiVisibility = View.SYSTEM_UI_FLAG_LAYOUT_STABLE
-    }
-
-    override fun onDestroy() {
-        super.onDestroy()
-        viewModel!!.removeYoutubeSeekbarChangedListener()
     }
 }

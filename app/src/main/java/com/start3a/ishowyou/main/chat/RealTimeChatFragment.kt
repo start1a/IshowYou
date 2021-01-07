@@ -41,7 +41,7 @@ class RealTimeChatFragment : Fragment() {
 
         viewModel!!.let { vm ->
             initAdapter()
-            vm.notifyChatRoomInfo()
+            vm.initChatRoom()
             vm.listMessage.observe(viewLifecycleOwner) {
                 listChatAdapter?.notifyDataSetChanged()
             }

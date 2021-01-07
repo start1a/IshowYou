@@ -6,8 +6,8 @@ import com.google.firebase.database.FirebaseDatabase
 import com.start3a.ishowyou.data.ChatMember
 import com.start3a.ishowyou.data.ChatMessage
 import com.start3a.ishowyou.data.ChatRoom
-import com.start3a.ishowyou.model.ChatDao
-import com.start3a.ishowyou.model.YoutubeDao
+import com.start3a.ishowyou.data.ContentSetting
+import com.start3a.ishowyou.model.RdbDao
 
 class MainViewModel : ViewModel() {
 
@@ -27,21 +27,36 @@ class MainViewModel : ViewModel() {
     // 프래그먼트에서 뷰를 실행하면서 종료할 시에 발생하는 에러 방지
     lateinit var messageView: (String) -> Unit
 
-    private val dbYoutube = YoutubeDao(FirebaseDatabase.getInstance().reference)
-    private val dbChat = ChatDao(FirebaseDatabase.getInstance().reference)
+    // Dao
+    private var dbYoutube: RdbDao.YoutubeDao
+    private var dbChat: RdbDao.ChatDao
+    private var curRoomContent: ContentSetting? = null
 
+    init {
+        val db = RdbDao(FirebaseDatabase.getInstance().reference)
+        dbYoutube = db.YoutubeDao()
+        dbChat = db.ChatDao()
+    }
+
+
+    // 컨텐츠 --------------------------------------
+    fun changeContent(content: ContentSetting) {
+        curRoomContent?.closeContent()
+        curRoomContent = content
+    }
+
+    // 유튜브
     fun seekBarYoutubeClicked(time: Float) {
-        dbYoutube.seekBarYoutubeClicked(time.toDouble())
+        if (isHost)
+            dbYoutube.seekBarYoutubeClicked(time.toDouble())
     }
 
-    fun setYoutubeSeekbarChangedListener(changedListener: (Float) -> Unit) {
-        dbYoutube.setSeekbarChangedListener(changedListener)
+    fun initContent_Youtube(changeSeekbar: (Float) -> Unit) {
+        if (!isHost)
+            dbYoutube.setSeekbarChangedListener(changeSeekbar)
     }
 
-    fun removeYoutubeSeekbarChangedListener() {
-        dbYoutube.removeSeekbarChangedListener()
-    }
-
+    // 채팅방 ----------------------------------------
     fun createChatRoom(
         title: String,
         successListener: () -> Unit,
@@ -52,8 +67,8 @@ class MainViewModel : ViewModel() {
     }
 
     fun leaveRoom() {
-        // Firebase 방 정보 삭제
-        dbChat.leaveRoom(isHost)
+        // 방 정보 삭제
+        dbChat.closeRoom(isHost)
 
         // 방 정보 리셋
         isJoinRoom = false
@@ -61,11 +76,15 @@ class MainViewModel : ViewModel() {
         listMessage.value?.clear()
         listMember.clear()
 
+        // 방 컨텐츠 비활성화
+        curRoomContent?.closeContent()
+        curRoomContent = null
+
         // 방 대기 화면
         createChatRoomViewListener()
     }
 
-    fun notifyChatRoomInfo() {
+    fun initChatRoom() {
         dbChat.notifyChatMessage {
             // 메시지 감지
             val list = listMessage.value!!

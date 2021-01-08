@@ -26,13 +26,13 @@ class RdbDao(private val db: DatabaseReference) {
         private val TAG = "YoutubeDao"
         private var seekbarChangedListener: ValueEventListener? = null
 
-        fun seekBarYoutubeClicked(time: Double) {
-            db.child("seekbar").setValue(time)
+        fun seekbarYoutubeClicked(time: Double) {
+            db.child("content/$roomCode/youtube/seekbar").setValue(time)
         }
 
         fun setSeekbarChangedListener(changeSeekbar: (Float) -> Unit) {
             seekbarChangedListener =
-                db.child("seekbar").addValueEventListener(object : ValueEventListener {
+                db.child("content/$roomCode/youtube/seekbar").addValueEventListener(object : ValueEventListener {
                     override fun onDataChange(snapshot: DataSnapshot) {
                         snapshot.getValue<Double>()?.let { time ->
                             changeSeekbar(time.toFloat())

@@ -82,14 +82,12 @@ class YoutubePlayerFragment : Fragment() {
                         object : YouTubePlayerSeekBarListener {
                             override fun seekTo(time: Float) {
                                 youTubePlayer.seekTo(time)
-                                vm.seekBarYoutubeClicked(time)
+                                vm.seekbarYoutubeClicked(time)
                             }
                         }
 
-                    btnSet.setOnClickListener {
-                        vm.initContent_Youtube {
-                            youTubePlayer.seekTo(it)
-                        }
+                    vm.initContent_Youtube {
+                        youTubePlayer.seekTo(it)
                     }
                 }
             })

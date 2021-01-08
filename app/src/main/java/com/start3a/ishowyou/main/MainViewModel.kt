@@ -46,9 +46,9 @@ class MainViewModel : ViewModel() {
     }
 
     // 유튜브
-    fun seekBarYoutubeClicked(time: Float) {
+    fun seekbarYoutubeClicked(time: Float) {
         if (isHost)
-            dbYoutube.seekBarYoutubeClicked(time.toDouble())
+            dbYoutube.seekbarYoutubeClicked(time.toDouble())
     }
 
     fun initContent_Youtube(changeSeekbar: (Float) -> Unit) {

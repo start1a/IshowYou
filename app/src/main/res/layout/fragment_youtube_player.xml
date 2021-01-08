@@ -27,11 +27,4 @@
         app:fontSize="12sp"
         app:layout_constraintTop_toBottomOf="@+id/youtubePlayerView" />
 
-    <Button
-        android:id="@+id/btnSet"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:text="감지"
-        app:layout_constraintTop_toBottomOf="@+id/youtubePlayerView" />
-
 </androidx.constraintlayout.widget.ConstraintLayout>

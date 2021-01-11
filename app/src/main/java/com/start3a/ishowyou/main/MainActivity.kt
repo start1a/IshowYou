@@ -10,6 +10,7 @@ import androidx.lifecycle.ViewModelProvider
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.firebase.ui.auth.AuthUI
 import com.start3a.ishowyou.R
+import com.start3a.ishowyou.data.Content
 import com.start3a.ishowyou.main.chat.ChatMemberAdapter
 import com.start3a.ishowyou.main.chat.NoRoomFragment
 import com.start3a.ishowyou.main.chat.RealTimeChatFragment
@@ -34,33 +35,8 @@ class MainActivity : AppCompatActivity() {
         }
 
         viewModel!!.let { vm ->
-            supportFragmentManager.beginTransaction()
-                .replace(R.id.contentViewFrame, YoutubePlayerFragment()).commit()
-
-            vm.createChatRoomViewListener = {
-                supportFragmentManager.beginTransaction().let {
-                    if (vm.isJoinRoom)
-                        it.replace(R.id.talkViewFrame, RealTimeChatFragment()).commit()
-                    else
-                        it.replace(R.id.talkViewFrame, NoRoomFragment()).commit()
-                }
-            }
-
-            vm.messageView = { text ->
-                Toast.makeText(this, text, Toast.LENGTH_LONG).show()
-            }
-
-            listMemberAdapter = ChatMemberAdapter(vm.listMember)
-            vm.openChatRoomMenu = {
-                main_drawer_layout.openDrawer(GravityCompat.START)
-                memberRecyclerView.adapter = listMemberAdapter
-                memberRecyclerView.layoutManager = LinearLayoutManager(this)
-            }
-
-            btnLeaveRoom.setOnClickListener {
-                if (vm.isJoinRoom)
-                    leaveRoom()
-            }
+            initMainView()
+            initDrawer()
         }
     }
 
@@ -73,6 +49,52 @@ class MainActivity : AppCompatActivity() {
                 val intent = Intent(applicationContext, SigninActivity::class.java)
                 startActivity(intent)
                 finish()
+            }
+        }
+    }
+
+    private fun initMainView() {
+        viewModel!!.let { vm ->
+
+            vm.messageView = { text ->
+                Toast.makeText(this, text, Toast.LENGTH_LONG).show()
+            }
+
+            supportFragmentManager.beginTransaction()
+                .replace(R.id.contentViewFrame, YoutubePlayerFragment()).commit()
+
+            // 방 출입 뷰
+            vm.createChatRoomView = {
+                supportFragmentManager.beginTransaction().let {
+                    if (vm.isJoinRoom)
+                        it.replace(R.id.talkViewFrame, RealTimeChatFragment()).commit()
+                    else
+                        it.replace(R.id.talkViewFrame, NoRoomFragment()).commit()
+                }
+            }
+
+            vm.initRoomCurContent = { content ->
+                val ft = supportFragmentManager.beginTransaction()
+                when (content) {
+                    Content.YOUTUBE ->
+                            ft.replace(R.id.contentViewFrame, YoutubePlayerFragment()).commit()
+                }
+            }
+        }
+    }
+
+    private fun initDrawer() {
+        viewModel!!.let { vm ->
+            listMemberAdapter = ChatMemberAdapter(vm.listMember)
+            vm.openChatRoomMenu = {
+                main_drawer_layout.openDrawer(GravityCompat.START)
+                memberRecyclerView.adapter = listMemberAdapter
+                memberRecyclerView.layoutManager = LinearLayoutManager(this)
+            }
+
+            btnLeaveRoom.setOnClickListener {
+                if (vm.isJoinRoom)
+                    leaveRoom()
             }
         }
     }

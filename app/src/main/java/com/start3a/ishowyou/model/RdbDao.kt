@@ -7,7 +7,7 @@ import com.google.firebase.database.ktx.getValue
 import com.start3a.ishowyou.data.ChatMember
 import com.start3a.ishowyou.data.ChatMessage
 import com.start3a.ishowyou.data.ChatRoom
-import com.start3a.ishowyou.data.ContentSetting
+import com.start3a.ishowyou.main.content.ContentSetting
 import java.util.*
 
 class RdbDao(private val db: DatabaseReference) {
@@ -45,7 +45,7 @@ class RdbDao(private val db: DatabaseReference) {
                 })
         }
 
-        override fun closeContent() {
+        override fun close() {
             seekbarChangedListener?.let { db.removeEventListener(it) }
         }
     }

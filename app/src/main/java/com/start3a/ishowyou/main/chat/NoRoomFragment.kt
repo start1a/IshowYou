@@ -74,7 +74,7 @@ class NoRoomFragment : Fragment() {
                 vm.createChatRoom(title, {
                     // 방 생성 성공 시
                     vm.isJoinRoom = true
-                    vm.createChatRoomViewListener()
+                    vm.createChatRoomView()
                 }, {
                     // 방 정보 변경 시
                 })

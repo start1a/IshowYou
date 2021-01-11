@@ -6,7 +6,8 @@ import com.google.firebase.database.FirebaseDatabase
 import com.start3a.ishowyou.data.ChatMember
 import com.start3a.ishowyou.data.ChatMessage
 import com.start3a.ishowyou.data.ChatRoom
-import com.start3a.ishowyou.data.ContentSetting
+import com.start3a.ishowyou.data.Content
+import com.start3a.ishowyou.main.content.ContentSetting
 import com.start3a.ishowyou.model.RdbDao
 
 class MainViewModel : ViewModel() {
@@ -22,7 +23,8 @@ class MainViewModel : ViewModel() {
     val listMember = mutableListOf<ChatMember>()
 
     // 채팅방 유무 뷰 전환
-    lateinit var createChatRoomViewListener: (() -> Unit)
+    lateinit var createChatRoomView: (() -> Unit)
+    lateinit var initRoomCurContent: ((Content) -> Unit)
     // 액티비티에서 토스트 메시지 관리
     // 프래그먼트에서 뷰를 실행하면서 종료할 시에 발생하는 에러 방지
     lateinit var messageView: (String) -> Unit
@@ -40,9 +42,13 @@ class MainViewModel : ViewModel() {
 
 
     // 컨텐츠 --------------------------------------
-    fun changeContent(content: ContentSetting) {
-        curRoomContent?.closeContent()
-        curRoomContent = content
+    fun changeContent(content: Content) {
+        curRoomContent?.close()
+
+        when (content) {
+            Content.YOUTUBE -> curRoomContent = dbYoutube
+        }
+        initRoomCurContent(content)
     }
 
     // 유튜브
@@ -52,7 +58,7 @@ class MainViewModel : ViewModel() {
     }
 
     fun initContent_Youtube(changeSeekbar: (Float) -> Unit) {
-        if (!isHost)
+        if (!isHost && isJoinRoom)
             dbYoutube.setSeekbarChangedListener(changeSeekbar)
     }
 
@@ -63,7 +69,9 @@ class MainViewModel : ViewModel() {
         roomInfoChangedListener: (ChatRoom) -> Unit
     ) {
         isHost = true
+        isJoinRoom = true
         dbChat.createChatRoom(ChatRoom(title), successListener, roomInfoChangedListener)
+        changeContent(Content.YOUTUBE)
     }
 
     fun leaveRoom() {
@@ -77,11 +85,11 @@ class MainViewModel : ViewModel() {
         listMember.clear()
 
         // 방 컨텐츠 비활성화
-        curRoomContent?.closeContent()
+        curRoomContent?.close()
         curRoomContent = null
 
         // 방 대기 화면
-        createChatRoomViewListener()
+        createChatRoomView()
     }
 
     fun initChatRoom() {
@@ -124,6 +132,7 @@ class MainViewModel : ViewModel() {
         isJoinRoom = true
         isHost = false
         dbChat.joinRoom(roomCode)
-        createChatRoomViewListener()
+        changeContent(Content.YOUTUBE)
+        createChatRoomView()
     }
 }

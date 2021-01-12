@@ -37,6 +37,10 @@ class MainActivity : AppCompatActivity() {
         viewModel!!.let { vm ->
             initMainView()
             initDrawer()
+
+            supportFragmentManager.beginTransaction()
+                .replace(R.id.contentViewFrame, YoutubePlayerFragment()).commit()
+            vm.createChatRoomView()
         }
     }
 
@@ -59,9 +63,6 @@ class MainActivity : AppCompatActivity() {
             vm.messageView = { text ->
                 Toast.makeText(this, text, Toast.LENGTH_LONG).show()
             }
-
-            supportFragmentManager.beginTransaction()
-                .replace(R.id.contentViewFrame, YoutubePlayerFragment()).commit()
 
             // 방 출입 뷰
             vm.createChatRoomView = {

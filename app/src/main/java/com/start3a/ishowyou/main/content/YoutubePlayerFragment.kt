@@ -44,7 +44,6 @@ class YoutubePlayerFragment : Fragment() {
         viewModel!!.let { vm ->
             // 화면이 중지되면 자동 재생 중지
             lifecycle.addObserver(youtubePlayerView)
-            vm.createChatRoomView()
 
             youtubePlayerView.addYouTubePlayerListener(object : AbstractYouTubePlayerListener() {
 

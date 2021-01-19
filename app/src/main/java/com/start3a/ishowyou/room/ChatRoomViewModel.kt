@@ -1,4 +1,4 @@
-package com.start3a.ishowyou.main
+package com.start3a.ishowyou.room
 
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
@@ -10,7 +10,7 @@ import com.start3a.ishowyou.data.Content
 import com.start3a.ishowyou.main.content.ContentSetting
 import com.start3a.ishowyou.model.RdbDao
 
-class MainViewModel : ViewModel() {
+class ChatRoomViewModel: ViewModel() {
 
     // 채팅방 정보
     var isHost = false
@@ -71,7 +71,7 @@ class MainViewModel : ViewModel() {
         isHost = true
         isJoinRoom = true
         dbChat.createChatRoom(ChatRoom(title), successListener, roomInfoChangedListener)
-//        changeContent(Content.YOUTUBE)
+        changeContent(Content.YOUTUBE)
     }
 
     fun leaveRoom() {
@@ -132,7 +132,8 @@ class MainViewModel : ViewModel() {
         isJoinRoom = true
         isHost = false
         dbChat.joinRoom(roomCode)
-//        changeContent(Content.YOUTUBE)
+        changeContent(Content.YOUTUBE)
         createChatRoomView()
     }
+
 }

@@ -15,6 +15,7 @@ import com.start3a.ishowyou.main.chat.ChatMemberAdapter
 import com.start3a.ishowyou.main.chat.NoRoomFragment
 import com.start3a.ishowyou.main.chat.RealTimeChatFragment
 import com.start3a.ishowyou.main.content.YoutubePlayerFragment
+import com.start3a.ishowyou.room.ChatRoomActivity
 import com.start3a.ishowyou.signin.SigninActivity
 import kotlinx.android.synthetic.main.activity_main.*
 import kotlinx.android.synthetic.main.info_chatroom.*
@@ -36,24 +37,26 @@ class MainActivity : AppCompatActivity() {
 
         viewModel!!.let { vm ->
             initMainView()
-            initDrawer()
+//            initDrawer()
 
             supportFragmentManager.beginTransaction()
-                .replace(R.id.contentViewFrame, YoutubePlayerFragment()).commit()
-            vm.createChatRoomView()
+                    // 별도 프래그먼트를 추가 구현할 것
+ //               .add(R.id.contentViewFrame, YoutubePlayerFragment())
+                .add(R.id.RoomMenuViewFrame, NoRoomFragment())
+                .commit()
         }
     }
 
     override fun onBackPressed() {
-        if (main_drawer_layout.isDrawerOpen(GravityCompat.START)) {
-            main_drawer_layout.closeDrawer(GravityCompat.START)
-        } else {
+//        if (main_drawer_layout.isDrawerOpen(GravityCompat.START)) {
+//            main_drawer_layout.closeDrawer(GravityCompat.START)
+//        } else {
             super.onBackPressed()
             AuthUI.getInstance().signOut(applicationContext).addOnSuccessListener {
                 val intent = Intent(applicationContext, SigninActivity::class.java)
                 startActivity(intent)
                 finish()
-            }
+//            }
         }
     }
 
@@ -66,12 +69,8 @@ class MainActivity : AppCompatActivity() {
 
             // 방 출입 뷰
             vm.createChatRoomView = {
-                supportFragmentManager.beginTransaction().let {
-                    if (vm.isJoinRoom)
-                        it.replace(R.id.talkViewFrame, RealTimeChatFragment()).commit()
-                    else
-                        it.replace(R.id.talkViewFrame, NoRoomFragment()).commit()
-                }
+                val intent = Intent(this, ChatRoomActivity::class.java)
+                startActivity(intent)
             }
 
             vm.initRoomCurContent = { content ->
@@ -88,7 +87,7 @@ class MainActivity : AppCompatActivity() {
         viewModel!!.let { vm ->
             listMemberAdapter = ChatMemberAdapter(vm.listMember)
             vm.openChatRoomMenu = {
-                main_drawer_layout.openDrawer(GravityCompat.START)
+//                main_drawer_layout.openDrawer(GravityCompat.START)
                 memberRecyclerView.adapter = listMemberAdapter
                 memberRecyclerView.layoutManager = LinearLayoutManager(this)
             }
@@ -108,7 +107,7 @@ class MainActivity : AppCompatActivity() {
                 viewModel!!.run {
                     leaveRoom()
                 }
-                main_drawer_layout.closeDrawer(GravityCompat.START)
+//                main_drawer_layout.closeDrawer(GravityCompat.START)
             }
             .setNegativeButton("취소", null)
             .create().show()

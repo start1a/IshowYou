@@ -10,13 +10,13 @@ import androidx.fragment.app.Fragment
 import androidx.lifecycle.ViewModelProvider
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.start3a.ishowyou.R
-import com.start3a.ishowyou.main.MainViewModel
+import com.start3a.ishowyou.room.ChatRoomViewModel
 import kotlinx.android.synthetic.main.fragment_real_time_chat.*
 
 
 class RealTimeChatFragment : Fragment() {
 
-    private var viewModel: MainViewModel? = null
+    private var viewModel: ChatRoomViewModel? = null
     private var listChatAdapter: ChatMessageAdapter? = null
 
     override fun onCreateView(
@@ -36,7 +36,7 @@ class RealTimeChatFragment : Fragment() {
                 activity!!.viewModelStore,
                 ViewModelProvider.AndroidViewModelFactory(it)
             )
-                .get(MainViewModel::class.java)
+                .get(ChatRoomViewModel::class.java)
         }
 
         viewModel!!.let { vm ->

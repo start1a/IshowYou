@@ -14,13 +14,13 @@ import com.pierfrancescosoffritti.androidyoutubeplayer.core.player.listeners.Abs
 import com.pierfrancescosoffritti.androidyoutubeplayer.core.player.listeners.YouTubePlayerFullScreenListener
 import com.pierfrancescosoffritti.androidyoutubeplayer.core.ui.views.YouTubePlayerSeekBarListener
 import com.start3a.ishowyou.R
-import com.start3a.ishowyou.main.MainViewModel
+import com.start3a.ishowyou.room.ChatRoomViewModel
 import kotlinx.android.synthetic.main.activity_main.*
 import kotlinx.android.synthetic.main.fragment_youtube_player.*
 
 class YoutubePlayerFragment : Fragment() {
 
-    private var viewModel: MainViewModel? = null
+    private var viewModel: ChatRoomViewModel? = null
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
@@ -38,7 +38,7 @@ class YoutubePlayerFragment : Fragment() {
                 activity!!.viewModelStore,
                 ViewModelProvider.AndroidViewModelFactory(it)
             )
-                .get(MainViewModel::class.java)
+                .get(ChatRoomViewModel::class.java)
         }
 
         viewModel!!.let { vm ->

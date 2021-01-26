@@ -9,7 +9,9 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.lifecycle.ViewModelProvider
 import com.firebase.ui.auth.AuthUI
 import com.start3a.ishowyou.R
+import com.start3a.ishowyou.data.Content
 import com.start3a.ishowyou.data.RoomRequest
+import com.start3a.ishowyou.main.content.LobbyYoutubeFragment
 import com.start3a.ishowyou.room.ChatRoomActivity
 import com.start3a.ishowyou.signin.SigninActivity
 
@@ -31,7 +33,8 @@ class MainActivity : AppCompatActivity() {
             initMainView()
 
             supportFragmentManager.beginTransaction()
-                .add(R.id.RoomMenuViewFrame, NoRoomFragment())
+                .add(R.id.contentViewFrame, LobbyYoutubeFragment())
+                .add(R.id.roomMenuViewFrame, NoRoomFragment())
                 .commit()
         }
     }
@@ -53,7 +56,11 @@ class MainActivity : AppCompatActivity() {
             }
 
             vm.initLobbyCurContent = { content ->
-
+                val ft = supportFragmentManager.beginTransaction()
+                when (content) {
+                    Content.YOUTUBE ->
+                        ft.replace(R.id.contentViewFrame, LobbyYoutubeFragment()).commit()
+                }
             }
         }
     }

@@ -2,13 +2,13 @@
 <androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
-    android:id="@+id/youtube_player_fragment"
+    android:id="@+id/lobby_youtube_player_fragment"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     tools:context=".room.content.YoutubePlayerFragment">
 
     <com.pierfrancescosoffritti.androidyoutubeplayer.core.player.views.YouTubePlayerView
-        android:id="@+id/youtubePlayerView"
+        android:id="@+id/lobby_youtubePlayerView"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         app:autoPlay="false"
@@ -19,12 +19,12 @@
         app:videoId="ydqla2glb44" />
 
     <com.pierfrancescosoffritti.androidyoutubeplayer.core.ui.views.YouTubePlayerSeekBar
-        android:id="@+id/youtube_player_seekbar"
+        android:id="@+id/lobby_youtube_player_seekbar"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:visibility="gone"
         app:color="@color/colorPrimary"
         app:fontSize="12sp"
-        app:layout_constraintTop_toBottomOf="@+id/youtubePlayerView" />
+        app:layout_constraintTop_toBottomOf="@+id/lobby_youtubePlayerView" />
 
 </androidx.constraintlayout.widget.ConstraintLayout>

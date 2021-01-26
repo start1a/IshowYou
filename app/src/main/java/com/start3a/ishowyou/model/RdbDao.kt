@@ -7,7 +7,7 @@ import com.google.firebase.database.ktx.getValue
 import com.start3a.ishowyou.data.ChatMember
 import com.start3a.ishowyou.data.ChatMessage
 import com.start3a.ishowyou.data.ChatRoom
-import com.start3a.ishowyou.main.content.ContentSetting
+import com.start3a.ishowyou.room.content.ContentSetting
 import java.util.*
 
 class RdbDao(private val db: DatabaseReference) {
@@ -32,17 +32,18 @@ class RdbDao(private val db: DatabaseReference) {
 
         fun setSeekbarChangedListener(changeSeekbar: (Float) -> Unit) {
             seekbarChangedListener =
-                db.child("content/$roomCode/youtube/seekbar").addValueEventListener(object : ValueEventListener {
-                    override fun onDataChange(snapshot: DataSnapshot) {
-                        snapshot.getValue<Double>()?.let { time ->
-                            changeSeekbar(time.toFloat())
+                db.child("content/$roomCode/youtube/seekbar")
+                    .addValueEventListener(object : ValueEventListener {
+                        override fun onDataChange(snapshot: DataSnapshot) {
+                            snapshot.getValue<Double>()?.let { time ->
+                                changeSeekbar(time.toFloat())
+                            }
                         }
-                    }
 
-                    override fun onCancelled(error: DatabaseError) {
-                        Log.d(TAG, "Youtube Seek is Cancelled.\n$error")
-                    }
-                })
+                        override fun onCancelled(error: DatabaseError) {
+                            Log.d(TAG, "Youtube Seek is Cancelled.\n$error")
+                        }
+                    })
         }
 
         override fun close() {
@@ -54,7 +55,6 @@ class RdbDao(private val db: DatabaseReference) {
 
         private val TAG = "ChatDao"
 
-        private var newRoomNotifyListener: ValueEventListener? = null
         private var roomInfoChildChangedListener: ValueEventListener? = null
         private var messageNotifyListener: ChildEventListener? = null
         private var memberNotifyListener: ChildEventListener? = null
@@ -86,7 +86,7 @@ class RdbDao(private val db: DatabaseReference) {
                                 Log.d(TAG, "Changing Room Info is Cancelled.\n$error")
                             }
                         })
-                    // 방으로 화면 이동
+
                     successListener()
                 }
                 .addOnFailureListener {
@@ -123,7 +123,12 @@ class RdbDao(private val db: DatabaseReference) {
                         }
                     }
 
-                    override fun onChildChanged(snapshot: DataSnapshot, previousChildName: String?) {}
+                    override fun onChildChanged(
+                        snapshot: DataSnapshot,
+                        previousChildName: String?
+                    ) {
+                    }
+
                     override fun onChildRemoved(snapshot: DataSnapshot) {}
                     override fun onChildMoved(snapshot: DataSnapshot, previousChildName: String?) {}
 
@@ -142,7 +147,11 @@ class RdbDao(private val db: DatabaseReference) {
                         }
                     }
 
-                    override fun onChildChanged(snapshot: DataSnapshot, previousChildName: String?) {}
+                    override fun onChildChanged(
+                        snapshot: DataSnapshot,
+                        previousChildName: String?
+                    ) {
+                    }
 
                     override fun onChildRemoved(snapshot: DataSnapshot) {
                         snapshot.getValue(ChatMember::class.java)?.let {
@@ -166,10 +175,7 @@ class RdbDao(private val db: DatabaseReference) {
             )
         }
 
-        fun requestUserChatRoomList(
-            firstRequestRoomListSucceed: (MutableList<ChatRoom>) -> Unit,
-            newRoomCreated: (ChatRoom) -> Unit
-        ) {
+        fun requestUserChatRoomList(firstRequestRoomListSucceed: (MutableList<ChatRoom>) -> Unit) {
             // 최초 리스트 출력
             db.child("chat").addListenerForSingleValueEvent(object : ValueEventListener {
                 override fun onDataChange(snapshot: DataSnapshot) {
@@ -180,8 +186,6 @@ class RdbDao(private val db: DatabaseReference) {
                         }
                     }
                     firstRequestRoomListSucceed(rooms)
-
-                    notifyNewRoomCreated(newRoomCreated)
                 }
 
                 override fun onCancelled(error: DatabaseError) {
@@ -190,30 +194,9 @@ class RdbDao(private val db: DatabaseReference) {
             })
         }
 
-        private fun notifyNewRoomCreated(newRoomCreated: (ChatRoom) -> Unit) {
-            // 새 방이 생성될 때마다 실행
-            newRoomNotifyListener =
-                db.child("chat").addValueEventListener(object : ValueEventListener {
-
-                    override fun onDataChange(snapshot: DataSnapshot) {
-                        snapshot.getValue(ChatRoom::class.java)?.let {
-                            // 리스너가 처음 연결될 때 빈 방이 리턴됨
-                            // 빈 방인지 체크
-                            if (it.timeCreated != 0L)
-                                newRoomCreated(it)
-                        }
-                    }
-
-                    override fun onCancelled(error: DatabaseError) {
-                        Log.d(TAG, "Requesting Chat Room List is Cancelled.\n$error")
-                    }
-
-                })
-        }
-
         fun requestJoinRoom(
             requestedRoomCode: String,
-            successJoined: (String) -> Unit,
+            successJoined: () -> Unit,
             failJoined: () -> Unit
         ) {
             // 방 입장
@@ -222,9 +205,9 @@ class RdbDao(private val db: DatabaseReference) {
 
                     override fun onDataChange(snapshot: DataSnapshot) {
                         if (snapshot.exists()) {
-                            successJoined(requestedRoomCode)
-                        }
-                        else failJoined()
+                            roomCode = requestedRoomCode
+                            successJoined()
+                        } else failJoined()
                     }
 
                     override fun onCancelled(error: DatabaseError) {
@@ -252,15 +235,6 @@ class RdbDao(private val db: DatabaseReference) {
                     }
                 })
         }
-
-        fun joinRoom(code: String) {
-            roomCode = code
-        }
-
-        fun closeJoinRoom() {
-            removeListener(newRoomNotifyListener, "chat")
-        }
-
 
         private fun removeListener(listener: ChildEventListener?, path: String) {
             db.child(path).let { dbr ->

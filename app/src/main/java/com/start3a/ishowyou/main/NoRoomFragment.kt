@@ -1,6 +1,5 @@
-package com.start3a.ishowyou.main.chat
+package com.start3a.ishowyou.main
 
-import android.app.Activity
 import android.app.AlertDialog
 import android.content.Intent
 import android.os.Bundle
@@ -13,14 +12,12 @@ import androidx.fragment.app.Fragment
 import androidx.lifecycle.ViewModelProvider
 import com.google.firebase.auth.FirebaseAuth
 import com.start3a.ishowyou.R
-import com.start3a.ishowyou.main.MainViewModel
+import com.start3a.ishowyou.main.joinroom.JoinChatRoomActivity
 import kotlinx.android.synthetic.main.fragment_no_room.*
 
 class NoRoomFragment : Fragment() {
 
     private var viewModel: MainViewModel? = null
-
-    private val REQUEST_JOIN_ROOM = 0
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
@@ -70,38 +67,13 @@ class NoRoomFragment : Fragment() {
             if (title.isBlank())
                 title = editInput.hint.toString()
 
-            viewModel!!.let { vm ->
-                vm.createChatRoom(title, {
-                    // 방 생성 성공 시
-                    vm.isJoinRoom = true
-                    vm.createChatRoomView()
-                }, {
-                    // 방 정보 변경 시
-                })
-                dialog.dismiss()
-            }
+            viewModel!!.createChatRoom(title)
+            dialog.dismiss()
         }
     }
 
     private fun joinRoom() {
         val intent = Intent(activity, JoinChatRoomActivity::class.java)
-        startActivityForResult(intent, REQUEST_JOIN_ROOM)
-    }
-
-    override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
-        super.onActivityResult(requestCode, resultCode, data)
-
-        viewModel!!.let { vm ->
-
-            when (requestCode) {
-                REQUEST_JOIN_ROOM -> {
-                    if (resultCode == Activity.RESULT_OK && data != null) {
-                        val roomCode = data.getStringExtra("roomCode")!!
-                        vm.joinRoom(roomCode)
-                    }
-                }
-            }
-
-        }
+        startActivity(intent)
     }
 }

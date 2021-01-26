@@ -1,4 +1,4 @@
-package com.start3a.ishowyou.main.content
+package com.start3a.ishowyou.room.content
 
 import android.content.pm.ActivityInfo
 import android.os.Bundle

@@ -1,5 +1,7 @@
-package com.start3a.ishowyou.main.chat
+package com.start3a.ishowyou.room.chat
 
+import android.app.Activity
+import android.content.Intent
 import android.os.Bundle
 import android.text.Editable
 import android.text.TextWatcher
@@ -30,7 +32,6 @@ class RealTimeChatFragment : Fragment() {
     override fun onActivityCreated(savedInstanceState: Bundle?) {
         super.onActivityCreated(savedInstanceState)
 
-
         viewModel = activity!!.application!!.let {
             ViewModelProvider(
                 activity!!.viewModelStore,
@@ -41,7 +42,15 @@ class RealTimeChatFragment : Fragment() {
 
         viewModel!!.let { vm ->
             initAdapter()
-            vm.initChatRoom()
+
+            vm.initChatRoom {
+                val intent = Intent().apply {
+                    putExtra("message", "방장이 퇴장했습니다.")
+                }
+                activity!!.setResult(Activity.RESULT_CANCELED, intent)
+                activity!!.finish()
+            }
+
             vm.listMessage.observe(viewLifecycleOwner) {
                 listChatAdapter?.notifyDataSetChanged()
             }

@@ -7,27 +7,21 @@ import com.start3a.ishowyou.data.ChatMember
 import com.start3a.ishowyou.data.ChatMessage
 import com.start3a.ishowyou.data.ChatRoom
 import com.start3a.ishowyou.data.Content
-import com.start3a.ishowyou.main.content.ContentSetting
 import com.start3a.ishowyou.model.RdbDao
+import com.start3a.ishowyou.room.content.ContentSetting
 
 class ChatRoomViewModel: ViewModel() {
 
     // 채팅방 정보
     var isHost = false
-    var isJoinRoom = false
     lateinit var openChatRoomMenu: () -> Unit
-
     // 메세지
     val listMessage = MutableLiveData<MutableList<ChatMessage>>().apply { value = mutableListOf() }
     // 멤버
     val listMember = mutableListOf<ChatMember>()
 
     // 채팅방 유무 뷰 전환
-    lateinit var createChatRoomView: (() -> Unit)
     lateinit var initRoomCurContent: ((Content) -> Unit)
-    // 액티비티에서 토스트 메시지 관리
-    // 프래그먼트에서 뷰를 실행하면서 종료할 시에 발생하는 에러 방지
-    lateinit var messageView: (String) -> Unit
 
     // Dao
     private var dbYoutube: RdbDao.YoutubeDao
@@ -58,9 +52,10 @@ class ChatRoomViewModel: ViewModel() {
     }
 
     fun initContent_Youtube(changeSeekbar: (Float) -> Unit) {
-        if (!isHost && isJoinRoom)
+        if (!isHost)
             dbYoutube.setSeekbarChangedListener(changeSeekbar)
     }
+
 
     // 채팅방 ----------------------------------------
     fun createChatRoom(
@@ -69,30 +64,20 @@ class ChatRoomViewModel: ViewModel() {
         roomInfoChangedListener: (ChatRoom) -> Unit
     ) {
         isHost = true
-        isJoinRoom = true
         dbChat.createChatRoom(ChatRoom(title), successListener, roomInfoChangedListener)
         changeContent(Content.YOUTUBE)
+    }
+
+    fun requestJoinRoom(roomCode: String, successJoined: () -> Unit, failJoined: () -> Unit) {
+        dbChat.requestJoinRoom(roomCode, successJoined, failJoined)
     }
 
     fun leaveRoom() {
         // 방 정보 삭제
         dbChat.closeRoom(isHost)
-
-        // 방 정보 리셋
-        isJoinRoom = false
-        isHost = false
-        listMessage.value?.clear()
-        listMember.clear()
-
-        // 방 컨텐츠 비활성화
-        curRoomContent?.close()
-        curRoomContent = null
-
-        // 방 대기 화면
-        createChatRoomView()
     }
 
-    fun initChatRoom() {
+    fun initChatRoom(roomDeleted: () -> Unit) {
         dbChat.notifyChatMessage {
             // 메시지 감지
             val list = listMessage.value!!
@@ -118,8 +103,8 @@ class ChatRoomViewModel: ViewModel() {
 
         if (!isHost) {
             dbChat.notifyIsRoomDeleted {
-                messageView("방장이 퇴장했습니다.")
                 leaveRoom()
+                roomDeleted()
             }
         }
     }
@@ -127,13 +112,4 @@ class ChatRoomViewModel: ViewModel() {
     fun sendChatMessage(message: String) {
         dbChat.sendChatMessage(message)
     }
-
-    fun joinRoom(roomCode: String) {
-        isJoinRoom = true
-        isHost = false
-        dbChat.joinRoom(roomCode)
-        changeContent(Content.YOUTUBE)
-        createChatRoomView()
-    }
-
 }

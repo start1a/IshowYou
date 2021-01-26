@@ -17,3 +17,8 @@ data class ChatMember(
     var userName: String = "",
     var isHost: Boolean = false
 )
+
+enum class RoomRequest(val num: Int) {
+    CREATE_ROOM(0),
+    JOIN_ROOM(1)
+}

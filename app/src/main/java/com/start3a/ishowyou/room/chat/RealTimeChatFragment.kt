@@ -15,7 +15,6 @@ import com.start3a.ishowyou.R
 import com.start3a.ishowyou.room.ChatRoomViewModel
 import kotlinx.android.synthetic.main.fragment_real_time_chat.*
 
-
 class RealTimeChatFragment : Fragment() {
 
     private var viewModel: ChatRoomViewModel? = null

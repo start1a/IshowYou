@@ -3,8 +3,9 @@ package com.start3a.ishowyou.main
 import androidx.lifecycle.ViewModel
 import com.google.firebase.database.FirebaseDatabase
 import com.start3a.ishowyou.data.Content
+import com.start3a.ishowyou.data.FullScreenController
 import com.start3a.ishowyou.model.RdbDao
-import com.start3a.ishowyou.room.content.ContentSetting
+import com.start3a.ishowyou.data.ContentSetting
 
 class MainViewModel : ViewModel() {
 
@@ -16,11 +17,14 @@ class MainViewModel : ViewModel() {
     private var dbYoutube: RdbDao.YoutubeDao
     private var curRoomContent: ContentSetting? = null
 
+    // View
+    var isFullScreen = false
+    lateinit var mFullScreenController: FullScreenController
+
     init {
         val db = RdbDao(FirebaseDatabase.getInstance().reference)
         dbYoutube = db.YoutubeDao()
     }
-
 
     // 컨텐츠 --------------------------------------
     fun changeContent(content: Content) {

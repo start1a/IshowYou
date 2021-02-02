@@ -7,7 +7,7 @@ import com.google.firebase.database.ktx.getValue
 import com.start3a.ishowyou.data.ChatMember
 import com.start3a.ishowyou.data.ChatMessage
 import com.start3a.ishowyou.data.ChatRoom
-import com.start3a.ishowyou.room.content.ContentSetting
+import com.start3a.ishowyou.data.ContentSetting
 import java.util.*
 
 class RdbDao(private val db: DatabaseReference) {

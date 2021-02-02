@@ -3,12 +3,9 @@ package com.start3a.ishowyou.room
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import com.google.firebase.database.FirebaseDatabase
-import com.start3a.ishowyou.data.ChatMember
-import com.start3a.ishowyou.data.ChatMessage
-import com.start3a.ishowyou.data.ChatRoom
-import com.start3a.ishowyou.data.Content
+import com.start3a.ishowyou.data.*
 import com.start3a.ishowyou.model.RdbDao
-import com.start3a.ishowyou.room.content.ContentSetting
+import com.start3a.ishowyou.data.ContentSetting
 
 class ChatRoomViewModel: ViewModel() {
 
@@ -27,6 +24,10 @@ class ChatRoomViewModel: ViewModel() {
     private var dbYoutube: RdbDao.YoutubeDao
     private var dbChat: RdbDao.ChatDao
     private var curRoomContent: ContentSetting? = null
+
+    // View
+    var isFullScreen = false
+    lateinit var mFullScreenController: FullScreenController
 
     init {
         val db = RdbDao(FirebaseDatabase.getInstance().reference)
@@ -111,5 +112,15 @@ class ChatRoomViewModel: ViewModel() {
 
     fun sendChatMessage(message: String) {
         dbChat.sendChatMessage(message)
+    }
+
+
+    // 뷰 설정 -------------------------
+    fun enterFullScreen(weightContent: Float, weightTalk: Float) {
+        mFullScreenController.enterFullScreenView(weightContent, weightTalk)
+    }
+
+    fun exitFullScreen() {
+        mFullScreenController.exitFullScreenView()
     }
 }

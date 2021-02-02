@@ -1,4 +1,4 @@
-package com.start3a.ishowyou.room.content
+package com.start3a.ishowyou.data
 
 interface ContentSetting {
     fun close()

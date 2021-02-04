@@ -7,18 +7,32 @@
     android:layout_height="match_parent"
     tools:context=".room.chat.RealTimeChatFragment">
 
+    <Button
+        android:id="@+id/btnShowNewMessage"
+        android:layout_width="0dp"
+        android:layout_height="40dp"
+        android:background="#60000000"
+        android:text="새 메세지 도착"
+        android:visibility="gone"
+        app:layout_constraintBottom_toBottomOf="@+id/messageRecyclerView"
+        app:layout_constraintEnd_toEndOf="@+id/messageRecyclerView"
+        app:layout_constraintStart_toStartOf="@+id/messageRecyclerView" />
+
     <androidx.recyclerview.widget.RecyclerView
         android:id="@+id/messageRecyclerView"
         android:layout_width="match_parent"
         android:layout_height="0dp"
         android:layout_marginStart="8dp"
-        android:layout_marginTop="16dp"
+        android:layout_marginTop="8dp"
         android:layout_marginEnd="8dp"
         android:layout_marginBottom="16dp"
         app:layout_constraintBottom_toTopOf="@+id/message_layout"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent"/>
+        app:layout_constraintTop_toTopOf="parent">
+
+    </androidx.recyclerview.widget.RecyclerView>
+
 
     <LinearLayout
         android:id="@+id/message_layout"
@@ -34,7 +48,6 @@
             android:layout_width="0dp"
             android:layout_height="50dp"
             android:layout_marginStart="8dp"
-            android:layout_marginBottom="8dp"
             android:layout_weight="1"
             android:src="@drawable/ic_baseline_dehaze_24" />
 
@@ -43,9 +56,7 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_marginStart="8dp"
-            android:layout_marginEnd="8dp"
-            android:layout_marginBottom="8dp"
-            android:ems="10"
+            android:layout_weight="1"
             android:hint="@string/send_message"
             android:inputType="textPersonName" />
 
@@ -54,7 +65,6 @@
             android:layout_width="10dp"
             android:layout_height="wrap_content"
             android:layout_marginEnd="8dp"
-            android:layout_marginBottom="8dp"
             android:layout_weight="1"
             android:text="@string/send" />
 

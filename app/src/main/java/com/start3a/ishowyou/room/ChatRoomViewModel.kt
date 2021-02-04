@@ -14,6 +14,7 @@ class ChatRoomViewModel: ViewModel() {
     lateinit var openChatRoomMenu: () -> Unit
     // 메세지
     val listMessage = MutableLiveData<MutableList<ChatMessage>>().apply { value = mutableListOf() }
+    var isMessageListUpScrolled = false
     // 멤버
     val listMember = mutableListOf<ChatMember>()
 
@@ -112,15 +113,5 @@ class ChatRoomViewModel: ViewModel() {
 
     fun sendChatMessage(message: String) {
         dbChat.sendChatMessage(message)
-    }
-
-
-    // 뷰 설정 -------------------------
-    fun enterFullScreen(weightContent: Float, weightTalk: Float) {
-        mFullScreenController.enterFullScreenView(weightContent, weightTalk)
-    }
-
-    fun exitFullScreen() {
-        mFullScreenController.exitFullScreenView()
     }
 }

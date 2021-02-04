@@ -10,10 +10,9 @@
     <FrameLayout
         android:id="@+id/chatroom_contentViewFrame"
         android:layout_width="match_parent"
-        android:layout_height="0dp"
+        android:layout_height="wrap_content"
         app:layout_constraintBottom_toTopOf="@+id/chatroom_talkViewFrame"
-        app:layout_constraintTop_toTopOf="parent"
-        app:layout_constraintVertical_weight="3" />
+        app:layout_constraintTop_toTopOf="parent" />
 
     <FrameLayout
         android:id="@+id/chatroom_talkViewFrame"
@@ -21,17 +20,15 @@
         android:layout_height="0dp"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintTop_toBottomOf="@id/chatroom_contentViewFrame"
-        app:layout_constraintVertical_weight="7" />
+        tools:layout_editor_absoluteX="0dp" />
 
     <androidx.drawerlayout.widget.DrawerLayout
         android:id="@+id/chatroom_drawer_layout"
-        android:layout_width="270dp"
+        android:layout_width="300dp"
         android:layout_height="match_parent"
         android:fitsSystemWindows="true"
         android:visibility="gone"
-        app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent"
         tools:context=".room.ChatRoomActivity"
         tools:openDrawer="start">
 

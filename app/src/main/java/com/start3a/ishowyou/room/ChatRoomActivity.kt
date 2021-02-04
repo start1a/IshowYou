@@ -55,7 +55,7 @@ class ChatRoomActivity : AppCompatActivity() {
     override fun onBackPressed() {
         viewModel!!.let { vm ->
             if (vm.isFullScreen)
-                vm.mFullScreenController.rotate(false)
+                vm.mFullScreenController.contentExitFullScreenMode?.invoke()
             else leaveRoom()
         }
     }

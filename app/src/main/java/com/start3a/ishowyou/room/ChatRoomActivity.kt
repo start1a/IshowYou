@@ -56,7 +56,7 @@ class ChatRoomActivity : AppCompatActivity() {
         viewModel!!.let { vm ->
             if (vm.isFullScreen)
                 vm.mFullScreenController.contentExitFullScreenMode?.invoke()
-            else leaveRoom()
+            else openChatRoomMenu()
         }
     }
 
@@ -98,17 +98,18 @@ class ChatRoomActivity : AppCompatActivity() {
     private fun initDrawer() {
         viewModel!!.let { vm ->
             listMemberAdapter = ChatMemberAdapter(vm.listMember)
-            vm.openChatRoomMenu = {
-                chatroom_drawer_layout.visibility = View.VISIBLE
-                chatroom_drawer_layout.openDrawer(GravityCompat.START)
-                memberRecyclerView.adapter = listMemberAdapter
-                memberRecyclerView.layoutManager = LinearLayoutManager(this)
-            }
 
             btnLeaveRoom.setOnClickListener {
                 leaveRoom()
             }
         }
+    }
+
+    private fun openChatRoomMenu() {
+        chatroom_drawer_layout.visibility = View.VISIBLE
+        chatroom_drawer_layout.openDrawer(GravityCompat.START)
+        memberRecyclerView.adapter = listMemberAdapter
+        memberRecyclerView.layoutManager = LinearLayoutManager(this)
     }
 
     private fun leaveRoom() {

@@ -58,9 +58,6 @@ class RealTimeChatFragment : Fragment() {
                 activity!!.finish()
             }
 
-            // 채팅방 메뉴
-            btnChatRoomMenu.setOnClickListener { vm.openChatRoomMenu() }
-
             btnSendMessage.setOnClickListener {
                 val message = editSendMessage.text.toString()
                 vm.sendChatMessage(message)

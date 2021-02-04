@@ -11,7 +11,6 @@ class ChatRoomViewModel: ViewModel() {
 
     // 채팅방 정보
     var isHost = false
-    lateinit var openChatRoomMenu: () -> Unit
     // 메세지
     val listMessage = MutableLiveData<MutableList<ChatMessage>>().apply { value = mutableListOf() }
     var isMessageListUpScrolled = false

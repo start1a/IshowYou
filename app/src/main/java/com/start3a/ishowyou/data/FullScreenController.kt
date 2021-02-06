@@ -2,12 +2,14 @@ package com.start3a.ishowyou.data
 
 import android.content.Context
 import android.content.pm.ActivityInfo
+import android.graphics.Rect
 import android.util.DisplayMetrics
 import android.view.View
 import android.widget.FrameLayout
 import androidx.constraintlayout.widget.ConstraintLayout
 import androidx.constraintlayout.widget.ConstraintSet
 import androidx.fragment.app.FragmentActivity
+import com.rw.keyboardlistener.KeyboardUtils
 
 class FullScreenController(
     private val activity: FragmentActivity,
@@ -16,6 +18,7 @@ class FullScreenController(
     private val talkViewFrame: View
 ) {
     var contentExitFullScreenMode: (() -> Unit)? = null
+
 
     fun enterFullScreenView(weightContent: Float, weightTalk: Float) {
         // 가로로 보기 180도 회전
@@ -49,6 +52,13 @@ class FullScreenController(
         else activity.requestedOrientation = ActivityInfo.SCREEN_ORIENTATION_PORTRAIT
     }
 
+    fun resizeScreenHeight(height: Int = ConstraintLayout.LayoutParams.MATCH_PARENT) {
+        var width = 0
+        contentViewFrame.layoutParams = ConstraintLayout.LayoutParams(width, height)
+        width = 0
+        talkViewFrame.layoutParams = ConstraintLayout.LayoutParams(width, height)
+    }
+
     private fun changeConstraint(
         mainView: View,
         targetView: View,
@@ -69,7 +79,7 @@ class FullScreenController(
         }
     }
 
-    private fun changeWeight(isFullScreen: Boolean, weightContent: Float, weightTalk: Float) {
+    fun changeWeight(isFullScreen: Boolean, weightContent: Float, weightTalk: Float) {
         ConstraintSet().let { cs ->
             cs.clone(parentView)
             if (isFullScreen) {

@@ -54,4 +54,7 @@ dependencies {
 
     // Youtube Player
     implementation 'com.pierfrancescosoffritti.androidyoutubeplayer:core:10.0.5'
+
+    // Keyboard visibility listener
+    implementation 'com.github.ravindu1024:android-keyboardlistener:1.0.0'
 }

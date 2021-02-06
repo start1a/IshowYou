@@ -9,6 +9,7 @@ import android.text.TextWatcher
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.view.inputmethod.EditorInfo
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.ViewModelProvider
 import androidx.recyclerview.widget.LinearLayoutManager
@@ -49,6 +50,7 @@ class RealTimeChatFragment : Fragment() {
 
         viewModel!!.let { vm ->
             initAdapter()
+            initView()
 
             vm.initChatRoom {
                 val intent = Intent().apply {
@@ -60,8 +62,10 @@ class RealTimeChatFragment : Fragment() {
 
             btnSendMessage.setOnClickListener {
                 val message = editSendMessage.text.toString()
+                if (message.isNotEmpty()) {
                     vm.sendChatMessage(message)
                     editSendMessage.text.clear()
+                }
             }
         }
     }
@@ -73,7 +77,11 @@ class RealTimeChatFragment : Fragment() {
 
             messageListView.adapter = listChatAdapter
             messageListView.layoutManager = LinearLayoutManager(activity)
+        }
+    }
 
+    private fun initView() {
+        viewModel!!.let { vm ->
             messageListView.addOnScrollListener(object : RecyclerView.OnScrollListener() {
                 override fun onScrolled(recyclerView: RecyclerView, dx: Int, dy: Int) {
                     super.onScrolled(recyclerView, dx, dy)
@@ -117,6 +125,7 @@ class RealTimeChatFragment : Fragment() {
                 else scrollToLastItem()
             }
 
+            // 텍스트 전송 버튼 활성화
             editSendMessage.addTextChangedListener(object : TextWatcher {
                 override fun afterTextChanged(s: Editable?) {
                     btnSendMessage.isClickable = s.toString().isNotEmpty()
@@ -125,6 +134,17 @@ class RealTimeChatFragment : Fragment() {
                 override fun onTextChanged(s: CharSequence?, start: Int, before: Int, count: Int) {}
                 override fun beforeTextChanged(s: CharSequence?, start: Int, count: Int, after: Int) {}
             })
+
+            // 키보드 전송 버튼 클릭
+            editSendMessage.setOnEditorActionListener { v, actionId, event ->
+                var handled = false
+
+                if (v.id == R.id.editSendMessage && actionId == EditorInfo.IME_ACTION_SEND) {
+                    handled = true
+                    btnSendMessage.callOnClick()
+                }
+                handled
+            }
 
             btnShowNewMessage.setOnClickListener {
                 scrollToLastItem()

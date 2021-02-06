@@ -1,5 +1,7 @@
 package com.start3a.ishowyou.data
 
+import java.util.*
+
 data class ChatRoom(
     var title: String = "",
     var contentName: String = "NONE",
@@ -10,7 +12,7 @@ data class ChatRoom(
 data class ChatMessage(
     var userName: String = "",
     var content: String = "",
-    var timeStamp: Long = 0
+    var timeStamp: Long = Date().time
 )
 
 data class ChatMember(

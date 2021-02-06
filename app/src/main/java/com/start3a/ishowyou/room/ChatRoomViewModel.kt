@@ -1,18 +1,19 @@
 package com.start3a.ishowyou.room
 
-import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import com.google.firebase.database.FirebaseDatabase
 import com.start3a.ishowyou.data.*
 import com.start3a.ishowyou.model.RdbDao
-import com.start3a.ishowyou.data.ContentSetting
 
 class ChatRoomViewModel: ViewModel() {
 
     // 채팅방 정보
     var isHost = false
     // 메세지
-    val listMessage = MutableLiveData<MutableList<ChatMessage>>().apply { value = mutableListOf() }
+
+    val listMessage : ListLiveData<ChatMessage> by lazy {
+        ListLiveData(mutableListOf())
+    }
     var isMessageListUpScrolled = false
     // 멤버
     val listMember = mutableListOf<ChatMember>()

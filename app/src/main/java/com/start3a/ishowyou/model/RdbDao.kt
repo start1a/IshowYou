@@ -1,24 +1,15 @@
 package com.start3a.ishowyou.model
 
 import android.util.Log
-import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.database.*
 import com.google.firebase.database.ktx.getValue
-import com.start3a.ishowyou.data.ChatMember
-import com.start3a.ishowyou.data.ChatMessage
-import com.start3a.ishowyou.data.ChatRoom
-import com.start3a.ishowyou.data.ContentSetting
+import com.start3a.ishowyou.data.*
 import java.util.*
 
 class RdbDao(private val db: DatabaseReference) {
 
     companion object {
-        private lateinit var curUserId: String
         private var roomCode: String? = null
-    }
-
-    init {
-        curUserId = FirebaseAuth.getInstance().currentUser!!.email!!.split("@")[0]
     }
 
     inner class YoutubeDao : ContentSetting {
@@ -93,7 +84,7 @@ class RdbDao(private val db: DatabaseReference) {
                     Log.d(TAG, "Creating ChatRoom is Failed\n$it")
                 }
 
-            db.child("member/$roomCode/$curUserId").setValue(ChatMember(curUserId, true))
+            db.child("member/$roomCode/${CurUser.userName}").setValue(ChatMember(CurUser.userName, true))
         }
 
         fun closeRoom(isHost: Boolean) {
@@ -102,7 +93,7 @@ class RdbDao(private val db: DatabaseReference) {
                 db.child("message/$roomCode").removeValue()
                 db.child("member/$roomCode").removeValue()
             } else {
-                db.child("member/$roomCode/$curUserId").removeValue()
+                db.child("member/$roomCode/${CurUser.userName}").removeValue()
                 removeListener(hostDeleteRoomNotifyListener, "member/$roomCode")
             }
 
@@ -171,7 +162,7 @@ class RdbDao(private val db: DatabaseReference) {
         fun sendChatMessage(message: String) {
             val time = Date().time
             db.child("message/$roomCode/$time").setValue(
-                ChatMessage(curUserId, message, time)
+                ChatMessage(CurUser.userName, message, time)
             )
         }
 
@@ -216,7 +207,7 @@ class RdbDao(private val db: DatabaseReference) {
                 })
 
             // 방 멤버 저장
-            db.child("member/$requestedRoomCode/$curUserId").setValue(ChatMember(curUserId, false))
+            db.child("member/$requestedRoomCode/${CurUser.userName}").setValue(ChatMember(CurUser.userName, false))
         }
 
         // 방 제거 여부

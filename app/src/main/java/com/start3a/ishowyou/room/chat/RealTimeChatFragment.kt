@@ -6,7 +6,6 @@ import android.os.Bundle
 import android.os.Handler
 import android.text.Editable
 import android.text.TextWatcher
-import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -15,6 +14,7 @@ import androidx.lifecycle.ViewModelProvider
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.start3a.ishowyou.R
+import com.start3a.ishowyou.data.CurUser
 import com.start3a.ishowyou.room.ChatRoomViewModel
 import kotlinx.android.synthetic.main.fragment_real_time_chat.*
 
@@ -60,8 +60,8 @@ class RealTimeChatFragment : Fragment() {
 
             btnSendMessage.setOnClickListener {
                 val message = editSendMessage.text.toString()
-                vm.sendChatMessage(message)
-                editSendMessage.text.clear()
+                    vm.sendChatMessage(message)
+                    editSendMessage.text.clear()
             }
         }
     }
@@ -87,42 +87,39 @@ class RealTimeChatFragment : Fragment() {
                     vm.isMessageListUpScrolled = isScrolled
                     if (!isScrolled)
                         btnShowNewMessage.visibility = View.GONE
-
-                    Log.d("TAGG", "scroll" + vm.isMessageListUpScrolled.toString())
                 }
             })
 
             // 키보드가 생성될 경우
             messageListView.addOnLayoutChangeListener { v, left, top, right, bottom, oldLeft, oldTop, oldRight, oldBottom ->
                 // 채팅을 스크롤하지 않음
-                Log.d("TAGG", "bottom : " + (bottom < oldBottom).toString())
                 if (bottom < oldBottom && !vm.isMessageListUpScrolled) {
-                    Handler().postDelayed(object : Runnable {
-                        override fun run() {
-                            scrollToLastItem()
-                        }
-
-                    }, 100)
+                    Handler().postDelayed({ scrollToLastItem() }, 100)
                 }
             }
 
-
+            // 메세지 수신
             vm.listMessage.observe(viewLifecycleOwner) {
                 listChatAdapter?.notifyDataSetChanged()
                 if (it.size > 0)
                     posLastItem = it.size - 1
 
                 // 메세지 스크롤 업 체크
-                if (vm.isMessageListUpScrolled && btnShowNewMessage.visibility == View.GONE) {
-                    btnShowNewMessage.visibility = View.VISIBLE
-                    vm.isMessageListUpScrolled = false
+                if (vm.isMessageListUpScrolled) {
+                    // 내가 보낸 매세지
+                    if (posLastItem != -1 && it[posLastItem].userName == CurUser.userName) {
+                        scrollToLastItem()
+                        btnShowNewMessage.visibility = View.GONE
+                    }
+                    else if (btnShowNewMessage.visibility == View.GONE)
+                        btnShowNewMessage.visibility = View.VISIBLE
                 }
                 else scrollToLastItem()
-        }
+            }
 
             editSendMessage.addTextChangedListener(object : TextWatcher {
                 override fun afterTextChanged(s: Editable?) {
-                    btnSendMessage.isClickable = editSendMessage.text.isNotEmpty()
+                    btnSendMessage.isClickable = s.toString().isNotEmpty()
                 }
 
                 override fun onTextChanged(s: CharSequence?, start: Int, before: Int, count: Int) {}
@@ -130,8 +127,7 @@ class RealTimeChatFragment : Fragment() {
             })
 
             btnShowNewMessage.setOnClickListener {
-                if (posLastItem != -1)
-                    scrollToLastItem()
+                scrollToLastItem()
                 btnShowNewMessage.visibility = View.GONE
             }
         }

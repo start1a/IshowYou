@@ -1,4 +1,4 @@
-package com.start3a.ishowyou.main
+package com.start3a.ishowyou.main.menu
 
 import android.app.AlertDialog
 import android.content.Intent
@@ -12,6 +12,7 @@ import androidx.fragment.app.Fragment
 import androidx.lifecycle.ViewModelProvider
 import com.google.firebase.auth.FirebaseAuth
 import com.start3a.ishowyou.R
+import com.start3a.ishowyou.main.MainViewModel
 import com.start3a.ishowyou.main.joinroom.JoinChatRoomActivity
 import kotlinx.android.synthetic.main.fragment_no_room.*
 

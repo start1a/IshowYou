@@ -2,6 +2,8 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     package="com.start3a.ishowyou">
 
+    <uses-permission android:name="android.permission.INTERNET" />
+
     <application
         android:allowBackup="true"
         android:icon="@mipmap/ic_launcher"
@@ -9,8 +11,12 @@
         android:roundIcon="@mipmap/ic_launcher_round"
         android:supportsRtl="true"
         android:theme="@style/AppTheme.NoActionBar">
-        <activity android:name=".room.ChatRoomActivity"
-            android:configChanges="orientation|screenSize|screenLayout|keyboardHidden|smallestScreenSize"/>
+        <activity
+            android:name=".YoutubeVideoSelectionActivity"
+            android:theme="@style/AppTheme" />
+        <activity
+            android:name=".room.ChatRoomActivity"
+            android:configChanges="orientation|screenSize|screenLayout|keyboardHidden|smallestScreenSize" />
         <activity android:name=".main.joinroom.JoinChatRoomActivity" />
         <activity android:name=".signin.PhoneVerifyActivity" />
         <activity android:name=".signin.PhoneSignInActivity" />

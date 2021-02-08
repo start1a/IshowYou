@@ -11,15 +11,29 @@
         android:id="@+id/chatroom_contentViewFrame"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        app:layout_constraintBottom_toTopOf="@+id/chatroom_talkViewFrame"
+        app:layout_constraintBottom_toTopOf="@+id/bottom_menu_layout_chatroom"
         app:layout_constraintTop_toTopOf="parent" />
+
+    <LinearLayout
+        android:id="@+id/bottom_menu_layout_chatroom"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        app:layout_constraintTop_toBottomOf="@+id/chatroom_contentViewFrame">
+
+    <com.google.android.material.bottomnavigation.BottomNavigationView
+        android:id="@+id/bottom_navigation_chatroom"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        app:menu="@menu/bottom_nav_menu_lobby" />
+
+    </LinearLayout>
 
     <FrameLayout
         android:id="@+id/chatroom_talkViewFrame"
         android:layout_width="match_parent"
         android:layout_height="0dp"
         app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintTop_toBottomOf="@id/chatroom_contentViewFrame"
+        app:layout_constraintTop_toBottomOf="@id/bottom_menu_layout_chatroom"
         tools:layout_editor_absoluteX="0dp" />
 
     <androidx.drawerlayout.widget.DrawerLayout

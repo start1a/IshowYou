@@ -1,6 +1,7 @@
 package com.start3a.ishowyou.room
 
 import android.app.Activity
+import android.content.Context
 import android.content.Intent
 import android.content.res.Configuration
 import android.content.res.Configuration.ORIENTATION_LANDSCAPE
@@ -8,7 +9,10 @@ import android.content.res.Configuration.ORIENTATION_PORTRAIT
 import android.graphics.Rect
 import android.os.Bundle
 import android.os.Handler
+import android.util.Log
+import android.view.MotionEvent
 import android.view.View
+import android.view.inputmethod.InputMethodManager
 import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.view.GravityCompat
@@ -20,10 +24,13 @@ import com.start3a.ishowyou.R
 import com.start3a.ishowyou.data.Content
 import com.start3a.ishowyou.data.FullScreenController
 import com.start3a.ishowyou.data.RoomRequest
+import com.start3a.ishowyou.main.menu.NoRoomFragment
 import com.start3a.ishowyou.room.chat.ChatMemberAdapter
 import com.start3a.ishowyou.room.chat.RealTimeChatFragment
 import com.start3a.ishowyou.room.content.YoutubePlayerFragment
 import kotlinx.android.synthetic.main.activity_chat_room.*
+import kotlinx.android.synthetic.main.activity_main.*
+import kotlinx.android.synthetic.main.fragment_youtube_player.*
 import kotlinx.android.synthetic.main.info_chatroom.*
 
 class ChatRoomActivity : AppCompatActivity() {
@@ -77,6 +84,7 @@ class ChatRoomActivity : AppCompatActivity() {
                 this,
                 chatroom_layout,
                 chatroom_contentViewFrame,
+                bottom_menu_layout_chatroom,
                 chatroom_talkViewFrame,
             )
 
@@ -95,6 +103,23 @@ class ChatRoomActivity : AppCompatActivity() {
                 }
 
             })
+
+            // 하단 메뉴
+            bottom_navigation.selectedItemId = R.id.action_chat
+            bottom_navigation.setOnNavigationItemSelectedListener { item ->
+                val sfm = supportFragmentManager.beginTransaction()
+                when(item.itemId) {
+                    R.id.action_contents -> {
+                        // 콘텐츠 설정 프래그먼트 활성화
+                        true
+                    }
+                    R.id.action_chat -> {
+                        sfm.replace(R.id.roomMenuViewFrame, NoRoomFragment()).commit()
+                        true
+                    }
+                    else -> false
+                }
+            }
 
             KeyboardUtils.addKeyboardToggleListener(this) { isVisible ->
                 if (vm.isFullScreen) {

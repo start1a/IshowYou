@@ -17,6 +17,7 @@ import com.start3a.ishowyou.data.Content
 import com.start3a.ishowyou.data.FullScreenController
 import com.start3a.ishowyou.data.RoomRequest
 import com.start3a.ishowyou.main.content.LobbyYoutubeFragment
+import com.start3a.ishowyou.main.menu.NoRoomFragment
 import com.start3a.ishowyou.room.ChatRoomActivity
 import com.start3a.ishowyou.signin.SigninActivity
 import kotlinx.android.synthetic.main.activity_main.*
@@ -88,8 +89,26 @@ class MainActivity : AppCompatActivity() {
                 this,
                 main_layout,
                 contentViewFrame,
+                bottom_menu_layout,
                 roomMenuViewFrame
             )
+
+            // 하단 메뉴
+            bottom_navigation.selectedItemId = R.id.action_menu
+            bottom_navigation.setOnNavigationItemSelectedListener { item ->
+                val sfm = supportFragmentManager.beginTransaction()
+                when(item.itemId) {
+                    R.id.action_contents -> {
+                        // 콘텐츠 설정 프래그먼트 활성화
+                        true
+                    }
+                    R.id.action_menu -> {
+                        sfm.replace(R.id.roomMenuViewFrame, NoRoomFragment()).commit()
+                        true
+                    }
+                    else -> false
+                }
+            }
         }
     }
 

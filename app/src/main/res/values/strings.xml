@@ -21,4 +21,8 @@
     <string name="send_message">메세지 입력</string>
     <string name="send">전송</string>
     <string name="list_member">멤버 목록</string>
+    <string name="chat">채팅</string>
+    <string name="content">콘텐츠</string>
+    <string name="menu">메뉴</string>
+    <string name="add_video">동영상 추가</string>
 </resources>

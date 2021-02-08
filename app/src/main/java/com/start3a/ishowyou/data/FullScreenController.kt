@@ -2,19 +2,18 @@ package com.start3a.ishowyou.data
 
 import android.content.Context
 import android.content.pm.ActivityInfo
-import android.graphics.Rect
 import android.util.DisplayMetrics
 import android.view.View
 import android.widget.FrameLayout
 import androidx.constraintlayout.widget.ConstraintLayout
 import androidx.constraintlayout.widget.ConstraintSet
 import androidx.fragment.app.FragmentActivity
-import com.rw.keyboardlistener.KeyboardUtils
 
 class FullScreenController(
     private val activity: FragmentActivity,
     private val parentView: ConstraintLayout,
     private val contentViewFrame: View,
+    private val navMenuView: View,
     private val talkViewFrame: View
 ) {
     var contentExitFullScreenMode: (() -> Unit)? = null
@@ -24,14 +23,13 @@ class FullScreenController(
         // 가로로 보기 180도 회전
         activity.requestedOrientation = ActivityInfo.SCREEN_ORIENTATION_SENSOR_LANDSCAPE
 
-        contentViewFrame.layoutParams = ConstraintLayout.LayoutParams(0, ConstraintLayout.LayoutParams.MATCH_PARENT)
-        talkViewFrame.layoutParams = ConstraintLayout.LayoutParams(0, ConstraintLayout.LayoutParams.MATCH_PARENT)
+        contentViewFrame.layoutParams = ConstraintLayout.LayoutParams(ConstraintLayout.LayoutParams.MATCH_CONSTRAINT, ConstraintLayout.LayoutParams.MATCH_PARENT)
+        talkViewFrame.layoutParams = ConstraintLayout.LayoutParams(ConstraintLayout.LayoutParams.MATCH_CONSTRAINT, ConstraintLayout.LayoutParams.MATCH_PARENT)
         changeWeight(true, weightContent, weightTalk)
     }
 
     fun exitFullScreenView() {
         activity.requestedOrientation = ActivityInfo.SCREEN_ORIENTATION_NOSENSOR
-        // 가로 채우기
         parentView.layoutParams = FrameLayout.LayoutParams(
             FrameLayout.LayoutParams.MATCH_PARENT,
             FrameLayout.LayoutParams.MATCH_PARENT
@@ -40,10 +38,11 @@ class FullScreenController(
         contentViewFrame.layoutParams =
             ConstraintLayout.LayoutParams(ConstraintLayout.LayoutParams.MATCH_PARENT, ConstraintLayout.LayoutParams.WRAP_CONTENT)
         talkViewFrame.layoutParams =
-            ConstraintLayout.LayoutParams(ConstraintLayout.LayoutParams.MATCH_PARENT, 0)
+            ConstraintLayout.LayoutParams(ConstraintLayout.LayoutParams.MATCH_PARENT, ConstraintLayout.LayoutParams.MATCH_CONSTRAINT)
 
-        changeConstraint(talkViewFrame, contentViewFrame, ConstraintSet.TOP, ConstraintSet.BOTTOM, 0.0f)
+        changeConstraint(talkViewFrame, navMenuView, ConstraintSet.TOP, ConstraintSet.BOTTOM, 0.0f)
         changeConstraint(talkViewFrame, parentView, ConstraintSet.BOTTOM, ConstraintSet.BOTTOM, 0.0f)
+        changeWeight(false)
     }
 
     fun rotate(isFullScreen: Boolean) {
@@ -53,9 +52,9 @@ class FullScreenController(
     }
 
     fun resizeScreenHeight(height: Int = ConstraintLayout.LayoutParams.MATCH_PARENT) {
-        var width = 0
+        var width = ConstraintLayout.LayoutParams.MATCH_CONSTRAINT
         contentViewFrame.layoutParams = ConstraintLayout.LayoutParams(width, height)
-        width = 0
+        width = ConstraintLayout.LayoutParams.MATCH_CONSTRAINT
         talkViewFrame.layoutParams = ConstraintLayout.LayoutParams(width, height)
     }
 
@@ -79,7 +78,7 @@ class FullScreenController(
         }
     }
 
-    fun changeWeight(isFullScreen: Boolean, weightContent: Float, weightTalk: Float) {
+    fun changeWeight(isFullScreen: Boolean, weightContent: Float = 0.0f, weightTalk: Float = 0.0f) {
         ConstraintSet().let { cs ->
             cs.clone(parentView)
             if (isFullScreen) {

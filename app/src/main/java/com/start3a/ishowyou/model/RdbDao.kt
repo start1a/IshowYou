@@ -86,7 +86,8 @@ class RdbDao(private val db: DatabaseReference) {
                     Log.d(TAG, "Creating ChatRoom is Failed\n$it")
                 }
 
-            db.child("member/$roomCode/${CurUser.userName}").setValue(ChatMember(CurUser.userName, true))
+            db.child("member/$roomCode/${CurUser.userName}")
+                .setValue(ChatMember(CurUser.userName, true))
         }
 
         fun closeRoom(isHost: Boolean) {
@@ -112,29 +113,39 @@ class RdbDao(private val db: DatabaseReference) {
 
         fun notifyChatMessage(messageAdded: (ChatMessage) -> Unit) {
             if (messageNotifyListener != null) return
+            val joinRoomTime = Date().time.toString()
 
             messageNotifyListener =
-                db.child("message/$roomCode").addChildEventListener(object : ChildEventListener {
+                // 새 멤버는 입장 이후 시간의 메세지만 추가됨
+                db.child("message/$roomCode").orderByKey().startAt(joinRoomTime)
+                    .addChildEventListener(object : ChildEventListener {
 
-                    override fun onChildAdded(snapshot: DataSnapshot, previousChildName: String?) {
-                        snapshot.getValue<ChatMessage>()?.let {
-                            messageAdded(it)
+                        override fun onChildAdded(
+                            snapshot: DataSnapshot,
+                            previousChildName: String?
+                        ) {
+                            snapshot.getValue<ChatMessage>()?.let {
+                                messageAdded(it)
+                            }
                         }
-                    }
 
-                    override fun onChildChanged(
-                        snapshot: DataSnapshot,
-                        previousChildName: String?
-                    ) {
-                    }
+                        override fun onChildChanged(
+                            snapshot: DataSnapshot,
+                            previousChildName: String?
+                        ) {
+                        }
 
-                    override fun onChildRemoved(snapshot: DataSnapshot) {}
-                    override fun onChildMoved(snapshot: DataSnapshot, previousChildName: String?) {}
+                        override fun onChildRemoved(snapshot: DataSnapshot) {}
+                        override fun onChildMoved(
+                            snapshot: DataSnapshot,
+                            previousChildName: String?
+                        ) {
+                        }
 
-                    override fun onCancelled(error: DatabaseError) {
-                        Log.d(TAG, "Notifying Chat Message is Cancelled.\n$error")
-                    }
-                })
+                        override fun onCancelled(error: DatabaseError) {
+                            Log.d(TAG, "Notifying Chat Message is Cancelled.\n$error")
+                        }
+                    })
         }
 
         fun notifyChatMember(memberAdded: (ChatMember) -> Unit, memberRemoved: (String) -> Unit) {
@@ -217,7 +228,8 @@ class RdbDao(private val db: DatabaseReference) {
                 })
 
             // 방 멤버 저장
-            db.child("member/$requestedRoomCode/${CurUser.userName}").setValue(ChatMember(CurUser.userName, false))
+            db.child("member/$requestedRoomCode/${CurUser.userName}")
+                .setValue(ChatMember(CurUser.userName, false))
         }
 
         // 방 제거 여부

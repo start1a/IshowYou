@@ -10,7 +10,6 @@ class ChatRoomViewModel: ViewModel() {
     // 채팅방 정보
     var isHost = false
     // 메세지
-
     val listMessage : ListLiveData<ChatMessage> by lazy {
         ListLiveData(mutableListOf())
     }

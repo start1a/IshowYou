@@ -47,7 +47,9 @@ class RealTimeChatFragment : Fragment() {
                 activity!!.viewModelStore,
                 ViewModelProvider.AndroidViewModelFactory(it)
             )
-                .get(ChatRoomViewModel::class.java)
+                .get(ChatRoomViewModel::class.java).apply {
+                    isMessageListUpScrolled = false
+                }
         }
 
         viewModel!!.let { vm ->
@@ -101,7 +103,7 @@ class RealTimeChatFragment : Fragment() {
             })
 
             // 키보드가 생성될 경우
-            messageListView.addOnLayoutChangeListener { v, left, top, right, bottom, oldLeft, oldTop, oldRight, oldBottom ->
+            messageListView.addOnLayoutChangeListener { _, _, _, _, bottom, _, _, _, oldBottom ->
                 // 채팅을 스크롤하지 않음
                 if (bottom < oldBottom && !vm.isMessageListUpScrolled) {
                     Handler().postDelayed({ scrollToLastItem() }, 100)

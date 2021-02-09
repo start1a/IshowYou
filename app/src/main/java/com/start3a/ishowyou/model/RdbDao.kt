@@ -22,6 +22,8 @@ class RdbDao(private val db: DatabaseReference) {
         }
 
         fun setSeekbarChangedListener(changeSeekbar: (Float) -> Unit) {
+            if (seekbarChangedListener != null) return
+
             seekbarChangedListener =
                 db.child("content/$roomCode/youtube/seekbar")
                     .addValueEventListener(object : ValueEventListener {
@@ -95,16 +97,22 @@ class RdbDao(private val db: DatabaseReference) {
             } else {
                 db.child("member/$roomCode/${CurUser.userName}").removeValue()
                 removeListener(hostDeleteRoomNotifyListener, "member/$roomCode")
+                hostDeleteRoomNotifyListener = null
             }
 
             removeListener(roomInfoChildChangedListener, "chat/$roomCode")
             removeListener(messageNotifyListener, "message/$roomCode")
             removeListener(memberNotifyListener, "member/$roomCode")
+            roomInfoChildChangedListener = null
+            messageNotifyListener = null
+            memberNotifyListener = null
 
             roomCode = null
         }
 
         fun notifyChatMessage(messageAdded: (ChatMessage) -> Unit) {
+            if (messageNotifyListener != null) return
+
             messageNotifyListener =
                 db.child("message/$roomCode").addChildEventListener(object : ChildEventListener {
 
@@ -130,6 +138,8 @@ class RdbDao(private val db: DatabaseReference) {
         }
 
         fun notifyChatMember(memberAdded: (ChatMember) -> Unit, memberRemoved: (String) -> Unit) {
+            if (memberNotifyListener != null) return
+
             memberNotifyListener =
                 db.child("member/$roomCode").addChildEventListener(object : ChildEventListener {
                     override fun onChildAdded(snapshot: DataSnapshot, previousChildName: String?) {
@@ -213,6 +223,8 @@ class RdbDao(private val db: DatabaseReference) {
         // 방 제거 여부
         // 방장이 방을 나가면 삭제됨
         fun notifyIsRoomDeleted(roomDeleted: () -> Unit) {
+            if (hostDeleteRoomNotifyListener != null) return
+
             hostDeleteRoomNotifyListener =
                 db.child("chat/$roomCode").addValueEventListener(object : ValueEventListener {
 

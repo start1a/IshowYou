@@ -5,7 +5,7 @@ import androidx.lifecycle.MutableLiveData
 class ListLiveData<T>(private val list: MutableList<T>): MutableLiveData<MutableList<T>>() {
 
     init {
-        value = mutableListOf()
+        value = list
     }
 
     fun add(item: T) {

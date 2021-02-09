@@ -24,7 +24,7 @@
         android:id="@+id/bottom_navigation_chatroom"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        app:menu="@menu/bottom_nav_menu_lobby" />
+        app:menu="@menu/bottom_nav_menu_chatroom" />
 
     </LinearLayout>
 

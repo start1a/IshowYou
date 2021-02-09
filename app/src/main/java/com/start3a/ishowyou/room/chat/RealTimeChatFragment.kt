@@ -130,7 +130,10 @@ class RealTimeChatFragment : Fragment() {
             // 텍스트 전송 버튼 활성화
             editSendMessage.addTextChangedListener(object : TextWatcher {
                 override fun afterTextChanged(s: Editable?) {
-                    btnSendMessage.isClickable = s.toString().isNotEmpty()
+                    if (s.toString().isNotEmpty())
+                        btnSendMessage.visibility = View.VISIBLE
+                    else
+                        btnSendMessage.visibility = View.GONE
                 }
 
                 override fun onTextChanged(s: CharSequence?, start: Int, before: Int, count: Int) {}

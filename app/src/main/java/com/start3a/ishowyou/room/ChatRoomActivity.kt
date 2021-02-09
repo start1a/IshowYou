@@ -7,7 +7,6 @@ import android.content.res.Configuration.ORIENTATION_LANDSCAPE
 import android.content.res.Configuration.ORIENTATION_PORTRAIT
 import android.graphics.Rect
 import android.os.Bundle
-import android.util.Log
 import android.view.View
 import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
@@ -117,22 +116,17 @@ class ChatRoomActivity : AppCompatActivity() {
             // 키보드 활성화 / 비활성화
             KeyboardUtils.addKeyboardToggleListener(this) { isVisible ->
                 if (vm.isFullScreen) {
+                    vm.contentAvailability?.invoke(isVisible)
                     // 비율 조절
                     if (isVisible) {
                         vm.mFullScreenController.resizeScreenHeight(getVisibleViewHeight())
                         vm.mFullScreenController.changeWeight(true, 5.0f, 5.0f)
-                        btnCoverScreen.visibility = View.VISIBLE
                     }
                     else {
                         vm.mFullScreenController.resizeScreenHeight()
                         vm.mFullScreenController.changeWeight(true, 7.0f, 3.0f)
-                        btnCoverScreen.visibility = View.GONE
                     }
                 }
-            }
-
-            btnCoverScreen.setOnClickListener {
-                vm.hideKeyboard?.invoke()
             }
         }
     }

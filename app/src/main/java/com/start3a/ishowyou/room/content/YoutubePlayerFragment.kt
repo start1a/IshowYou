@@ -73,9 +73,29 @@ class YoutubePlayerFragment : Fragment() {
                 }
             })
 
+            // 백 버튼용 리스너
+            // 기기만 회전할 경우 유튜브 뷰의 크기가 줄어들지 않음
             vm.mFullScreenController.contentExitFullScreenMode = {
                 youtubePlayerView.exitFullScreen()
             }
+
+
+            // 키보드가 표시되면 유튜브 클릭을 방지하는 버튼 생성
+            vm.contentAvailability = { isKeyboardVisible ->
+                if (isKeyboardVisible)
+                    btnCoverScreen.visibility = View.VISIBLE
+                else btnCoverScreen.visibility = View.GONE
+            }
+
+            // 버튼을 누르면 키보드 종료
+            btnCoverScreen.setOnClickListener {
+                vm.hideKeyboard?.invoke()
+            }
         }
+    }
+
+    override fun onDestroyView() {
+        super.onDestroyView()
+        viewModel!!.contentAvailability = null
     }
 }

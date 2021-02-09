@@ -30,6 +30,7 @@ class ChatRoomViewModel: ViewModel() {
     var isFullScreen = false
     lateinit var mFullScreenController: FullScreenController
     var hideKeyboard: (() -> Unit)? = null
+    var contentAvailability: ((Boolean) -> Unit)? = null
 
     init {
         val db = RdbDao(FirebaseDatabase.getInstance().reference)

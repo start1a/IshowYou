@@ -1,12 +1,54 @@
 package com.start3a.ishowyou.contentapi
 
+import android.os.Parcel
+import android.os.Parcelable
+
 // 리스트 아이템용 Object
-data class YoutubeSearchData(
-    var title: String,
-    var desc: String,
-    var channelTitle: String,
-    var thumbnail: String
-)
+// parcelable : intent Arraylist로 넘김
+class YoutubeSearchData() : Parcelable {
+    lateinit var title: String
+    lateinit var desc: String
+    lateinit var channelTitle: String
+    lateinit var videoId: String
+    lateinit var thumbnail: String
+    lateinit var thumbnailSmall: String
+
+    constructor(parcel: Parcel) : this() {
+        title = parcel.readString()!!
+        desc = parcel.readString()!!
+        channelTitle = parcel.readString()!!
+        videoId = parcel.readString()!!
+        thumbnail = parcel.readString()!!
+        thumbnailSmall = parcel.readString()!!
+    }
+
+    override fun writeToParcel(parcel: Parcel, flags: Int) {
+        parcel.writeString(title)
+        parcel.writeString(desc)
+        parcel.writeString(channelTitle)
+        parcel.writeString(videoId)
+        parcel.writeString(thumbnail)
+        parcel.writeString(thumbnailSmall)
+    }
+
+    override fun describeContents(): Int {
+        return 0
+    }
+
+    companion object CREATOR : Parcelable.Creator<YoutubeSearchData> {
+        override fun createFromParcel(parcel: Parcel): YoutubeSearchData {
+            return YoutubeSearchData(parcel)
+        }
+
+        override fun newArray(size: Int): Array<YoutubeSearchData?> {
+            return arrayOfNulls(size)
+        }
+    }
+
+    override fun toString(): String {
+        return "$title, $thumbnail, $channelTitle"
+    }
+}
 
 // Json -> Object
 data class YoutubeSearchJsonData(

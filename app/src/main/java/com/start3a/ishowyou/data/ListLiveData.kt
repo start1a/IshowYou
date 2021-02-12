@@ -17,4 +17,9 @@ class ListLiveData<T>(private val list: MutableList<T>): MutableLiveData<Mutable
         list.addAll(items)
         value = list
     }
+
+    fun removeAt(pos: Int) {
+        list.removeAt(pos)
+        value = list
+    }
 }

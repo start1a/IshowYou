@@ -21,6 +21,7 @@ import com.start3a.ishowyou.data.FullScreenController
 import com.start3a.ishowyou.data.RoomRequest
 import com.start3a.ishowyou.room.chat.ChatMemberAdapter
 import com.start3a.ishowyou.room.chat.RealTimeChatFragment
+import com.start3a.ishowyou.room.content.YoutubeContentEditFragment
 import com.start3a.ishowyou.room.content.YoutubePlayerFragment
 import kotlinx.android.synthetic.main.activity_chat_room.*
 import kotlinx.android.synthetic.main.info_chatroom.*
@@ -102,7 +103,7 @@ class ChatRoomActivity : AppCompatActivity() {
                 val sfm = supportFragmentManager.beginTransaction()
                 when(item.itemId) {
                     R.id.action_contents -> {
-                        // 콘텐츠 설정 프래그먼트 활성화
+                        sfm.replace(R.id.chatroom_talkViewFrame, YoutubeContentEditFragment()).commit()
                         true
                     }
                     R.id.action_chat -> {
@@ -212,7 +213,10 @@ class ChatRoomActivity : AppCompatActivity() {
                 vm.isFullScreen = true
                 hideSystemUI()
                 vm.mFullScreenController.enterFullScreenView(7.0f, 3.0f)
-            } else if (resources.configuration.orientation == ORIENTATION_PORTRAIT) {
+                // 채팅 뷰로 전환
+                swapToChat()
+            }
+            else if (resources.configuration.orientation == ORIENTATION_PORTRAIT) {
                 vm.isFullScreen = false
                 showSystemUI()
                 vm.mFullScreenController.exitFullScreenView()
@@ -239,5 +243,13 @@ class ChatRoomActivity : AppCompatActivity() {
         chatroom_layout.getWindowVisibleDisplayFrame(visibleFrameSize)
 
         return visibleFrameSize.bottom - visibleFrameSize.top
+    }
+
+    private fun swapToChat() {
+        // 채팅 뷰만 보기
+        supportFragmentManager.beginTransaction()
+            .replace(R.id.chatroom_talkViewFrame, RealTimeChatFragment()).commit()
+
+        bottom_navigation_chatroom.selectedItemId = R.id.action_chat
     }
 }

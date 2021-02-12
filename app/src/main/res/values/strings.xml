@@ -25,4 +25,5 @@
     <string name="content">콘텐츠</string>
     <string name="menu">메뉴</string>
     <string name="add_video">동영상 추가</string>
+    <string name="playlist">재생 목록</string>
 </resources>

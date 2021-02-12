@@ -1,19 +1,21 @@
-package com.start3a.ishowyou
+package com.start3a.ishowyou.room.content
 
 import android.view.LayoutInflater
 import android.view.ViewGroup
 import androidx.recyclerview.widget.RecyclerView
 import com.bumptech.glide.Glide
+import com.start3a.ishowyou.ItemViewHolder
+import com.start3a.ishowyou.R
 import com.start3a.ishowyou.contentapi.YoutubeSearchData
-import kotlinx.android.synthetic.main.item_video_searched.view.*
+import kotlinx.android.synthetic.main.item_video_playlist.view.*
 
-class YoutubeVideoListAdapter(val list: MutableList<YoutubeSearchData>):
+class YoutubePlayListAdapter(val list: MutableList<YoutubeSearchData>):
     RecyclerView.Adapter<ItemViewHolder>() {
 
     lateinit var videoClicked: (Int) -> Unit
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ItemViewHolder {
-        val view = LayoutInflater.from(parent.context).inflate(R.layout.item_video_searched, parent, false)
+        val view = LayoutInflater.from(parent.context).inflate(R.layout.item_video_playlist, parent, false)
         view.setOnClickListener {
             val pos = it.tag as Int
             videoClicked(pos)
@@ -27,20 +29,13 @@ class YoutubeVideoListAdapter(val list: MutableList<YoutubeSearchData>):
 
     override fun onBindViewHolder(holder: ItemViewHolder, position: Int) {
         holder.containerView.let {
-            it.textTitle.text = list[position].title
-
-            val desc = list[position].desc
-            if (desc.length > 20)
-                it.textDesc.text = desc.substring(0..20)
-            else
-                it.textDesc.text = desc
-
+            it.textTitle_playlist.text = list[position].title
             it.textChannelTitle_playlist.text = list[position].channelTitle
 
             Glide.with(it)
-                .load(list[position].thumbnail)
+                .load(list[position].thumbnailSmall)
                 .error(R.drawable.ic_baseline_search_24)
-                .into(it.image_thumbnail)
+                .into(it.imageThumbnail_playlist)
 
             it.tag = position
         }

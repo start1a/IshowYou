@@ -42,9 +42,9 @@ class RealTimeChatFragment : Fragment() {
     override fun onActivityCreated(savedInstanceState: Bundle?) {
         super.onActivityCreated(savedInstanceState)
 
-        viewModel = activity!!.application!!.let {
+        viewModel = requireActivity().application!!.let {
             ViewModelProvider(
-                activity!!.viewModelStore,
+                requireActivity().viewModelStore,
                 ViewModelProvider.AndroidViewModelFactory(it)
             )
                 .get(ChatRoomViewModel::class.java).apply {
@@ -60,8 +60,8 @@ class RealTimeChatFragment : Fragment() {
                 val intent = Intent().apply {
                     putExtra("message", "방장이 퇴장했습니다.")
                 }
-                activity!!.setResult(Activity.RESULT_CANCELED, intent)
-                activity!!.finish()
+                requireActivity().setResult(Activity.RESULT_CANCELED, intent)
+                requireActivity().finish()
             }
 
             btnSendMessage.setOnClickListener {
@@ -160,7 +160,7 @@ class RealTimeChatFragment : Fragment() {
 
             vm.hideKeyboard = {
                 val imm =
-                    activity!!.getSystemService(Context.INPUT_METHOD_SERVICE) as InputMethodManager
+                    requireActivity().getSystemService(Context.INPUT_METHOD_SERVICE) as InputMethodManager
                 imm.hideSoftInputFromWindow(editSendMessage.windowToken, 0)
             }
         }

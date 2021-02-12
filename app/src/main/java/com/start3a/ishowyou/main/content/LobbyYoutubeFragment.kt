@@ -26,9 +26,9 @@ class LobbyYoutubeFragment : Fragment() {
     override fun onActivityCreated(savedInstanceState: Bundle?) {
         super.onActivityCreated(savedInstanceState)
 
-        viewModel = activity!!.application!!.let {
+        viewModel = requireActivity().application!!.let {
             ViewModelProvider(
-                activity!!.viewModelStore,
+                requireActivity().viewModelStore,
                 ViewModelProvider.AndroidViewModelFactory(it)
             )
                 .get(MainViewModel::class.java)

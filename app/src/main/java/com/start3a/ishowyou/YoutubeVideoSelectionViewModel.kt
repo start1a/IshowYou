@@ -10,4 +10,7 @@ class YoutubeVideoSelectionViewModel: ViewModel() {
         ListLiveData(mutableListOf())
     }
 
+    val listVideoSelected: ListLiveData<YoutubeSearchData> by lazy {
+        ListLiveData(mutableListOf())
+    }
 }

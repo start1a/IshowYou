@@ -29,9 +29,9 @@ class YoutubePlayerFragment : Fragment() {
     override fun onActivityCreated(savedInstanceState: Bundle?) {
         super.onActivityCreated(savedInstanceState)
 
-        viewModel = activity!!.application!!.let {
+        viewModel = requireActivity().application!!.let {
             ViewModelProvider(
-                activity!!.viewModelStore,
+                requireActivity().viewModelStore,
                 ViewModelProvider.AndroidViewModelFactory(it)
             )
                 .get(ChatRoomViewModel::class.java)
@@ -39,10 +39,15 @@ class YoutubePlayerFragment : Fragment() {
 
 
         viewModel!!.let { vm ->
+            initYoutubePlayer()
+            initView()
+        }
+    }
 
+    private fun initYoutubePlayer() {
+        viewModel!!.let { vm ->
             // 화면이 중지되면 자동 재생 중지
             lifecycle.addObserver(youtubePlayerView)
-
             youtubePlayerView.addYouTubePlayerListener(object : AbstractYouTubePlayerListener() {
 
                 override fun onReady(youTubePlayer: YouTubePlayer) {
@@ -58,6 +63,11 @@ class YoutubePlayerFragment : Fragment() {
                         }
                     })
 
+                    // 영상 선택
+                    vm.curVideoSelected.observe(viewLifecycleOwner) {
+                        youTubePlayer.loadVideo(it.videoId, 0.0f)
+                    }
+
                     // Seekbar
                     youtube_player_seekbar.youtubePlayerSeekBarListener =
                         object : YouTubePlayerSeekBarListener {
@@ -72,13 +82,17 @@ class YoutubePlayerFragment : Fragment() {
                     }
                 }
             })
+        }
+    }
+
+    private fun initView() {
+        viewModel!!.let { vm ->
 
             // 백 버튼용 리스너
             // 기기만 회전할 경우 유튜브 뷰의 크기가 줄어들지 않음
             vm.mFullScreenController.contentExitFullScreenMode = {
                 youtubePlayerView.exitFullScreen()
             }
-
 
             // 키보드가 표시되면 유튜브 클릭을 방지하는 버튼 생성
             vm.contentAvailability = { isKeyboardVisible ->

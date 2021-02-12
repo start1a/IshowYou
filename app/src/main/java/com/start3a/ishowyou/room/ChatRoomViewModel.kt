@@ -1,7 +1,9 @@
 package com.start3a.ishowyou.room
 
+import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import com.google.firebase.database.FirebaseDatabase
+import com.start3a.ishowyou.contentapi.YoutubeSearchData
 import com.start3a.ishowyou.data.*
 import com.start3a.ishowyou.model.RdbDao
 
@@ -48,7 +50,13 @@ class ChatRoomViewModel: ViewModel() {
         initRoomCurContent(content)
     }
 
-    // 유튜브
+
+    // 유튜브 --------------------------------------
+    val listPlayYoutube: ListLiveData<YoutubeSearchData> by lazy {
+        ListLiveData(mutableListOf())
+    }
+    var curVideoSelected = MutableLiveData<YoutubeSearchData>()
+
     fun seekbarYoutubeClicked(time: Float) {
         if (isHost)
             dbYoutube.seekbarYoutubeClicked(time.toDouble())

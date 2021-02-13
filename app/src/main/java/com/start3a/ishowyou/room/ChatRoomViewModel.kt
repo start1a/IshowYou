@@ -67,6 +67,30 @@ class ChatRoomViewModel: ViewModel() {
             dbYoutube.setSeekbarChangedListener(changeSeekbar)
     }
 
+    fun initContentEdit_Youtube(playlistAdded: (YoutubeSearchData) -> Unit, playlistRemoved: (YoutubeSearchData) -> Unit) {
+        if (!isHost)
+            dbYoutube.notifyPlayListChanged(playlistAdded, playlistRemoved)
+    }
+
+    fun addVideoToPlaylist_Youtube(list: List<YoutubeSearchData>) {
+        listPlayYoutube.addAll(list)
+        dbYoutube.addVideoToPlaylist(list)
+    }
+
+    fun removeVideoPlaylist_Youtube(pos: Int) {
+        listPlayYoutube.removeAt(pos)
+        val video = listPlayYoutube.value!![pos]
+        dbYoutube.removeVideoToPlaylist(video)
+    }
+
+    fun setNewYoutubeVideoPlayed(video: YoutubeSearchData) {
+        dbYoutube.setNewYoutubeVideoPlayed(video)
+    }
+
+    fun notifyNewVideoSelected(newVideoPlayed: (YoutubeSearchData) -> Unit) {
+        dbYoutube.notifyNewVideoSelected(newVideoPlayed)
+    }
+
 
     // 채팅방 ----------------------------------------
     fun createChatRoom(

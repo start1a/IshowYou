@@ -1,6 +1,7 @@
 package com.start3a.ishowyou.room.content
 
 import android.view.LayoutInflater
+import android.view.View
 import android.view.ViewGroup
 import androidx.recyclerview.widget.RecyclerView
 import com.bumptech.glide.Glide
@@ -9,16 +10,19 @@ import com.start3a.ishowyou.R
 import com.start3a.ishowyou.contentapi.YoutubeSearchData
 import kotlinx.android.synthetic.main.item_video_playlist.view.*
 
-class YoutubePlayListAdapter(val list: MutableList<YoutubeSearchData>):
+class YoutubePlayListAdapter(val list: MutableList<YoutubeSearchData>, val isHost: Boolean):
     RecyclerView.Adapter<ItemViewHolder>() {
 
     lateinit var videoClicked: (Int) -> Unit
+    lateinit var videoRemoved: (Int) -> Unit
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ItemViewHolder {
         val view = LayoutInflater.from(parent.context).inflate(R.layout.item_video_playlist, parent, false)
-        view.setOnClickListener {
-            val pos = it.tag as Int
-            videoClicked(pos)
+        if (isHost) {
+            view.setOnClickListener {
+                val pos = it.tag as Int
+                videoClicked(pos)
+            }
         }
         return ItemViewHolder(view)
     }
@@ -36,6 +40,15 @@ class YoutubePlayListAdapter(val list: MutableList<YoutubeSearchData>):
                 .load(list[position].thumbnailSmall)
                 .error(R.drawable.ic_baseline_search_24)
                 .into(it.imageThumbnail_playlist)
+
+            if (isHost) {
+                it.btnRemoveVideo.setOnClickListener {
+                    videoRemoved(position)
+                }
+            }
+            else {
+                it.btnRemoveVideo.visibility = View.GONE
+            }
 
             it.tag = position
         }

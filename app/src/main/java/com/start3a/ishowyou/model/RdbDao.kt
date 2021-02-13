@@ -3,6 +3,7 @@ package com.start3a.ishowyou.model
 import android.util.Log
 import com.google.firebase.database.*
 import com.google.firebase.database.ktx.getValue
+import com.start3a.ishowyou.contentapi.YoutubeSearchData
 import com.start3a.ishowyou.data.*
 import java.util.*
 
@@ -16,6 +17,8 @@ class RdbDao(private val db: DatabaseReference) {
 
         private val TAG = "YoutubeDao"
         private var seekbarChangedListener: ValueEventListener? = null
+        private var newVideoSelectedListener: ValueEventListener? = null
+        private var playlistChangedListener: ChildEventListener? = null
 
         fun seekbarYoutubeClicked(time: Double) {
             db.child("content/$roomCode/youtube/seekbar").setValue(time)
@@ -41,6 +44,68 @@ class RdbDao(private val db: DatabaseReference) {
 
         override fun close() {
             seekbarChangedListener?.let { db.removeEventListener(it) }
+            playlistChangedListener?.let { db.removeEventListener(it) }
+            newVideoSelectedListener?.let { db.removeEventListener(it) }
+        }
+
+        fun addVideoToPlaylist(list: List<YoutubeSearchData>) {
+            list.forEach { video ->
+                db.child("content/$roomCode/youtube/playlist/${video.videoId}").setValue(video)
+            }
+        }
+
+        fun removeVideoToPlaylist(video: YoutubeSearchData) {
+            db.child("content/$roomCode/youtube/playlist/${video.videoId}").removeValue()
+        }
+
+        fun notifyPlayListChanged(playlistAdded: (YoutubeSearchData) -> Unit, playlistRemoved: (YoutubeSearchData) -> Unit) {
+            if (playlistChangedListener != null) return
+
+            playlistChangedListener =
+                db.child("content/$roomCode/youtube/playlist").addChildEventListener(object : ChildEventListener {
+                    override fun onChildAdded(snapshot: DataSnapshot, previousChildName: String?) {
+                        snapshot.getValue<YoutubeSearchData>()?.let {
+                            playlistAdded(it)
+                        }
+                    }
+
+                    override fun onChildChanged(snapshot: DataSnapshot, previousChildName: String?) {}
+
+                    override fun onChildRemoved(snapshot: DataSnapshot) {
+                        snapshot.getValue<YoutubeSearchData>()?.let {
+                            playlistRemoved(it)
+                        }
+                    }
+
+                    override fun onChildMoved(snapshot: DataSnapshot, previousChildName: String?) {}
+
+                    override fun onCancelled(error: DatabaseError) {
+                        Log.d(TAG, "Changing Play-list is Cancelled.\n$error")
+                    }
+
+                })
+        }
+
+        fun setNewYoutubeVideoPlayed(video: YoutubeSearchData) {
+            db.child("content/$roomCode/youtube/curvideo").setValue(video)
+        }
+
+        fun notifyNewVideoSelected(newVideoPlayed: (YoutubeSearchData) -> Unit) {
+        if (newVideoSelectedListener != null) return
+
+            newVideoSelectedListener =
+            db.child("content/$roomCode/youtube/curvideo").addValueEventListener(object : ValueEventListener {
+                override fun onDataChange(snapshot: DataSnapshot) {
+                    snapshot.getValue<YoutubeSearchData>()?.let { newVideo ->
+                        newVideoPlayed(newVideo)
+                    }
+                }
+
+                override fun onCancelled(error: DatabaseError) {
+                    Log.d(TAG, "Notifying new video selection is Cancelled.\n$error")
+                }
+
+            })
         }
     }
 

@@ -25,15 +25,17 @@ class YoutubeContentEditFragment : Fragment() {
 
     // onAcitivityResult (deprecated)
     // -> ActivityResultContracts
-    private val requestActivityForSearchVideos: ActivityResultLauncher<Intent> = registerForActivityResult(
-        ActivityResultContracts.StartActivityForResult()
-    ) { activityResult ->
-        // 비디오 리스트
-        if (activityResult.resultCode == Activity.RESULT_OK && activityResult.data != null) {
-            val videos = activityResult.data!!.extras!!.getParcelableArrayList<YoutubeSearchData>("videos")
-            viewModel!!.listPlayYoutube.addAll(videos!!)
+    private val requestActivityForSearchVideos: ActivityResultLauncher<Intent> =
+        registerForActivityResult(
+            ActivityResultContracts.StartActivityForResult()
+        ) { activityResult ->
+            // 비디오 리스트
+            if (activityResult.resultCode == Activity.RESULT_OK && activityResult.data != null) {
+                val videos =
+                    activityResult.data!!.extras!!.getParcelableArrayList<YoutubeSearchData>("videos")!!
+                viewModel!!.addVideoToPlaylist_Youtube(videos)
+            }
         }
-    }
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
@@ -62,16 +64,52 @@ class YoutubeContentEditFragment : Fragment() {
 
     private fun initView() {
         viewModel!!.let { vm ->
+            // 영상 선택 감지
+            vm.curVideoSelected.observe(viewLifecycleOwner) {
+                textVideoTitle.text = it.title
+                textVideoDesc.text = it.desc
+                textVideoChannelTitle.text = it.channelTitle
+            }
+            // 서버에서 영상 선택 감지
+            vm.notifyNewVideoSelected {
+                vm.curVideoSelected.value = it
+            }
 
+            vm.initContentEdit_Youtube(
+                // 비디오 리스트에 추가
+                { vm.listPlayYoutube.add(it) },
+
+                // 비디오 리스트에서 제거
+                {
+                    val list = vm.listPlayYoutube.value!!
+                    var indexSearched = -1
+                    for (i in 0 until list.size)
+                        if (list[i] == it) {
+                            indexSearched = i
+                        }
+
+                    if (indexSearched != -1)
+                        vm.listPlayYoutube.removeAt(indexSearched)
+                }
+            )
+
+            if (!vm.isHost)
+                btnAddVideo.visibility = View.GONE
         }
     }
 
     private fun initAdapter() {
         viewModel!!.let { vm ->
-            listVideoAdapter = YoutubePlayListAdapter(vm.listPlayYoutube.value!!).apply {
+            listVideoAdapter = YoutubePlayListAdapter(vm.listPlayYoutube.value!!, vm.isHost).apply {
+                // 영상 클릭 시 정보 텍스트 표시
                 videoClicked = {
                     val video = vm.listPlayYoutube.value!![it]
                     vm.curVideoSelected.value = video
+                    vm.setNewYoutubeVideoPlayed(video)
+                }
+                // 비디오 삭제 버튼 클릭
+                videoRemoved = {
+                    vm.removeVideoPlaylist_Youtube(it)
                 }
             }
             playlistRecyclerView.adapter = listVideoAdapter
@@ -80,13 +118,6 @@ class YoutubeContentEditFragment : Fragment() {
             // 리스트 감지
             vm.listPlayYoutube.observe(viewLifecycleOwner) {
                 listVideoAdapter?.notifyDataSetChanged()
-            }
-
-            // 영상 선택 감지
-            vm.curVideoSelected.observe(viewLifecycleOwner) {
-                textVideoTitle.text = it.title
-                textVideoDesc.text = it.desc
-                textVideoChannelTitle.text = it.channelTitle
             }
 
             btnAddVideo.setOnClickListener {

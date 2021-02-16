@@ -54,8 +54,8 @@ class RdbDao(private val db: DatabaseReference) {
             }
         }
 
-        fun removeVideoToPlaylist(video: YoutubeSearchData) {
-            db.child("content/$roomCode/youtube/playlist/${video.videoId}").removeValue()
+        fun removeVideoToPlaylist(videoId: String) {
+            db.child("content/$roomCode/youtube/playlist/$videoId").removeValue()
         }
 
         fun notifyPlayListChanged(playlistAdded: (YoutubeSearchData) -> Unit, playlistRemoved: (YoutubeSearchData) -> Unit) {
@@ -120,7 +120,7 @@ class RdbDao(private val db: DatabaseReference) {
 
         fun createChatRoom(
             chatRoom: ChatRoom,
-            successListener: () -> Unit,
+            successListener: (String) -> Unit,
             roomInfoChangedListener: (ChatRoom) -> Unit
         ) {
             Date().time.let {
@@ -145,7 +145,7 @@ class RdbDao(private val db: DatabaseReference) {
                             }
                         })
 
-                    successListener()
+                    successListener(chatRoom.contentName)
                 }
                 .addOnFailureListener {
                     Log.d(TAG, "Creating ChatRoom is Failed\n$it")
@@ -273,7 +273,7 @@ class RdbDao(private val db: DatabaseReference) {
 
         fun requestJoinRoom(
             requestedRoomCode: String,
-            successJoined: () -> Unit,
+            successJoined: (String) -> Unit,
             failJoined: () -> Unit
         ) {
             // 방 입장
@@ -283,7 +283,9 @@ class RdbDao(private val db: DatabaseReference) {
                     override fun onDataChange(snapshot: DataSnapshot) {
                         if (snapshot.exists()) {
                             roomCode = requestedRoomCode
-                            successJoined()
+                            snapshot.getValue<ChatRoom>()?.let {
+                                successJoined(it.contentName)
+                            }
                         } else failJoined()
                     }
 

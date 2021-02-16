@@ -48,6 +48,8 @@ class YoutubeSearchData() : Parcelable {
     override fun toString(): String {
         return "$title, $thumbnail, $channelTitle"
     }
+
+    override fun equals(other: Any?): Boolean = this.toString() == other.toString()
 }
 
 // Json -> Object

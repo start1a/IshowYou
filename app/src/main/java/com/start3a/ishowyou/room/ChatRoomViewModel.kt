@@ -78,9 +78,9 @@ class ChatRoomViewModel: ViewModel() {
     }
 
     fun removeVideoPlaylist_Youtube(pos: Int) {
+        val videoId = listPlayYoutube.value!![pos].videoId
+        dbYoutube.removeVideoToPlaylist(videoId)
         listPlayYoutube.removeAt(pos)
-        val video = listPlayYoutube.value!![pos]
-        dbYoutube.removeVideoToPlaylist(video)
     }
 
     fun setNewYoutubeVideoPlayed(video: YoutubeSearchData) {
@@ -95,14 +95,14 @@ class ChatRoomViewModel: ViewModel() {
     // 채팅방 ----------------------------------------
     fun createChatRoom(
         title: String,
-        successListener: () -> Unit,
+        successListener: (String) -> Unit,
         roomInfoChangedListener: (ChatRoom) -> Unit
     ) {
         isHost = true
-        dbChat.createChatRoom(ChatRoom(title), successListener, roomInfoChangedListener)
+        dbChat.createChatRoom(ChatRoom(title, "Youtube"), successListener, roomInfoChangedListener)
     }
 
-    fun requestJoinRoom(roomCode: String, successJoined: () -> Unit, failJoined: () -> Unit) {
+    fun requestJoinRoom(roomCode: String, successJoined: (String) -> Unit, failJoined: () -> Unit) {
         dbChat.requestJoinRoom(roomCode, successJoined, failJoined)
     }
 

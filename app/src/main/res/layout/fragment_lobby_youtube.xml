@@ -6,7 +6,7 @@
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
     android:background="#000000"
-    tools:context=".room.content.YoutubePlayerFragment">
+    tools:context=".main.content.LobbyYoutubeFragment">
 
     <com.pierfrancescosoffritti.androidyoutubeplayer.core.player.views.YouTubePlayerView
         android:id="@+id/lobby_youtubePlayerView"

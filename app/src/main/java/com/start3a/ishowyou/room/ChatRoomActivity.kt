@@ -68,8 +68,10 @@ class ChatRoomActivity : AppCompatActivity() {
             vm.initRoomCurContent = { content ->
                 val ft = supportFragmentManager.beginTransaction()
                 when (content) {
-                    Content.YOUTUBE ->
-                        ft.replace(R.id.chatroom_contentViewFrame, YoutubePlayerFragment()).commit()
+                    Content.YOUTUBE -> {
+                        ft.replace(R.id.chatroom_contentViewFrame, YoutubePlayerFragment())
+                            .replace(R.id.chatroom_talkViewFrame, YoutubeContentEditFragment()).commit()
+                    }
                 }
             }
 
@@ -98,7 +100,7 @@ class ChatRoomActivity : AppCompatActivity() {
             })
 
             // 하단 메뉴
-            bottom_navigation_chatroom.selectedItemId = R.id.action_chat
+            bottom_navigation_chatroom.selectedItemId = R.id.action_contents
             bottom_navigation_chatroom.setOnNavigationItemSelectedListener { item ->
                 val sfm = supportFragmentManager.beginTransaction()
                 when(item.itemId) {
@@ -165,12 +167,13 @@ class ChatRoomActivity : AppCompatActivity() {
 
     private fun initRoom() {
         val requestcode = intent.getIntExtra("requestcode", -1)
-        val roomSucceedJoined = object : () -> Unit {
-            override fun invoke() {
-                supportFragmentManager.beginTransaction()
-                    .add(R.id.chatroom_contentViewFrame, YoutubePlayerFragment())
-                    .add(R.id.chatroom_talkViewFrame, RealTimeChatFragment())
-                    .commit()
+        val roomSucceedJoined = object : (String) -> Unit {
+            override fun invoke(contentName: String) {
+                when (contentName) {
+                    "Youtube" -> {
+                        viewModel!!.initRoomCurContent(Content.YOUTUBE)
+                    }
+                }
             }
         }
 

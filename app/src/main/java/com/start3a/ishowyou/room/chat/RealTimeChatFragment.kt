@@ -170,10 +170,4 @@ class RealTimeChatFragment : Fragment() {
         if (posLastItem != -1)
             messageListView.scrollToPosition(posLastItem)
     }
-
-
-    override fun onDestroyView() {
-        super.onDestroyView()
-        viewModel!!.hideKeyboard = null
-    }
 }

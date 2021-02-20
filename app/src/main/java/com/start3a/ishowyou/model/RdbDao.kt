@@ -196,6 +196,7 @@ class RdbDao(private val db: DatabaseReference) {
                 db.child("chat/$roomCode").removeValue()
                 db.child("message/$roomCode").removeValue()
                 db.child("member/$roomCode").removeValue()
+                db.child("content/$roomCode").removeValue()
             } else {
                 db.child("member/$roomCode/${CurUser.userName}").removeValue()
                 removeListener(hostDeleteRoomNotifyListener, "member/$roomCode")

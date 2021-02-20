@@ -9,6 +9,8 @@ import android.content.res.Configuration.ORIENTATION_PORTRAIT
 import android.os.Bundle
 import android.view.View
 import android.widget.Toast
+import androidx.activity.result.ActivityResultLauncher
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AppCompatActivity
 import androidx.lifecycle.ViewModelProvider
 import com.firebase.ui.auth.AuthUI
@@ -72,7 +74,7 @@ class MainActivity : AppCompatActivity() {
                     putExtra("requestcode", RoomRequest.CREATE_ROOM.num)
                     putExtra("title", title)
                 }
-                startActivityForResult(intent, RoomRequest.CREATE_ROOM.num)
+                requestActivityForRoomIsDeleted.launch(intent)
             }
 
             // 로비 컨텐츠 뷰 변경
@@ -107,21 +109,6 @@ class MainActivity : AppCompatActivity() {
                         true
                     }
                     else -> false
-                }
-            }
-        }
-    }
-
-    override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
-        super.onActivityResult(requestCode, resultCode, data)
-
-        when (requestCode) {
-            RoomRequest.CREATE_ROOM.num -> {
-                // 정상적인 퇴장이 아닐 경우
-                // ex. 방장이 퇴장하여 자동 퇴장
-                if (resultCode != Activity.RESULT_OK && data != null) {
-                    val text = data.getStringExtra("message")
-                    Toast.makeText(this, text, Toast.LENGTH_LONG).show()
                 }
             }
         }
@@ -172,4 +159,16 @@ class MainActivity : AppCompatActivity() {
     private fun showSystemUI() {
         window.decorView.systemUiVisibility = View.SYSTEM_UI_FLAG_LAYOUT_STABLE
    }
+
+    private val requestActivityForRoomIsDeleted: ActivityResultLauncher<Intent> =
+        registerForActivityResult(
+            ActivityResultContracts.StartActivityForResult()
+        ) { activityResult ->
+            // 정상적인 퇴장이 아닐 경우
+            // ex. 방장이 퇴장하여 자동 퇴장
+            if (activityResult.resultCode == Activity.RESULT_CANCELED && activityResult.data != null) {
+                val text = activityResult.data!!.getStringExtra("message")
+                Toast.makeText(this, text, Toast.LENGTH_LONG).show()
+            }
+        }
 }

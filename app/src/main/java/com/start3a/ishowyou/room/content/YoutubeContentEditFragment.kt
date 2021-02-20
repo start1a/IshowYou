@@ -66,13 +66,15 @@ class YoutubeContentEditFragment : Fragment() {
         viewModel!!.let { vm ->
             // 영상 선택 감지
             vm.curVideoSelected.observe(viewLifecycleOwner) {
-                textVideoTitle.text = it.title
-                textVideoDesc.text = it.desc
-                textVideoChannelTitle.text = it.channelTitle
+                updateVideoInfo(it)
             }
             // 서버에서 영상 선택 감지
             vm.notifyNewVideoSelected {
                 vm.curVideoSelected.value = it
+            }
+
+            vm.curVideoPlayed.observe(viewLifecycleOwner) {
+                updateVideoInfo(it)
             }
 
             vm.initContentEdit_Youtube(
@@ -98,6 +100,12 @@ class YoutubeContentEditFragment : Fragment() {
         }
     }
 
+    private fun updateVideoInfo(video: YoutubeSearchData) {
+        textVideoTitle.text = video.title
+        textVideoDesc.text = video.desc
+        textVideoChannelTitle.text = video.channelTitle
+    }
+
     private fun initAdapter() {
         viewModel!!.let { vm ->
             listVideoAdapter = YoutubePlayListAdapter(vm.listPlayYoutube.value!!, vm.isHost).apply {
@@ -105,7 +113,8 @@ class YoutubeContentEditFragment : Fragment() {
                 videoClicked = {
                     val video = vm.listPlayYoutube.value!![it]
                     vm.curVideoSelected.value = video
-                    vm.setNewYoutubeVideoPlayed(video)
+                    vm.curVideoPlayed.value = video
+                    vm.curSeekbarPos.value = 0.0f
                 }
                 // 비디오 삭제 버튼 클릭
                 videoRemoved = {

@@ -3,6 +3,7 @@ package com.start3a.ishowyou.room
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import com.google.firebase.database.FirebaseDatabase
+import com.start3a.ishowyou.contentapi.PlayStateRequested
 import com.start3a.ishowyou.contentapi.YoutubeSearchData
 import com.start3a.ishowyou.data.*
 import com.start3a.ishowyou.model.RdbDao
@@ -57,8 +58,39 @@ class ChatRoomViewModel: ViewModel() {
     }
     var curVideoSelected = MutableLiveData<YoutubeSearchData>()
 
-    fun seekbarYoutubeClicked(time: Float) {
-        if (isHost) dbYoutube.seekbarYoutubeClicked(time)
+    // 재생 시간 복원 데이터
+    val curVideoPlayed = MutableLiveData<YoutubeSearchData>()
+    val curSeekbarPos = MutableLiveData<Float>()
+    var timeStopped = -1L
+    var timeVideoPaused = -1f
+    var durationVideo = -1f
+//    var playStateController: YoutubePlayStateController? = null
+
+    // 영상 정지 시간
+    var isActiveRoomMemberControl = false
+    var isActiveFollowHost = true
+
+    fun getIdAndPlayNextVideo(): String {
+        val list = listPlayYoutube.value!!
+        // 현재 영상 위치 탐색
+        var indexSearched = -1
+        for (i in 0 until list.size) {
+            if (curVideoPlayed.value!! == list[i]) {
+                indexSearched = i
+                // 다음 영상 재생
+                val video = list[(i + 1) % list.size]
+                curVideoPlayed.value = video
+                return video.videoId
+            }
+        }
+
+        // 해당 영상이 없음
+        if (indexSearched == -1 && list.size > 0) {
+            curVideoPlayed.value = list[0]
+            return list[0].videoId
+        }
+
+        return ""
     }
 
     fun initContent_Youtube(changeSeekbar: (Float) -> Unit) {
@@ -86,10 +118,25 @@ class ChatRoomViewModel: ViewModel() {
         if (isHost) dbYoutube.setNewYoutubeVideoSelected(video)
     }
 
-    fun notifyNewVideoSelected(newVideoPlayed: (YoutubeSearchData) -> Unit) {
-        dbYoutube.notifyNewVideoSelected(newVideoPlayed)
+    fun setNewYoutubeVideoPlayed(video: YoutubeSearchData, duration: Float, seekBar: Float) {
+        if (isHost) dbYoutube.setNewYoutubeVideoPlayed(video, duration, seekBar)
     }
 
+    fun notifyNewVideoSelected(newVideoPlayed: (YoutubeSearchData) -> Unit) {
+        if (!isHost) dbYoutube.notifyNewVideoSelected(newVideoPlayed)
+    }
+
+    fun seekbarYoutubeClicked(time: Float) {
+        if (isHost) dbYoutube.seekbarYoutubeClicked(time)
+    }
+
+    fun setYoutubeVideoSeekbarChanged(seekbar: Float) {
+        if (isHost) dbYoutube.setYoutubeVideoSeekbarChanged(seekbar)
+    }
+
+    fun requestVideoPlayState(requestPlayState: (PlayStateRequested) -> Unit) {
+        if (!isHost) dbYoutube.requestVideoPlayState(requestPlayState)
+    }
 
     // 채팅방 ----------------------------------------
     fun createChatRoom(

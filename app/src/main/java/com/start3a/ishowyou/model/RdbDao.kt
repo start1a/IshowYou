@@ -3,6 +3,7 @@ package com.start3a.ishowyou.model
 import android.util.Log
 import com.google.firebase.database.*
 import com.google.firebase.database.ktx.getValue
+import com.start3a.ishowyou.contentapi.PlayStateRequested
 import com.start3a.ishowyou.contentapi.YoutubeSearchData
 import com.start3a.ishowyou.data.*
 import java.util.*
@@ -107,7 +108,39 @@ class RdbDao(private val db: DatabaseReference) {
 
             })
         }
+
+        fun setNewYoutubeVideoPlayed(video: YoutubeSearchData, duration: Float, seekBar: Float) {
+            val curPlayState = PlayStateRequested(video, seekBar, Date().time, duration)
+            db.child("content/$roomCode/youtube/curvideo").setValue(curPlayState)
+        }
+
+        fun setYoutubeVideoSeekbarChanged(seekbar: Float) {
+            db.child("content/$roomCode/youtube/curvideo/seekbar").setValue(seekbar)
+            db.child("content/$roomCode/youtube/curvideo/time").setValue(Date().time)
+        }
+
+        fun requestVideoPlayState(requestPlayState: (PlayStateRequested) -> Unit) {
+            db.child("content/$roomCode/youtube/curvideo")
+                .addListenerForSingleValueEvent(object : ValueEventListener {
+                override fun onDataChange(snapshot: DataSnapshot) {
+                    if (snapshot.exists()) {
+                        val video = snapshot.child("curVideo").getValue<YoutubeSearchData>()!!
+                        val seekBar = snapshot.child("seekbar").getValue<Float>()!!
+                        val time = snapshot.child("time").getValue<Long>()!!
+                        val duration = snapshot.child("duration").getValue<Float>()!!
+                        val videoInfo = PlayStateRequested(video, seekBar, time, duration)
+                        requestPlayState(videoInfo)
+                    }
+                }
+
+                override fun onCancelled(error: DatabaseError) {
+                    Log.d(TAG, "Request video play state is Cancelled.\n$error")
+                }
+
+            })
+        }
     }
+
 
     inner class ChatDao {
 

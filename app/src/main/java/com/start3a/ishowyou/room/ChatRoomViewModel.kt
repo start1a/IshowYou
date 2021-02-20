@@ -58,8 +58,7 @@ class ChatRoomViewModel: ViewModel() {
     var curVideoSelected = MutableLiveData<YoutubeSearchData>()
 
     fun seekbarYoutubeClicked(time: Float) {
-        if (isHost)
-            dbYoutube.seekbarYoutubeClicked(time.toDouble())
+        if (isHost) dbYoutube.seekbarYoutubeClicked(time)
     }
 
     fun initContent_Youtube(changeSeekbar: (Float) -> Unit) {
@@ -78,13 +77,13 @@ class ChatRoomViewModel: ViewModel() {
     }
 
     fun removeVideoPlaylist_Youtube(pos: Int) {
-        val videoId = listPlayYoutube.value!![pos].videoId
-        dbYoutube.removeVideoToPlaylist(videoId)
+        val createdTime = listPlayYoutube.value!![pos].createdTime
+        dbYoutube.removeVideoToPlaylist(createdTime)
         listPlayYoutube.removeAt(pos)
     }
 
-    fun setNewYoutubeVideoPlayed(video: YoutubeSearchData) {
-        dbYoutube.setNewYoutubeVideoPlayed(video)
+    fun setNewYoutubeVideoSelected(video: YoutubeSearchData) {
+        if (isHost) dbYoutube.setNewYoutubeVideoSelected(video)
     }
 
     fun notifyNewVideoSelected(newVideoPlayed: (YoutubeSearchData) -> Unit) {

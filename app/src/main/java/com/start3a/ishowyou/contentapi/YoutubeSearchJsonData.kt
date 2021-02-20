@@ -2,6 +2,7 @@ package com.start3a.ishowyou.contentapi
 
 import android.os.Parcel
 import android.os.Parcelable
+import java.util.*
 
 // 리스트 아이템용 Object
 // parcelable : intent Arraylist로 넘김
@@ -12,6 +13,7 @@ class YoutubeSearchData() : Parcelable {
     lateinit var videoId: String
     lateinit var thumbnail: String
     lateinit var thumbnailSmall: String
+    var createdTime = Date().time
 
     constructor(parcel: Parcel) : this() {
         title = parcel.readString()!!
@@ -51,6 +53,14 @@ class YoutubeSearchData() : Parcelable {
 
     override fun equals(other: Any?): Boolean = this.toString() == other.toString()
 }
+
+// 현재 재생 영상 및 위치 요청
+data class PlayStateRequested(
+    var curVideo: YoutubeSearchData,
+    var seekbar: Float,
+    var time: Long,
+    var duration: Float
+)
 
 // Json -> Object
 data class YoutubeSearchJsonData(

@@ -20,7 +20,7 @@ class RdbDao(private val db: DatabaseReference) {
         private var newVideoSelectedListener: ValueEventListener? = null
         private var playlistChangedListener: ChildEventListener? = null
 
-        fun seekbarYoutubeClicked(time: Double) {
+        fun seekbarYoutubeClicked(time: Float) {
             db.child("content/$roomCode/youtube/seekbar").setValue(time)
         }
 
@@ -31,8 +31,8 @@ class RdbDao(private val db: DatabaseReference) {
                 db.child("content/$roomCode/youtube/seekbar")
                     .addValueEventListener(object : ValueEventListener {
                         override fun onDataChange(snapshot: DataSnapshot) {
-                            snapshot.getValue<Double>()?.let { time ->
-                                changeSeekbar(time.toFloat())
+                            snapshot.getValue<Float>()?.let { time ->
+                                changeSeekbar(time)
                             }
                         }
 
@@ -50,12 +50,12 @@ class RdbDao(private val db: DatabaseReference) {
 
         fun addVideoToPlaylist(list: List<YoutubeSearchData>) {
             list.forEach { video ->
-                db.child("content/$roomCode/youtube/playlist/${video.videoId}").setValue(video)
+                db.child("content/$roomCode/youtube/playlist/${video.createdTime}").setValue(video)
             }
         }
 
-        fun removeVideoToPlaylist(videoId: String) {
-            db.child("content/$roomCode/youtube/playlist/$videoId").removeValue()
+        fun removeVideoToPlaylist(createdTime: Long) {
+            db.child("content/$roomCode/youtube/playlist/$createdTime").removeValue()
         }
 
         fun notifyPlayListChanged(playlistAdded: (YoutubeSearchData) -> Unit, playlistRemoved: (YoutubeSearchData) -> Unit) {
@@ -86,15 +86,15 @@ class RdbDao(private val db: DatabaseReference) {
                 })
         }
 
-        fun setNewYoutubeVideoPlayed(video: YoutubeSearchData) {
-            db.child("content/$roomCode/youtube/curvideo").setValue(video)
+        fun setNewYoutubeVideoSelected(video: YoutubeSearchData) {
+            db.child("content/$roomCode/youtube/selectedvideo").setValue(video)
         }
 
         fun notifyNewVideoSelected(newVideoPlayed: (YoutubeSearchData) -> Unit) {
-        if (newVideoSelectedListener != null) return
+            if (newVideoSelectedListener != null) return
 
             newVideoSelectedListener =
-            db.child("content/$roomCode/youtube/curvideo").addValueEventListener(object : ValueEventListener {
+            db.child("content/$roomCode/youtube/selectedvideo").addValueEventListener(object : ValueEventListener {
                 override fun onDataChange(snapshot: DataSnapshot) {
                     snapshot.getValue<YoutubeSearchData>()?.let { newVideo ->
                         newVideoPlayed(newVideo)

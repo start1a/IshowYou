@@ -64,7 +64,6 @@ class ChatRoomViewModel: ViewModel() {
     var timeStopped = -1L
     var timeVideoPaused = -1f
     var durationVideo = -1f
-//    var playStateController: YoutubePlayStateController? = null
 
     // 영상 정지 시간
     var isActiveRoomMemberControl = false

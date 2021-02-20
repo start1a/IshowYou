@@ -50,8 +50,11 @@ class RdbDao(private val db: DatabaseReference) {
         }
 
         fun addVideoToPlaylist(list: List<YoutubeSearchData>) {
+            var alpha = 0
             list.forEach { video ->
-                db.child("content/$roomCode/youtube/playlist/${video.createdTime}").setValue(video)
+                val uploadTime = video.createdTime + alpha++
+                video.createdTime = uploadTime
+                db.child("content/$roomCode/youtube/playlist/$uploadTime").setValue(video)
             }
         }
 

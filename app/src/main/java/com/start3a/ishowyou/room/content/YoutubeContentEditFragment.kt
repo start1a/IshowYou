@@ -3,12 +3,13 @@ package com.start3a.ishowyou.room.content
 import android.app.Activity
 import android.content.Intent
 import android.os.Bundle
-import androidx.fragment.app.Fragment
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.widget.Toast
 import androidx.activity.result.ActivityResultLauncher
 import androidx.activity.result.contract.ActivityResultContracts
+import androidx.fragment.app.Fragment
 import androidx.lifecycle.ViewModelProvider
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.start3a.ishowyou.R
@@ -118,7 +119,10 @@ class YoutubeContentEditFragment : Fragment() {
                 }
                 // 비디오 삭제 버튼 클릭
                 videoRemoved = {
-                    vm.removeVideoPlaylist_Youtube(it)
+                    val curVideo = vm.curVideoPlayed.value!!
+                    if (curVideo.createdTime == list[it].createdTime)
+                        Toast.makeText(requireActivity(), "재생 중인 영상은 제거할 수 없습니다.", Toast.LENGTH_LONG).show()
+                    else vm.removeVideoPlaylist_Youtube(it)
                 }
             }
             playlistRecyclerView.adapter = listVideoAdapter

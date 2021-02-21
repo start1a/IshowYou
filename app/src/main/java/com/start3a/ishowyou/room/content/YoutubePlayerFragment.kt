@@ -4,6 +4,7 @@ import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import androidx.core.content.ContextCompat
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.ViewModelProvider
 import com.pierfrancescosoffritti.androidyoutubeplayer.core.player.PlayerConstants
@@ -22,6 +23,7 @@ class YoutubePlayerFragment : Fragment() {
 
     private var restoreNewTime: ((Float) -> Unit)? = null
     private var updatePlayedVideo: (() -> Unit)? = null
+    private val INTERVAL_VIDEO_SEEK = 10.0f
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
@@ -56,6 +58,21 @@ class YoutubePlayerFragment : Fragment() {
             youtubePlayerView.addYouTubePlayerListener(object : AbstractYouTubePlayerListener() {
 
                 override fun onReady(youTubePlayer: YouTubePlayer) {
+
+                    youtubePlayerView.getPlayerUiController().setCustomAction1(
+                        ContextCompat.getDrawable(requireContext(), R.drawable.ic_baseline_fast_rewind_24)!!
+                    ) {
+                        val time = vm.timeCurVideo - INTERVAL_VIDEO_SEEK
+                        vm.curSeekbarPos.value = time
+                        youTubePlayer.seekTo(time)
+                    }
+                    youtubePlayerView.getPlayerUiController().setCustomAction2(ContextCompat.getDrawable(requireContext(), R.drawable.ic_baseline_fast_forward_24)!!
+                    ) {
+                        val time = vm.timeCurVideo + INTERVAL_VIDEO_SEEK
+                        vm.curSeekbarPos.value = time
+                        youTubePlayer.seekTo(time)
+                    }
+
                     // 풀스크린 뷰 설정
                     youtubePlayerView.addFullScreenListener(object :
                         YouTubePlayerFullScreenListener {
@@ -69,11 +86,11 @@ class YoutubePlayerFragment : Fragment() {
                     })
 
                     restoreNewTime = { timeElapsed ->
-                        val restVideoTime = vm.durationVideo - vm.timeVideoPaused
+                        val restVideoTime = vm.durationVideo - vm.timeCurVideo
 
                         // 해당 영상이 끝나지 않음
                         if (restVideoTime > timeElapsed) {
-                            val time = vm.timeVideoPaused + timeElapsed
+                            val time = vm.timeCurVideo + timeElapsed
                             youTubePlayer.seekTo(time)
                             youTubePlayer.play()
                             vm.curSeekbarPos.value = time
@@ -146,7 +163,7 @@ class YoutubePlayerFragment : Fragment() {
 
                 override fun onCurrentSecond(youTubePlayer: YouTubePlayer, second: Float) {
                     super.onCurrentSecond(youTubePlayer, second)
-                    vm.timeVideoPaused = second
+                    vm.timeCurVideo = second
                 }
 
                 // 동영상이 로드될 때 호출

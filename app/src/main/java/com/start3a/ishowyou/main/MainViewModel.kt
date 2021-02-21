@@ -20,6 +20,7 @@ class MainViewModel : ViewModel() {
     // View
     var isFullScreen = false
     lateinit var mFullScreenController: FullScreenController
+    var timeCurVideo = -1f
 
     init {
         val db = RdbDao(FirebaseDatabase.getInstance().reference)

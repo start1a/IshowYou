@@ -62,7 +62,7 @@ class ChatRoomViewModel: ViewModel() {
     val curVideoPlayed = MutableLiveData<YoutubeSearchData>()
     val curSeekbarPos = MutableLiveData<Float>()
     var timeStopped = -1L
-    var timeVideoPaused = -1f
+    var timeCurVideo = -1f
     var durationVideo = -1f
 
     // 영상 정지 시간

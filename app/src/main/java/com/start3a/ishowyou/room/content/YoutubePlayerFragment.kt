@@ -23,6 +23,7 @@ class YoutubePlayerFragment : Fragment() {
 
     private var restoreNewTime: ((Float) -> Unit)? = null
     private var updatePlayedVideo: (() -> Unit)? = null
+    private var requestVideoPlayState: (() -> Unit)? = null
     private val INTERVAL_VIDEO_SEEK = 10.0f
 
     override fun onCreateView(
@@ -102,6 +103,22 @@ class YoutubePlayerFragment : Fragment() {
                         }
                     }
 
+                    requestVideoPlayState = {
+                        vm.requestVideoPlayState { playState, curTime, saveTime ->
+                            vm.curVideoPlayed.value = playState.curVideo
+                            val timeElapsed = (curTime - saveTime).toFloat() / 1000
+                            val restVideoTime = playState.duration - playState.seekbar
+
+                            // 현재 영상이 끝나지 않음
+                            if (restVideoTime > timeElapsed) {
+                                youTubePlayer.loadVideo(
+                                    playState.curVideo.videoId,
+                                    playState.seekbar + timeElapsed
+                                )
+                            } else vm.PlayNextVideo(timeElapsed - restVideoTime)
+                        }
+                    }
+
                     // 영상 선택
                     vm.curVideoSelected.observe(viewLifecycleOwner) {
                         vm.setNewYoutubeVideoSelected(it.videoId)
@@ -134,20 +151,7 @@ class YoutubePlayerFragment : Fragment() {
                     vm.isRealtimeUsed.observe(viewLifecycleOwner) {
                         if (it) {
                             // 현재 재생 정보 요청
-                            vm.requestVideoPlayState { playState, curTime, saveTime ->
-                                vm.curVideoPlayed.value = playState.curVideo
-                                val timeElapsed = (curTime - saveTime).toFloat() / 1000
-                                val restVideoTime = playState.duration - playState.seekbar
-
-                                // 현재 영상이 끝나지 않음
-                                if (restVideoTime > timeElapsed) {
-                                    youTubePlayer.loadVideo(
-                                        playState.curVideo.videoId,
-                                        playState.seekbar + timeElapsed
-                                    )
-                                }
-                                else vm.PlayNextVideo(timeElapsed - restVideoTime)
-                            }
+                            requestVideoPlayState?.invoke()
                             // 재생바 감지
                             vm.initContent_Youtube {
                                 youTubePlayer.seekTo(it)
@@ -236,15 +240,15 @@ class YoutubePlayerFragment : Fragment() {
         viewModel!!.let { vm ->
             if (vm.timeStopped != -1L) {
                 // 방장이 방 멤버를 제어하지 않을 경우
-                if (vm.isHost && !vm.isActiveRoomMemberControl) {
+                if (!vm.isRealtimeUsed.value!!) {
                     val timeStart = Date().time
                     val timeElapsed = (timeStart - vm.timeStopped).toFloat() / 1000
                     vm.timeStopped = -1
                     // 자리 비운 후 경과한 시간만큼 영상 재생이동
                     restoreNewTime?.invoke(timeElapsed)
                 }
-                else if (!vm.isHost && vm.isActiveFollowHost) {
-
+                else if (!vm.isHost) {
+                    requestVideoPlayState?.invoke()
                 }
             }
         }

@@ -5,7 +5,7 @@
     android:id="@+id/lobby_youtube_player_fragment"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
-    android:background="#000000"
+    android:background="@android:color/black"
     tools:context=".main.content.LobbyYoutubeFragment">
 
     <com.pierfrancescosoffritti.androidyoutubeplayer.core.player.views.YouTubePlayerView
@@ -20,14 +20,5 @@
         app:showFullScreenButton="true"
         app:showYouTubeButton="true"
         app:videoId="ydqla2glb44" />
-
-    <com.pierfrancescosoffritti.androidyoutubeplayer.core.ui.views.YouTubePlayerSeekBar
-        android:id="@+id/lobby_youtube_player_seekbar"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:visibility="gone"
-        app:color="@color/colorPrimary"
-        app:fontSize="12sp"
-        app:layout_constraintTop_toBottomOf="@+id/lobby_youtubePlayerView" />
 
 </androidx.constraintlayout.widget.ConstraintLayout>

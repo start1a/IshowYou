@@ -66,10 +66,6 @@ class ChatRoomViewModel: ViewModel() {
     var timeCurVideo = -1f
     var durationVideo = -1f
 
-    // 영상 정지 시간
-    var isActiveRoomMemberControl = false
-    var isActiveFollowHost = true
-
     fun PlayNextVideo(time: Float): String {
         curSeekbarPos.value = time
         val list = listPlayYoutube.value!!

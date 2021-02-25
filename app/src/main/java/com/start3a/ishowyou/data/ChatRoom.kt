@@ -6,7 +6,7 @@ data class ChatRoom(
     var title: String = "",
     var contentName: String = "NONE",
     var countMember: Int = 1,
-    var timeCreated: Long = 0
+    var timeCreated: Long = Date().time
 )
 
 data class ChatMessage(

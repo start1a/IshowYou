@@ -58,7 +58,6 @@ class YoutubeSearchData() : Parcelable {
 data class PlayStateRequested(
     var curVideo: YoutubeSearchData,
     var seekbar: Float,
-    var time: Long,
     var duration: Float
 )
 

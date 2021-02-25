@@ -69,10 +69,6 @@ class YoutubeContentEditFragment : Fragment() {
             vm.curVideoSelected.observe(viewLifecycleOwner) {
                 updateVideoInfo(it)
             }
-            // 서버에서 영상 선택 감지
-            vm.notifyNewVideoSelected {
-                vm.curVideoSelected.value = it
-            }
 
             vm.curVideoPlayed.observe(viewLifecycleOwner) {
                 updateVideoInfo(it)

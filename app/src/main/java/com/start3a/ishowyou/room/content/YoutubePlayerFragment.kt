@@ -98,33 +98,18 @@ class YoutubePlayerFragment : Fragment() {
                         // 남은 재생 시간 초과
                         else {
                             val time = timeElapsed - restVideoTime
-                            playNextVideo(youTubePlayer, time)
+                            vm.PlayNextVideo(time)
                         }
-                    }
-
-                    vm.requestVideoPlayState { playState ->
-                        vm.curVideoPlayed.value = playState.curVideo
-                        val timeElapsed = (Date().time - playState.time).toFloat() / 1000
-                        val restVideoTime = playState.duration - playState.seekbar
-
-                        // 현재 영상이 끝나지 않음
-                        if (restVideoTime > timeElapsed) {
-                            youTubePlayer.loadVideo(
-                                playState.curVideo.videoId,
-                                playState.seekbar + timeElapsed
-                            )
-                        }
-                        else playNextVideo(youTubePlayer, timeElapsed - restVideoTime)
                     }
 
                     // 영상 선택
                     vm.curVideoSelected.observe(viewLifecycleOwner) {
-                        youTubePlayer.loadVideo(it.videoId, 0.0f)
-                        vm.setNewYoutubeVideoSelected(it)
+                        vm.setNewYoutubeVideoSelected(it.videoId)
                     }
 
                     // 새 영상이 실행됨
                     vm.curVideoPlayed.observe(viewLifecycleOwner) {
+                        youTubePlayer.loadVideo(it.videoId, 0.0f)
                         updatePlayedVideo = {
                             vm.setNewYoutubeVideoPlayed(it, vm.durationVideo, vm.curSeekbarPos.value?:0.0f)
                         }
@@ -145,8 +130,37 @@ class YoutubePlayerFragment : Fragment() {
                             }
                         }
 
-                    vm.initContent_Youtube {
-                        youTubePlayer.seekTo(it)
+                    // 실시간 정보 on / off
+                    vm.isRealtimeUsed.observe(viewLifecycleOwner) {
+                        if (it) {
+                            // 현재 재생 정보 요청
+                            vm.requestVideoPlayState { playState, curTime, saveTime ->
+                                vm.curVideoPlayed.value = playState.curVideo
+                                val timeElapsed = (curTime - saveTime).toFloat() / 1000
+                                val restVideoTime = playState.duration - playState.seekbar
+
+                                // 현재 영상이 끝나지 않음
+                                if (restVideoTime > timeElapsed) {
+                                    youTubePlayer.loadVideo(
+                                        playState.curVideo.videoId,
+                                        playState.seekbar + timeElapsed
+                                    )
+                                }
+                                else vm.PlayNextVideo(timeElapsed - restVideoTime)
+                            }
+                            // 재생바 감지
+                            vm.initContent_Youtube {
+                                youTubePlayer.seekTo(it)
+                            }
+                            // 영상 선택 감지
+                            vm.notifyNewVideoSelected { videoId ->
+                                vm.retriveVideoById(videoId)?.let {
+                                    vm.curVideoSelected.value = it
+                                    vm.curVideoPlayed.value = it
+                                }
+                            }
+                        }
+                        else vm.inActiveYoutubeRealtimeListener()
                     }
                 }
 
@@ -156,7 +170,7 @@ class YoutubePlayerFragment : Fragment() {
                 ) {
                     when (state) {
                         PlayerConstants.PlayerState.ENDED -> {
-                            playNextVideo(youTubePlayer, 0.0f)
+                            vm.PlayNextVideo(0f)
                         }
                     }
                 }
@@ -199,6 +213,11 @@ class YoutubePlayerFragment : Fragment() {
             btnCoverScreen.setOnClickListener {
                 vm.hideKeyboard?.invoke()
             }
+
+            rbtnRealtime.setOnClickListener {
+                rbtnRealtime.isChecked = !vm.isRealtimeUsed.value!!
+                vm.isRealtimeUsed.value = !vm.isRealtimeUsed.value!!
+            }
         }
     }
 
@@ -225,7 +244,7 @@ class YoutubePlayerFragment : Fragment() {
                     restoreNewTime?.invoke(timeElapsed)
                 }
                 else if (!vm.isHost && vm.isActiveFollowHost) {
-                    // 서버로부터 현재 재생 상황 요청
+
                 }
             }
         }
@@ -234,13 +253,5 @@ class YoutubePlayerFragment : Fragment() {
     override fun onDestroy() {
         super.onDestroy()
         viewModel!!.contentAvailability = null
-    }
-
-    private fun playNextVideo(youTubePlayer: YouTubePlayer, time: Float) {
-        viewModel!!.let { vm ->
-            vm.curSeekbarPos.value = time
-            val videoId = vm.getIdAndPlayNextVideo()
-            youTubePlayer.loadVideo(videoId, time)
-        }
     }
 }

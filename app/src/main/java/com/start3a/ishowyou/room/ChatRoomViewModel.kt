@@ -57,6 +57,7 @@ class ChatRoomViewModel: ViewModel() {
         ListLiveData(mutableListOf())
     }
     var curVideoSelected = MutableLiveData<YoutubeSearchData>()
+    var isRealtimeUsed = MutableLiveData<Boolean>().apply { value = true }
 
     // 재생 시간 복원 데이터
     val curVideoPlayed = MutableLiveData<YoutubeSearchData>()
@@ -69,7 +70,8 @@ class ChatRoomViewModel: ViewModel() {
     var isActiveRoomMemberControl = false
     var isActiveFollowHost = true
 
-    fun getIdAndPlayNextVideo(): String {
+    fun PlayNextVideo(time: Float): String {
+        curSeekbarPos.value = time
         val list = listPlayYoutube.value!!
         // 현재 영상 위치 탐색
         var indexSearched = -1
@@ -113,7 +115,7 @@ class ChatRoomViewModel: ViewModel() {
         listPlayYoutube.removeAt(pos)
     }
 
-    fun setNewYoutubeVideoSelected(video: YoutubeSearchData) {
+    fun setNewYoutubeVideoSelected(video: String) {
         if (isHost) dbYoutube.setNewYoutubeVideoSelected(video)
     }
 
@@ -121,7 +123,7 @@ class ChatRoomViewModel: ViewModel() {
         if (isHost) dbYoutube.setNewYoutubeVideoPlayed(video, duration, seekBar)
     }
 
-    fun notifyNewVideoSelected(newVideoPlayed: (YoutubeSearchData) -> Unit) {
+    fun notifyNewVideoSelected(newVideoPlayed: (String) -> Unit) {
         if (!isHost) dbYoutube.notifyNewVideoSelected(newVideoPlayed)
     }
 
@@ -133,8 +135,24 @@ class ChatRoomViewModel: ViewModel() {
         if (isHost) dbYoutube.setYoutubeVideoSeekbarChanged(seekbar)
     }
 
-    fun requestVideoPlayState(requestPlayState: (PlayStateRequested) -> Unit) {
+    fun requestVideoPlayState(requestPlayState: (PlayStateRequested, Long, Long) -> Unit) {
         if (!isHost) dbYoutube.requestVideoPlayState(requestPlayState)
+    }
+
+    fun inActiveYoutubeRealtimeListener() {
+        if (!isHost) dbYoutube.inActiveYoutubeRealtimeListener()
+    }
+
+    fun retriveVideoById(videoId: String): YoutubeSearchData? {
+        val list = listPlayYoutube.value!!
+
+        for (i in 0 until list.size) {
+            if (list[i].videoId == videoId) {
+                return list[i]
+            }
+        }
+
+        return null
     }
 
     // 채팅방 ----------------------------------------

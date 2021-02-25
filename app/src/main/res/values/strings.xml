@@ -26,4 +26,5 @@
     <string name="menu">메뉴</string>
     <string name="add_video">동영상 추가</string>
     <string name="playlist">재생 목록</string>
+    <string name="realtime">실시간</string>
 </resources>

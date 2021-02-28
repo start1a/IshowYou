@@ -112,11 +112,11 @@ class ChatRoomViewModel: ViewModel() {
     }
 
     fun setNewYoutubeVideoSelected(video: String) {
-        if (isHost) dbYoutube.setNewYoutubeVideoSelected(video)
+        if (isControlMember()) dbYoutube.setNewYoutubeVideoSelected(video)
     }
 
     fun setNewYoutubeVideoPlayed(video: YoutubeSearchData, duration: Float, seekBar: Float) {
-        if (isHost) dbYoutube.setNewYoutubeVideoPlayed(video, duration, seekBar)
+        if (isControlMember()) dbYoutube.setNewYoutubeVideoPlayed(video, duration, seekBar)
     }
 
     fun notifyNewVideoSelected(newVideoPlayed: (String) -> Unit) {
@@ -124,15 +124,15 @@ class ChatRoomViewModel: ViewModel() {
     }
 
     fun seekbarYoutubeClicked(time: Float) {
-        if (isHost) dbYoutube.seekbarYoutubeClicked(time)
+        if (isControlMember()) dbYoutube.seekbarYoutubeClicked(time)
     }
 
     fun setYoutubeVideoSeekbarChanged(seekbar: Float) {
-        if (isHost) dbYoutube.setYoutubeVideoSeekbarChanged(seekbar)
+        if (isControlMember()) dbYoutube.setYoutubeVideoSeekbarChanged(seekbar)
     }
 
     fun requestVideoPlayState(requestPlayState: (PlayStateRequested, Long, Long) -> Unit) {
-        if (!isHost) dbYoutube.requestVideoPlayState(requestPlayState)
+        if (!isRealtimeUsed.value!!) dbYoutube.requestVideoPlayState(requestPlayState)
     }
 
     fun inActiveYoutubeRealtimeListener() {
@@ -150,6 +150,8 @@ class ChatRoomViewModel: ViewModel() {
 
         return null
     }
+
+    private fun isControlMember() = isHost && isRealtimeUsed.value!!
 
     // 채팅방 ----------------------------------------
     fun createChatRoom(

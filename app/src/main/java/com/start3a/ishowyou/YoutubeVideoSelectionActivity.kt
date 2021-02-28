@@ -5,10 +5,13 @@ import android.content.Intent
 import android.os.Bundle
 import android.util.Log
 import android.view.Menu
+import android.view.View
 import androidx.appcompat.app.AppCompatActivity
 import androidx.appcompat.widget.SearchView
 import androidx.lifecycle.ViewModelProvider
 import androidx.recyclerview.widget.LinearLayoutManager
+import com.pierfrancescosoffritti.androidyoutubeplayer.core.player.YouTubePlayer
+import com.pierfrancescosoffritti.androidyoutubeplayer.core.player.listeners.AbstractYouTubePlayerListener
 import com.start3a.ishowyou.contentapi.RetrofitYoutubeService
 import com.start3a.ishowyou.contentapi.YoutubeSearchData
 import com.start3a.ishowyou.contentapi.YoutubeSearchJsonData
@@ -24,6 +27,8 @@ class YoutubeVideoSelectionActivity : AppCompatActivity() {
     private var listVideoAdapter: YoutubeVideoListAdapter? = null
     private var listVideoSelectedAdapter: YoutubeVideoSelectedListAdapter? = null
 
+    private var setVideoDuration: (() -> Unit)? = null
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_youtube_video_selection)
@@ -37,16 +42,48 @@ class YoutubeVideoSelectionActivity : AppCompatActivity() {
         viewModel!!.let { vm ->
             initVideoListAdapter()
             initVideoSelectedListAdapter()
+
+            val selList = vm.listVideoSelected.value!!
+            lifecycle.addObserver(videoSelectionPlayer)
+            videoSelectionPlayer.addYouTubePlayerListener(object : AbstractYouTubePlayerListener() {
+                override fun onReady(youTubePlayer: YouTubePlayer) {
+                    super.onReady(youTubePlayer)
+
+                    youTubePlayer.mute()
+                    setVideoDuration = {
+                        youTubePlayer.loadVideo(selList[vm.indexDurationSave].videoId, 0f)
+                    }
+                }
+
+                override fun onVideoDuration(youTubePlayer: YouTubePlayer, duration: Float) {
+                    super.onVideoDuration(youTubePlayer, duration)
+                    selList[vm.indexDurationSave++].duration = duration
+                    // 다음 영상이 있으면 계속 작업
+                    if (vm.indexDurationSave < selList.size)
+                        youTubePlayer.loadVideo(selList[vm.indexDurationSave].videoId, 0f)
+                    else {
+                        if (vm.isEndVideoSelection) endVideoSelection()
+                        vm.isLoadVideosStarted = false
+                    }
+                }
+            })
         }
     }
 
     override fun onBackPressed() {
-        val list = viewModel!!.listVideoSelected.value!! as ArrayList<YoutubeSearchData>
-        val intent = Intent().apply {
-            putParcelableArrayListExtra("videos", list)
+        val vm = viewModel!!
+        val selList = vm.listVideoSelected.value!!
+
+        // 아직 duration 추출 작업 중
+        if (vm.indexDurationSave < selList.size) {
+            vm.isEndVideoSelection = true
+
+            // 저장 중 로딩 Ui 출력
+            progressVideoSelection.let {
+                it.visibility = View.VISIBLE
+            }
         }
-        setResult(Activity.RESULT_OK, intent)
-        finish()
+        else endVideoSelection()
     }
 
     private fun initVideoListAdapter() {
@@ -63,8 +100,14 @@ class YoutubeVideoSelectionActivity : AppCompatActivity() {
                             break
                         }
 
-                    if (indexSearched == -1)
+                    if (indexSearched == -1) {
                         vm.listVideoSelected.add(list[pos])
+                        // 비디오 duration 추출 작업 시작
+                        if (!vm.isLoadVideosStarted) {
+                            vm.isLoadVideosStarted = true
+                            setVideoDuration?.invoke()
+                        }
+                    }
                 }
             }
             videoRecyclerView.adapter = listVideoAdapter
@@ -157,5 +200,14 @@ class YoutubeVideoSelectionActivity : AppCompatActivity() {
                     }
                 })
         }.run()
+    }
+
+    private fun endVideoSelection() {
+        val list = viewModel!!.listVideoSelected.value!! as ArrayList<YoutubeSearchData>
+        val intent = Intent().apply {
+            putParcelableArrayListExtra("videos", list)
+        }
+        setResult(Activity.RESULT_OK, intent)
+        finish()
     }
 }

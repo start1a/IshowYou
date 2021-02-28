@@ -13,6 +13,7 @@ class YoutubeSearchData() : Parcelable {
     lateinit var videoId: String
     lateinit var thumbnail: String
     lateinit var thumbnailSmall: String
+    var duration = -1f
     var createdTime = Date().time
 
     constructor(parcel: Parcel) : this() {

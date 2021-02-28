@@ -238,18 +238,18 @@ class YoutubePlayerFragment : Fragment() {
     // 영상 재생 상황으로 복귀
     private fun restoreVideoPlayState() {
         viewModel!!.let { vm ->
-            if (vm.timeStopped != -1L) {
-                // 방장이 방 멤버를 제어하지 않을 경우
-                if (!vm.isRealtimeUsed.value!!) {
+            // 실시간 정보 사용 중일 경우
+            if (vm.timeStopped != -1L && vm.isRealtimeUsed.value!!) {
+                // 방장 : 영상 재생 이동
+                if (vm.isHost) {
                     val timeStart = Date().time
                     val timeElapsed = (timeStart - vm.timeStopped).toFloat() / 1000
                     vm.timeStopped = -1
                     // 자리 비운 후 경과한 시간만큼 영상 재생이동
                     restoreNewTime?.invoke(timeElapsed)
                 }
-                else if (!vm.isHost) {
-                    requestVideoPlayState?.invoke()
-                }
+                // 방 멤버 : 서버에서 실시간 재생 위치 요청
+                else requestVideoPlayState?.invoke()
             }
         }
     }

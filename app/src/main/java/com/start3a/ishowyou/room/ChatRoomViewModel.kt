@@ -7,6 +7,7 @@ import com.start3a.ishowyou.contentapi.PlayStateRequested
 import com.start3a.ishowyou.contentapi.YoutubeSearchData
 import com.start3a.ishowyou.data.*
 import com.start3a.ishowyou.model.RdbDao
+import com.start3a.ishowyou.room.content.CustomPlayerUiController
 
 class ChatRoomViewModel: ViewModel() {
 
@@ -53,6 +54,8 @@ class ChatRoomViewModel: ViewModel() {
 
 
     // 유튜브 --------------------------------------
+    lateinit var customPlayerUiController: CustomPlayerUiController
+
     val listPlayYoutube: ListLiveData<YoutubeSearchData> by lazy {
         ListLiveData(mutableListOf())
     }
@@ -62,32 +65,25 @@ class ChatRoomViewModel: ViewModel() {
     // 재생 시간 복원 데이터
     val curVideoPlayed = MutableLiveData<YoutubeSearchData>()
     val curSeekbarPos = MutableLiveData<Float>()
-    var timeStopped = -1L
-    var timeCurVideo = -1f
-    var durationVideo = -1f
 
-    fun PlayNextVideo(time: Float): String {
-        curSeekbarPos.value = time
+    fun PlayNextVideo(curVideo: YoutubeSearchData) {
         val list = listPlayYoutube.value!!
         // 현재 영상 위치 탐색
         var indexSearched = -1
         for (i in 0 until list.size) {
-            if (curVideoPlayed.value!! == list[i]) {
+            if (curVideo == list[i]) {
                 indexSearched = i
                 // 다음 영상 재생
                 val video = list[(i + 1) % list.size]
                 curVideoPlayed.value = video
-                return video.videoId
+                return
             }
         }
 
         // 해당 영상이 없음
         if (indexSearched == -1 && list.size > 0) {
             curVideoPlayed.value = list[0]
-            return list[0].videoId
         }
-
-        return ""
     }
 
     fun initContent_Youtube(changeSeekbar: (Float) -> Unit) {
@@ -115,8 +111,8 @@ class ChatRoomViewModel: ViewModel() {
         if (isControlMember()) dbYoutube.setNewYoutubeVideoSelected(video)
     }
 
-    fun setNewYoutubeVideoPlayed(video: YoutubeSearchData, duration: Float, seekBar: Float) {
-        if (isControlMember()) dbYoutube.setNewYoutubeVideoPlayed(video, duration, seekBar)
+    fun setNewYoutubeVideoPlayed(video: YoutubeSearchData, seekBar: Float) {
+        if (isControlMember()) dbYoutube.setNewYoutubeVideoPlayed(video, seekBar)
     }
 
     fun notifyNewVideoSelected(newVideoPlayed: (String) -> Unit) {
@@ -132,7 +128,7 @@ class ChatRoomViewModel: ViewModel() {
     }
 
     fun requestVideoPlayState(requestPlayState: (PlayStateRequested, Long, Long) -> Unit) {
-        if (!isRealtimeUsed.value!!) dbYoutube.requestVideoPlayState(requestPlayState)
+        dbYoutube.requestVideoPlayState(requestPlayState)
     }
 
     fun inActiveYoutubeRealtimeListener() {

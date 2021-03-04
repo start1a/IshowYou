@@ -40,15 +40,4 @@
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent" />
 
-    <com.google.android.material.radiobutton.MaterialRadioButton
-        android:id="@+id/rbtnRealtime"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="@string/realtime"
-        android:checked="true"
-        android:textColor="@android:color/white"
-        android:textSize="12sp"
-        app:layout_constraintStart_toStartOf="@+id/youtubePlayerView"
-        app:layout_constraintTop_toTopOf="@+id/youtubePlayerView" />
-
 </androidx.constraintlayout.widget.ConstraintLayout>

@@ -127,8 +127,8 @@ class RdbDao(private val db: DatabaseReference) {
 
         }
 
-        fun setNewYoutubeVideoPlayed(video: YoutubeSearchData, duration: Float, seekBar: Float) {
-            val curPlayState = PlayStateRequested(video, seekBar, duration)
+        fun setNewYoutubeVideoPlayed(video: YoutubeSearchData, seekBar: Float) {
+            val curPlayState = PlayStateRequested(video, seekBar)
             val playState = hashMapOf<String, Any>().apply {
                 put("$PATH_CURRENT_PLAY_STATE/curVideo", curPlayState)
             }
@@ -150,8 +150,7 @@ class RdbDao(private val db: DatabaseReference) {
                     if (snapshot.exists()) {
                         val video = snapshot.child("curVideo/curVideo").getValue<YoutubeSearchData>()!!
                         val seekBar = snapshot.child("curVideo/seekbar").getValue<Float>()!!
-                        val duration = snapshot.child("curVideo/duration").getValue<Float>()!!
-                        val videoInfo = PlayStateRequested(video, seekBar, duration)
+                        val videoInfo = PlayStateRequested(video, seekBar)
                         val videoInfoSaveTime = snapshot.child("timeRecorded").getValue<Long>()!!
 
                         // 현재 서버 시간 가져오기

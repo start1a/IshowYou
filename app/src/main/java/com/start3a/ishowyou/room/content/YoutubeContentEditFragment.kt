@@ -108,15 +108,20 @@ class YoutubeContentEditFragment : Fragment() {
             listVideoAdapter = YoutubePlayListAdapter(vm.listPlayYoutube.value!!, vm.isHost).apply {
                 // 영상 클릭 시 정보 텍스트 표시
                 videoClicked = {
+                    if (!vm.isHost)
+                        vm.customPlayerUiController.uncheckRealtime()
+
                     val video = vm.listPlayYoutube.value!![it]
                     vm.curVideoSelected.value = video
-                    vm.curVideoPlayed.value = video
                     vm.curSeekbarPos.value = 0.0f
+                    vm.curVideoPlayed.value = video
                 }
                 // 비디오 삭제 버튼 클릭
                 videoRemoved = {
                     val curVideo = vm.curVideoPlayed.value!!
-                    if (curVideo.createdTime == list[it].createdTime)
+                    if (!vm.isRealtimeUsed.value!!)
+                        Toast.makeText(requireActivity(), "실시간 버튼을 켜 주세요.", Toast.LENGTH_LONG).show()
+                    else if (curVideo.createdTime == list[it].createdTime)
                         Toast.makeText(requireActivity(), "재생 중인 영상은 제거할 수 없습니다.", Toast.LENGTH_LONG).show()
                     else vm.removeVideoPlaylist_Youtube(it)
                 }

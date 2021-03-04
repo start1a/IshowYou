@@ -18,11 +18,9 @@ class YoutubePlayListAdapter(val list: MutableList<YoutubeSearchData>, val isHos
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ItemViewHolder {
         val view = LayoutInflater.from(parent.context).inflate(R.layout.item_video_playlist, parent, false)
-        if (isHost) {
-            view.setOnClickListener {
-                val pos = it.tag as Int
-                videoClicked(pos)
-            }
+        view.setOnClickListener {
+            val pos = it.tag as Int
+            videoClicked(pos)
         }
         return ItemViewHolder(view)
     }

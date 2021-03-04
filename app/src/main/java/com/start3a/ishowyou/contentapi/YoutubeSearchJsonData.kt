@@ -58,8 +58,7 @@ class YoutubeSearchData() : Parcelable {
 // 현재 재생 영상 및 위치 요청
 data class PlayStateRequested(
     var curVideo: YoutubeSearchData,
-    var seekbar: Float,
-    var duration: Float
+    var seekbar: Float
 )
 
 // Json -> Object

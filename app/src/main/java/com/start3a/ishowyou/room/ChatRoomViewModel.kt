@@ -66,22 +66,28 @@ class ChatRoomViewModel: ViewModel() {
     val curVideoPlayed = MutableLiveData<YoutubeSearchData>()
     val curSeekbarPos = MutableLiveData<Float>()
 
-    fun PlayNextVideo(curVideo: YoutubeSearchData) {
+    fun PlayNextVideo(curVideo: YoutubeSearchData, time: Float) {
+        var restTime = time
         val list = listPlayYoutube.value!!
-        // 현재 영상 위치 탐색
+        // 현재 영상 위치
         var indexSearched = -1
         for (i in 0 until list.size) {
             if (curVideo == list[i]) {
-                indexSearched = i
-                // 다음 영상 재생
-                val video = list[(i + 1) % list.size]
-                curVideoPlayed.value = video
+                indexSearched = (i + 1) % list.size
+                // 흐른 시간만큼 다음 영상 이동
+                while (restTime >= list[indexSearched].duration) {
+                    restTime -= list[indexSearched].duration
+                    indexSearched = (indexSearched + 1) % list.size
+                }
+                curSeekbarPos.value = restTime
+                curVideoPlayed.value = list[indexSearched]
                 return
             }
         }
 
         // 해당 영상이 없음
         if (indexSearched == -1 && list.size > 0) {
+            curSeekbarPos.value = 0f
             curVideoPlayed.value = list[0]
         }
     }

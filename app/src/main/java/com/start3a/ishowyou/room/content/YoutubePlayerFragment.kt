@@ -1,7 +1,6 @@
 package com.start3a.ishowyou.room.content
 
 import android.os.Bundle
-import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -19,7 +18,6 @@ class YoutubePlayerFragment : Fragment() {
 
     private var viewModel: ChatRoomViewModel? = null
 
-    private var requestVideoPlayState: (() -> Unit)? = null
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
@@ -80,23 +78,6 @@ class YoutubePlayerFragment : Fragment() {
                         }
                     })
 
-                    requestVideoPlayState = {
-                        vm.requestVideoPlayState { playState, curTime, saveTime ->
-                            // 흐른 시간 계산
-                            val timeElapsed = (curTime - saveTime).toFloat() / 1000
-                            val restVideoTime = playState.curVideo.duration - playState.seekbar
-
-                            // 현재 영상이 끝나지 않음
-                            if (restVideoTime > timeElapsed) {
-                                vm.curSeekbarPos.value = playState.seekbar + timeElapsed
-                                vm.curVideoPlayed.value = playState.curVideo
-                            } else {
-                                vm.curSeekbarPos.value = timeElapsed - restVideoTime
-                                vm.PlayNextVideo(playState.curVideo)
-                            }
-                        }
-                    }
-
                     // 영상 선택
                     vm.curVideoSelected.observe(viewLifecycleOwner) {
                         vm.setNewYoutubeVideoSelected(it.videoId)
@@ -118,7 +99,19 @@ class YoutubePlayerFragment : Fragment() {
                     vm.isRealtimeUsed.observe(viewLifecycleOwner) {
                         if (it) {
                             // 현재 재생 정보 요청
-                            requestVideoPlayState?.invoke()
+                            vm.requestVideoPlayState { playState, curTime, saveTime ->
+                                // 흐른 시간 계산
+                                val timeElapsed = (curTime - saveTime).toFloat() / 1000
+                                val restVideoTime = playState.curVideo.duration - playState.seekbar
+
+                                // 현재 영상이 끝나지 않음
+                                if (restVideoTime > timeElapsed) {
+                                    vm.curSeekbarPos.value = playState.seekbar + timeElapsed
+                                    vm.curVideoPlayed.value = playState.curVideo
+                                } else {
+                                    vm.PlayNextVideo(playState.curVideo, timeElapsed - restVideoTime)
+                                }
+                            }
                             // 재생바 감지
                             vm.initContent_Youtube {
                                 youTubePlayer.seekTo(it)
@@ -141,8 +134,7 @@ class YoutubePlayerFragment : Fragment() {
                 ) {
                     when (state) {
                         PlayerConstants.PlayerState.ENDED -> {
-                            vm.curSeekbarPos.value = 0f
-                            vm.PlayNextVideo(vm.curVideoPlayed.value!!)
+                            vm.PlayNextVideo(vm.curVideoPlayed.value!!, 0f)
                         }
                     }
                 }

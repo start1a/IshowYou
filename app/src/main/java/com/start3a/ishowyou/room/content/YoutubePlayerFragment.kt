@@ -119,6 +119,7 @@ class YoutubePlayerFragment : Fragment() {
                             // 영상 선택 감지
                             vm.notifyNewVideoSelected { videoId ->
                                 vm.retriveVideoById(videoId)?.let {
+                                    vm.curSeekbarPos.value = 0f
                                     vm.curVideoSelected.value = it
                                     vm.curVideoPlayed.value = it
                                 }

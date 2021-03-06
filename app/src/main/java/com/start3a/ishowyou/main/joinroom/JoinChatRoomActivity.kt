@@ -4,6 +4,8 @@ import android.app.Activity
 import android.content.Intent
 import android.os.Bundle
 import android.widget.Toast
+import androidx.activity.result.ActivityResultLauncher
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AppCompatActivity
 import androidx.lifecycle.ViewModelProvider
 import androidx.recyclerview.widget.LinearLayoutManager
@@ -16,6 +18,16 @@ class JoinChatRoomActivity : AppCompatActivity() {
 
     private var viewModel: JoinChatRoomViewModel? = null
     private lateinit var listRoomAdapter: ChatRoomAdapter
+
+    private val requestActivityForJoinRoom: ActivityResultLauncher<Intent> =
+        registerForActivityResult(
+            ActivityResultContracts.StartActivityForResult()
+        ) { activityResult ->
+            if (activityResult.resultCode == Activity.RESULT_OK && activityResult.data != null) {
+                val text = activityResult.data!!.getStringExtra("message")
+                Toast.makeText(this, text, Toast.LENGTH_LONG).show()
+            }
+        }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -53,21 +65,10 @@ class JoinChatRoomActivity : AppCompatActivity() {
                     putExtra("requestcode", RoomRequest.JOIN_ROOM.num)
                     putExtra("roomcode", code)
                 }
-                startActivityForResult(intent, RoomRequest.JOIN_ROOM.num)
+                requestActivityForJoinRoom.launch(intent)
             }
         }
     }
 
-    override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
-        super.onActivityResult(requestCode, resultCode, data)
 
-        when (requestCode) {
-            RoomRequest.JOIN_ROOM.num -> {
-                if (resultCode != Activity.RESULT_OK && data != null) {
-                    val text = data.getStringExtra("message")
-                    Toast.makeText(this, text, Toast.LENGTH_LONG).show()
-                }
-            }
-        }
-    }
 }

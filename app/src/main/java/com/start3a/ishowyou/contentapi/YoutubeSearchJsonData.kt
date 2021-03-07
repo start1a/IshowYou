@@ -23,6 +23,7 @@ class YoutubeSearchData() : Parcelable {
         videoId = parcel.readString()!!
         thumbnail = parcel.readString()!!
         thumbnailSmall = parcel.readString()!!
+        duration = parcel.readFloat()
     }
 
     override fun writeToParcel(parcel: Parcel, flags: Int) {
@@ -32,6 +33,7 @@ class YoutubeSearchData() : Parcelable {
         parcel.writeString(videoId)
         parcel.writeString(thumbnail)
         parcel.writeString(thumbnailSmall)
+        parcel.writeFloat(duration)
     }
 
     override fun describeContents(): Int {

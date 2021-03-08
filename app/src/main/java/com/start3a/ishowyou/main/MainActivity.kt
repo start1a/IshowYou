@@ -175,7 +175,6 @@ class MainActivity : AppCompatActivity() {
         registerForActivityResult(
             ActivityResultContracts.StartActivityForResult()
         ) { activityResult ->
-            // 비디오 리스트
             if (activityResult.resultCode == Activity.RESULT_OK && activityResult.data != null) {
                 val text = activityResult.data!!.getStringExtra("message")
                 Toast.makeText(this, text, Toast.LENGTH_LONG).show()

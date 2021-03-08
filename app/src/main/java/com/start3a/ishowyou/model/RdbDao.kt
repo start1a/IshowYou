@@ -169,7 +169,7 @@ class RdbDao(private val db: DatabaseReference) {
                         val video = snapshot.child("curVideo/curVideo").getValue<YoutubeSearchData>()!!
                         val seekBar = snapshot.child("curVideo/seekbar").getValue<Float>()!!
                         val videoInfo = PlayStateRequested(video, seekBar)
-                        val videoInfoSaveTime = snapshot.child("timeRecorded").getValue<Long>()!!
+                        var videoInfoSaveTime = snapshot.child("timeRecorded").getValue<Long>()?:0L
 
                         // 현재 서버 시간 가져오기
                         val serverTimeRef = db.child("ServerTime")
@@ -177,6 +177,8 @@ class RdbDao(private val db: DatabaseReference) {
                             serverTimeRef.addListenerForSingleValueEvent(object : ValueEventListener {
                                 override fun onDataChange(snapshot: DataSnapshot) {
                                     snapshot.getValue<Long>()?.let { serverTime ->
+                                        if (videoInfoSaveTime == 0L)
+                                            videoInfoSaveTime = serverTime
                                         requestPlayState(videoInfo, serverTime, videoInfoSaveTime)
                                     }
                                 }

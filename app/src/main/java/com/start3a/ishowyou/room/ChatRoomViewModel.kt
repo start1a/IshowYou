@@ -102,9 +102,9 @@ class ChatRoomViewModel: ViewModel() {
             dbYoutube.notifyPlayListChanged(playlistAdded, playlistRemoved)
     }
 
-    fun notifyPrevVideoPlayList(playlistAdded: (YoutubeSearchData) -> Unit) {
+    fun notifyPrevVideoPlayList() {
         if (isHost)
-            dbYoutube.notifyPrevVideoPlayList(playlistAdded)
+            dbYoutube.notifyPrevVideoPlayList { listPlayYoutube.add(it) }
     }
 
     fun addVideoToPlaylist_Youtube(list: List<YoutubeSearchData>) {

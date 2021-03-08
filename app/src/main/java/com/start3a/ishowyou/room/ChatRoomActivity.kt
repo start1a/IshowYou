@@ -16,6 +16,7 @@ import androidx.lifecycle.ViewModelProvider
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.rw.keyboardlistener.KeyboardUtils
 import com.start3a.ishowyou.R
+import com.start3a.ishowyou.contentapi.YoutubeSearchData
 import com.start3a.ishowyou.data.Content
 import com.start3a.ishowyou.data.FullScreenController
 import com.start3a.ishowyou.data.RoomRequest
@@ -70,7 +71,8 @@ class ChatRoomActivity : AppCompatActivity() {
                 when (content) {
                     Content.YOUTUBE -> {
                         ft.replace(R.id.chatroom_contentViewFrame, YoutubePlayerFragment())
-                            .replace(R.id.chatroom_talkViewFrame, YoutubeContentEditFragment()).commit()
+                            .replace(R.id.chatroom_talkViewFrame, YoutubeContentEditFragment())
+                            .commit()
                     }
                 }
             }
@@ -103,9 +105,10 @@ class ChatRoomActivity : AppCompatActivity() {
             bottom_navigation_chatroom.selectedItemId = R.id.action_contents
             bottom_navigation_chatroom.setOnNavigationItemSelectedListener { item ->
                 val sfm = supportFragmentManager.beginTransaction()
-                when(item.itemId) {
+                when (item.itemId) {
                     R.id.action_contents -> {
-                        sfm.replace(R.id.chatroom_talkViewFrame, YoutubeContentEditFragment()).commit()
+                        sfm.replace(R.id.chatroom_talkViewFrame, YoutubeContentEditFragment())
+                            .commit()
                         true
                     }
                     R.id.action_chat -> {
@@ -124,8 +127,7 @@ class ChatRoomActivity : AppCompatActivity() {
                     if (isVisible) {
                         vm.mFullScreenController.resizeScreenHeight(getVisibleViewHeight())
                         vm.mFullScreenController.changeWeight(true, 5.0f, 5.0f)
-                    }
-                    else {
+                    } else {
                         vm.mFullScreenController.resizeScreenHeight()
                         vm.mFullScreenController.changeWeight(true, 7.0f, 3.0f)
                     }
@@ -167,15 +169,6 @@ class ChatRoomActivity : AppCompatActivity() {
 
     private fun initRoom() {
         val requestcode = intent.getIntExtra("requestcode", -1)
-        val roomSucceedJoined = object : (String) -> Unit {
-            override fun invoke(contentName: String) {
-                when (contentName) {
-                    "Youtube" -> {
-                        viewModel!!.initRoomCurContent(Content.YOUTUBE)
-                    }
-                }
-            }
-        }
 
         viewModel!!.let { vm ->
             when (requestcode) {
@@ -184,11 +177,21 @@ class ChatRoomActivity : AppCompatActivity() {
                     val title = intent.getStringExtra("title")!!
                     vm.createChatRoom(title,
                         // 방 생성 성공
-                        roomSucceedJoined,
+                        { contentName ->
+                            when (contentName) {
+                                "Youtube" -> {
+                                    val videos =
+                                        intent.getParcelableArrayListExtra<YoutubeSearchData>("videos")!!
+                                    vm.addVideoToPlaylist_Youtube(videos)
+                                    viewModel!!.initRoomCurContent(Content.YOUTUBE)
+                                }
+                            }
+                        },
                         // 방 정보 변경
                         {
 
-                        })
+                        }
+                    )
                 }
 
                 // 방 입장
@@ -197,7 +200,16 @@ class ChatRoomActivity : AppCompatActivity() {
                     // 방장이 방에 재접속일 경우 체크
                     vm.isHost = intent.getBooleanExtra("ishost", false)
 
-                    vm.requestJoinRoom(roomCode, vm.isHost, roomSucceedJoined, {
+                    vm.requestJoinRoom(roomCode, vm.isHost,
+                        // 방 입장 성공
+                        { contentName ->
+                        when (contentName) {
+                            "Youtube" -> {
+                                vm.notifyPrevVideoPlayList()
+                                vm.initRoomCurContent(Content.YOUTUBE)
+                            }
+                        }
+                    }, {
                         // 방 입장 실패
                         val intent = Intent().apply {
                             putExtra("message", "방이 존재하지 않습니다.")
@@ -221,8 +233,7 @@ class ChatRoomActivity : AppCompatActivity() {
                 vm.mFullScreenController.enterFullScreenView(7.0f, 3.0f)
                 // 채팅 뷰로 전환
                 swapToChat()
-            }
-            else if (resources.configuration.orientation == ORIENTATION_PORTRAIT) {
+            } else if (resources.configuration.orientation == ORIENTATION_PORTRAIT) {
                 vm.isFullScreen = false
                 showSystemUI()
                 vm.mFullScreenController.exitFullScreenView()

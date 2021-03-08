@@ -22,6 +22,8 @@ class MainViewModel : ViewModel() {
     var isFullScreen = false
     lateinit var mFullScreenController: FullScreenController
     var timeCurVideo = -1f
+    // 임시 방 생성 제목 저장
+    lateinit var titleTemp: String
 
     init {
         val db = RdbDao(FirebaseDatabase.getInstance().reference)

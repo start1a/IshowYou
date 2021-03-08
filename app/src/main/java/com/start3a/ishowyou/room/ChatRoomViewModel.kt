@@ -102,6 +102,11 @@ class ChatRoomViewModel: ViewModel() {
             dbYoutube.notifyPlayListChanged(playlistAdded, playlistRemoved)
     }
 
+    fun notifyPrevVideoPlayList(playlistAdded: (YoutubeSearchData) -> Unit) {
+        if (isHost)
+            dbYoutube.notifyPrevVideoPlayList(playlistAdded)
+    }
+
     fun addVideoToPlaylist_Youtube(list: List<YoutubeSearchData>) {
         listPlayYoutube.addAll(list)
         dbYoutube.addVideoToPlaylist(list)
@@ -165,8 +170,8 @@ class ChatRoomViewModel: ViewModel() {
         dbChat.createChatRoom(ChatRoom(title, "Youtube"), successListener, roomInfoChangedListener)
     }
 
-    fun requestJoinRoom(roomCode: String, successJoined: (String) -> Unit, failJoined: () -> Unit) {
-        dbChat.requestJoinRoom(roomCode, successJoined, failJoined)
+    fun requestJoinRoom(roomCode: String, isHostJoinRoom: Boolean, successJoined: (String) -> Unit, failJoined: () -> Unit) {
+        dbChat.requestJoinRoom(roomCode, isHostJoinRoom, successJoined, failJoined)
     }
 
     fun leaveRoom() {

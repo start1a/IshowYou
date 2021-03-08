@@ -49,18 +49,18 @@ class YoutubeVideoSelectionActivity : AppCompatActivity() {
                 override fun onReady(youTubePlayer: YouTubePlayer) {
                     super.onReady(youTubePlayer)
 
-                    youTubePlayer.mute()
                     setVideoDuration = {
                         youTubePlayer.loadVideo(selList[vm.indexDurationSave].videoId, 0f)
+                        youTubePlayer.mute()
                     }
                 }
 
                 override fun onVideoDuration(youTubePlayer: YouTubePlayer, duration: Float) {
                     super.onVideoDuration(youTubePlayer, duration)
-                    selList[vm.indexDurationSave++].duration = duration
+                    selList[vm.indexDurationSave].duration = duration
                     // 다음 영상이 있으면 계속 작업
-                    if (vm.indexDurationSave < selList.size)
-                        youTubePlayer.loadVideo(selList[vm.indexDurationSave].videoId, 0f)
+                    if (vm.indexDurationSave + 1 < selList.size)
+                        youTubePlayer.loadVideo(selList[++vm.indexDurationSave].videoId, 0f)
                     else {
                         if (vm.isEndVideoSelection) endVideoSelection()
                         vm.isLoadVideosStarted = false
@@ -204,10 +204,12 @@ class YoutubeVideoSelectionActivity : AppCompatActivity() {
 
     private fun endVideoSelection() {
         val list = viewModel!!.listVideoSelected.value!! as ArrayList<YoutubeSearchData>
-        val intent = Intent().apply {
-            putParcelableArrayListExtra("videos", list)
+        if (list.size > 0) {
+            val intent = Intent().apply {
+                putParcelableArrayListExtra("videos", list)
+            }
+            setResult(Activity.RESULT_OK, intent)
         }
-        setResult(Activity.RESULT_OK, intent)
         finish()
     }
 }

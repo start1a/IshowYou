@@ -27,6 +27,8 @@ class RdbDao(private val db: DatabaseReference) {
             get() = "content/$roomCode/youtube/RealtimeListenPlayState/video"
         private val PATH_CURRENT_PLAY_STATE
             get() = "content/$roomCode/youtube/CurrentPlayState"
+        private val PATH_PLAY_LIST
+            get() = "content/$roomCode/youtube/playlist"
 
         fun seekbarYoutubeClicked(time: Float) {
             db.child("$PATH_REALTIME_SEEKBAR/seekbar").setValue(time)
@@ -64,19 +66,19 @@ class RdbDao(private val db: DatabaseReference) {
             list.forEach { video ->
                 val uploadTime = video.createdTime + alpha++
                 video.createdTime = uploadTime
-                db.child("content/$roomCode/youtube/playlist/$uploadTime").setValue(video)
+                db.child("$PATH_PLAY_LIST/$uploadTime").setValue(video)
             }
         }
 
         fun removeVideoToPlaylist(createdTime: Long) {
-            db.child("content/$roomCode/youtube/playlist/$createdTime").removeValue()
+            db.child("$PATH_PLAY_LIST/$createdTime").removeValue()
         }
 
         fun notifyPlayListChanged(playlistAdded: (YoutubeSearchData) -> Unit, playlistRemoved: (YoutubeSearchData) -> Unit) {
             if (playlistChangedListener != null) return
 
             playlistChangedListener =
-                db.child("content/$roomCode/youtube/playlist").addChildEventListener(object : ChildEventListener {
+                db.child(PATH_PLAY_LIST).addChildEventListener(object : ChildEventListener {
                     override fun onChildAdded(snapshot: DataSnapshot, previousChildName: String?) {
                         snapshot.getValue<YoutubeSearchData>()?.let {
                             playlistAdded(it)
@@ -98,6 +100,22 @@ class RdbDao(private val db: DatabaseReference) {
                     }
 
                 })
+        }
+
+        // 방에 재접속한 방장이 기존에 플레이 리스트를 불러옴
+        fun notifyPrevVideoPlayList(playlistAdded: (YoutubeSearchData) -> Unit) {
+            db.child(PATH_PLAY_LIST).addListenerForSingleValueEvent(object : ValueEventListener {
+                override fun onDataChange(snapshot: DataSnapshot) {
+                    snapshot.children.forEach {
+                        playlistAdded(it.getValue<YoutubeSearchData>()!!)
+                    }
+                }
+
+                override fun onCancelled(error: DatabaseError) {
+                    Log.d(TAG, "notifying previous play list is Cancelled.\n$error")
+                }
+
+            })
         }
 
         fun setNewYoutubeVideoSelected(videoId: String) {
@@ -226,16 +244,20 @@ class RdbDao(private val db: DatabaseReference) {
                         })
 
                     successListener(chatRoom.contentName)
+
+                    // 방 멤버로 추가
+                    db.child("member/$roomCode/${CurUser.userName}")
+                        .setValue(ChatMember(CurUser.userName, true))
+                    // 사용자 방 접속 기록 갱신
+                    setUserRoomRecord(true)
                 }
                 .addOnFailureListener {
                     Log.d(TAG, "Creating ChatRoom is Failed\n$it")
                 }
-
-            db.child("member/$roomCode/${CurUser.userName}")
-                .setValue(ChatMember(CurUser.userName, true))
         }
 
         fun closeRoom(isHost: Boolean) {
+            // 방 정보 제거
             if (isHost) {
                 db.child("chat/$roomCode").removeValue()
                 db.child("message/$roomCode").removeValue()
@@ -247,12 +269,16 @@ class RdbDao(private val db: DatabaseReference) {
                 hostDeleteRoomNotifyListener = null
             }
 
+            // 방 리스너 제거
             removeListener(roomInfoChildChangedListener, "chat/$roomCode")
             removeListener(messageNotifyListener, "message/$roomCode")
             removeListener(memberNotifyListener, "member/$roomCode")
             roomInfoChildChangedListener = null
             messageNotifyListener = null
             memberNotifyListener = null
+
+            // 현재 사용자의 방 접속 기록 제거
+            db.child("user/${CurUser.userName}").removeValue()
 
             roomCode = null
         }
@@ -354,6 +380,7 @@ class RdbDao(private val db: DatabaseReference) {
 
         fun requestJoinRoom(
             requestedRoomCode: String,
+            isHostJoinRoom: Boolean,
             successJoined: (String) -> Unit,
             failJoined: () -> Unit
         ) {
@@ -363,9 +390,10 @@ class RdbDao(private val db: DatabaseReference) {
 
                     override fun onDataChange(snapshot: DataSnapshot) {
                         if (snapshot.exists()) {
-                            roomCode = requestedRoomCode
                             snapshot.getValue<ChatRoom>()?.let {
+                                roomCode = requestedRoomCode
                                 successJoined(it.contentName)
+                                setUserRoomRecord(isHostJoinRoom)
                             }
                         } else failJoined()
                     }
@@ -409,6 +437,31 @@ class RdbDao(private val db: DatabaseReference) {
             db.child(path).let { dbr ->
                 listener?.let { dbr.removeEventListener(it) }
             }
+        }
+
+        fun checkPrevRoomJoin(requestJoin: (String, Boolean) -> Unit, loadingOff: () -> Unit) {
+            db.child("user/${CurUser.userName}")
+                .addListenerForSingleValueEvent(object : ValueEventListener {
+                    override fun onDataChange(snapshot: DataSnapshot) {
+                        loadingOff()
+                        if (snapshot.exists()) {
+                            val userRoomCode = snapshot.child("room").getValue<String>()!!
+                            val isHost = snapshot.child("isHost").getValue<Boolean>()!!
+                            requestJoin(userRoomCode, isHost)
+                        }
+                    }
+
+                    override fun onCancelled(error: DatabaseError) {
+                        Log.d(TAG, "Checking previous room join is Cancelled.\n$error")
+                        loadingOff()
+                    }
+                })
+        }
+
+        // 사용자 방 접속 기록 업데이트
+        private fun setUserRoomRecord(isHost: Boolean) {
+            db.child("user/${CurUser.userName}/room").setValue(roomCode)
+            db.child("user/${CurUser.userName}/isHost").setValue(isHost)
         }
     }
 }

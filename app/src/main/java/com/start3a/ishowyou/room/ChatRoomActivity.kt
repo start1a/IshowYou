@@ -194,7 +194,10 @@ class ChatRoomActivity : AppCompatActivity() {
                 // 방 입장
                 RoomRequest.JOIN_ROOM.num -> {
                     val roomCode = intent.getStringExtra("roomcode")!!
-                    vm.requestJoinRoom(roomCode, roomSucceedJoined, {
+                    // 방장이 방에 재접속일 경우 체크
+                    vm.isHost = intent.getBooleanExtra("ishost", false)
+
+                    vm.requestJoinRoom(roomCode, vm.isHost, roomSucceedJoined, {
                         // 방 입장 실패
                         val intent = Intent().apply {
                             putExtra("message", "방이 존재하지 않습니다.")

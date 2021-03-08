@@ -32,9 +32,9 @@ class YoutubeContentEditFragment : Fragment() {
         ) { activityResult ->
             // 비디오 리스트
             if (activityResult.resultCode == Activity.RESULT_OK && activityResult.data != null) {
-                val videos =
-                    activityResult.data!!.extras!!.getParcelableArrayList<YoutubeSearchData>("videos")!!
-                viewModel!!.addVideoToPlaylist_Youtube(videos)
+                activityResult.data!!.extras!!.getParcelableArrayList<YoutubeSearchData>("videos")?.let { videos ->
+                    viewModel!!.addVideoToPlaylist_Youtube(videos)
+                }
             }
         }
 

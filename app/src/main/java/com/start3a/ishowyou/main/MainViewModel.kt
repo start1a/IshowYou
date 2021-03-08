@@ -15,6 +15,7 @@ class MainViewModel : ViewModel() {
 
     // Dao
     private var dbYoutube: RdbDao.YoutubeDao
+    private var dbChat: RdbDao.ChatDao
     private var curRoomContent: ContentSetting? = null
 
     // View
@@ -25,6 +26,7 @@ class MainViewModel : ViewModel() {
     init {
         val db = RdbDao(FirebaseDatabase.getInstance().reference)
         dbYoutube = db.YoutubeDao()
+        dbChat = db.ChatDao()
     }
 
     // 컨텐츠 --------------------------------------
@@ -35,5 +37,9 @@ class MainViewModel : ViewModel() {
             Content.YOUTUBE -> curRoomContent = dbYoutube
         }
         initLobbyCurContent(content)
+    }
+
+    fun checkPrevRoomJoin(requestJoin: (String, Boolean) -> Unit, loadingOff: () -> Unit) {
+        dbChat.checkPrevRoomJoin(requestJoin, loadingOff)
     }
 }

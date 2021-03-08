@@ -1,5 +1,6 @@
 package com.start3a.ishowyou.main
 
+import android.app.Activity
 import android.app.AlertDialog
 import android.content.Intent
 import android.content.res.Configuration
@@ -7,6 +8,9 @@ import android.content.res.Configuration.ORIENTATION_LANDSCAPE
 import android.content.res.Configuration.ORIENTATION_PORTRAIT
 import android.os.Bundle
 import android.view.View
+import android.widget.Toast
+import androidx.activity.result.ActivityResultLauncher
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AppCompatActivity
 import androidx.lifecycle.ViewModelProvider
 import com.firebase.ui.auth.AuthUI
@@ -49,6 +53,17 @@ class MainActivity : AppCompatActivity() {
                     }
                 }
             }
+
+            vm.checkPrevRoomJoin({ roomCode, isHost ->
+                val intent = Intent(this, ChatRoomActivity::class.java).apply {
+                    putExtra("requestcode", RoomRequest.JOIN_ROOM.num)
+                    putExtra("roomcode", roomCode)
+                    putExtra("ishost", isHost)
+                }
+                requestActivityForJoinRoom.launch(intent)
+            }, {
+                loading_layout.visibility = View.GONE
+            })
         }
     }
 
@@ -155,4 +170,15 @@ class MainActivity : AppCompatActivity() {
     private fun showSystemUI() {
         window.decorView.systemUiVisibility = View.SYSTEM_UI_FLAG_LAYOUT_STABLE
     }
+
+    private val requestActivityForJoinRoom: ActivityResultLauncher<Intent> =
+        registerForActivityResult(
+            ActivityResultContracts.StartActivityForResult()
+        ) { activityResult ->
+            // 비디오 리스트
+            if (activityResult.resultCode == Activity.RESULT_OK && activityResult.data != null) {
+                val text = activityResult.data!!.getStringExtra("message")
+                Toast.makeText(this, text, Toast.LENGTH_LONG).show()
+            }
+        }
 }

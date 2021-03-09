@@ -65,13 +65,9 @@ class YoutubeContentEditFragment : Fragment() {
 
     private fun initView() {
         viewModel!!.let { vm ->
-            // 영상 선택 감지
-            vm.curVideoSelected.observe(viewLifecycleOwner) {
-                updateVideoInfo(it)
-            }
-
             vm.curVideoPlayed.observe(viewLifecycleOwner) {
-                updateVideoInfo(it)
+                listVideoAdapter?.videoPlayed = it
+                listVideoAdapter?.notifyDataSetChanged()
             }
 
             vm.initContentEdit_Youtube(
@@ -91,21 +87,12 @@ class YoutubeContentEditFragment : Fragment() {
                         vm.listPlayYoutube.removeAt(indexSearched)
                 }
             )
-
-            if (!vm.isHost)
-                btnAddVideo.visibility = View.GONE
         }
-    }
-
-    private fun updateVideoInfo(video: YoutubeSearchData) {
-        textVideoTitle.text = video.title
-        textVideoDesc.text = video.desc
-        textVideoChannelTitle.text = video.channelTitle
     }
 
     private fun initAdapter() {
         viewModel!!.let { vm ->
-            listVideoAdapter = YoutubePlayListAdapter(vm.listPlayYoutube.value!!, vm.isHost).apply {
+            listVideoAdapter = YoutubePlayListAdapter(vm.listPlayYoutube.value!!, vm.curVideoPlayed.value, vm.isHost).apply {
                 // 영상 클릭 시 정보 텍스트 표시
                 videoClicked = {
                     if (!vm.isHost)
@@ -125,18 +112,20 @@ class YoutubeContentEditFragment : Fragment() {
                         Toast.makeText(requireActivity(), "재생 중인 영상은 제거할 수 없습니다.", Toast.LENGTH_LONG).show()
                     else vm.removeVideoPlaylist_Youtube(it)
                 }
+                // 새 비디오 추가 버튼
+                videoAdd = {
+                    val intent = Intent(requireActivity(), YoutubeVideoSelectionActivity::class.java)
+                    requestActivityForSearchVideos.launch(intent)
+                }
             }
-            playlistRecyclerView.adapter = listVideoAdapter
-            playlistRecyclerView.layoutManager = LinearLayoutManager(activity)
+            playlistRecyclerView.let {
+                it.adapter = listVideoAdapter
+                it.layoutManager = LinearLayoutManager(activity)
+            }
 
             // 리스트 감지
             vm.listPlayYoutube.observe(viewLifecycleOwner) {
                 listVideoAdapter?.notifyDataSetChanged()
-            }
-
-            btnAddVideo.setOnClickListener {
-                val intent = Intent(requireActivity(), YoutubeVideoSelectionActivity::class.java)
-                requestActivityForSearchVideos.launch(intent)
             }
         }
     }

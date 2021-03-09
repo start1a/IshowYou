@@ -64,8 +64,6 @@ class YoutubePlayerFragment : Fragment() {
                     }
                     youTubePlayer.addListener(vm.customPlayerUiController)
                     youtubePlayerView.addFullScreenListener(vm.customPlayerUiController)
-                    if (vm.listPlayYoutube.value!!.size > 0)
-                        vm.curVideoPlayed.value = vm.listPlayYoutube.value!![0]
 
                     // 풀스크린 뷰 설정
                     youtubePlayerView.addFullScreenListener(object :

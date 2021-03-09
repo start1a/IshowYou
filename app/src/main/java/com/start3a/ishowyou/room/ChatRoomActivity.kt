@@ -184,6 +184,7 @@ class ChatRoomActivity : AppCompatActivity() {
                                         intent.getParcelableArrayListExtra<YoutubeSearchData>("videos")!!
                                     vm.addVideoToPlaylist_Youtube(videos)
                                     viewModel!!.initRoomCurContent(Content.YOUTUBE)
+                                    vm.curVideoPlayed.value = vm.listPlayYoutube.value!![0]
                                 }
                             }
                         },

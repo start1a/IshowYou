@@ -61,6 +61,12 @@ class YoutubePlayerFragment : Fragment() {
                             vm.seekbarYoutubeClicked(time)
                             vm.curSeekbarPos.value = time
                         }
+                        changeChatVisibility = {
+                            if (it)
+                                vm.mFullScreenController.changeWeight(vm.isFullScreen, 7.0f, 3.0f)
+                            else
+                                vm.mFullScreenController.changeWeight(vm.isFullScreen, 1f, 0f)
+                        }
                     }
                     youTubePlayer.addListener(vm.customPlayerUiController)
                     youtubePlayerView.addFullScreenListener(vm.customPlayerUiController)

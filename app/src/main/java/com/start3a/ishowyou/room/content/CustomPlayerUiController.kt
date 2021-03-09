@@ -3,6 +3,7 @@ package com.start3a.ishowyou.room.content
 import android.content.Context
 import android.os.Handler
 import android.os.Looper
+import android.util.Log
 import android.view.View
 import android.view.ViewGroup
 import android.widget.ImageButton
@@ -38,10 +39,13 @@ class CustomPlayerUiController(
     private val btnFullScreen: ImageButton = playerUi.findViewById(R.id.btnFullScreen)
     private val btnFastForward: ImageButton = playerUi.findViewById(R.id.btnFastForward)
     private val btnRewind: ImageButton = playerUi.findViewById(R.id.btnRewind)
+    private val btnChatVisible: ImageButton = playerUi.findViewById(R.id.btnChatVisible)
     private val rbtnRealTime: RadioButton = playerUi.findViewById(R.id.rbtnRealtime)
 
     private val playerTracker: YouTubePlayerTracker = YouTubePlayerTracker()
     private var isFullscreen = false
+    private var isChatVisible = true
+    lateinit var changeChatVisibility: (Boolean) -> Unit
 
     // 실시간
     private var isRealtimeUsed = true
@@ -106,11 +110,19 @@ class CustomPlayerUiController(
                 youtubePlayer.play()
         }
 
+        btnChatVisible.setOnClickListener {
+            if (isChatVisible)
+                btnChatVisible.setImageResource(R.drawable.ic_baseline_arrow_back_ios_24)
+            else
+                btnChatVisible.setImageResource(R.drawable.ic_baseline_arrow_forward_ios_24)
+            isChatVisible = !isChatVisible
+            changeChatVisibility(isChatVisible)
+        }
+
         btnFullScreen.setOnClickListener {
+            Log.d("TAGG", isFullscreen.toString())
             if (isFullscreen) youtubePlayerView.exitFullScreen()
             else youtubePlayerView.enterFullScreen()
-
-            isFullscreen = !isFullscreen
         }
 
         progressPlay.setLabelFormatter { millisecondsToTimeString(it) }
@@ -163,21 +175,42 @@ class CustomPlayerUiController(
     }
 
     override fun onYouTubePlayerEnterFullScreen() {
+        isFullscreen = true
         val viewParams: ViewGroup.LayoutParams = playerUi.layoutParams
         viewParams.height = ViewGroup.LayoutParams.MATCH_PARENT
         viewParams.width = ViewGroup.LayoutParams.MATCH_PARENT
         playerUi.layoutParams = viewParams
 
         btnFullScreen.setImageResource(R.drawable.ic_baseline_fullscreen_exit_24)
+        btnFullScreen.let {
+            it.setImageResource(R.drawable.ic_baseline_fullscreen_24)
+            val layoutParams = it.layoutParams
+            layoutParams.width = it.width * 2
+            layoutParams.height = it.height * 2
+            it.layoutParams = layoutParams
+        }
+        btnChatVisible.visibility = View.VISIBLE
     }
 
     override fun onYouTubePlayerExitFullScreen() {
+        isFullscreen = false
         val viewParams = playerUi.layoutParams
         viewParams.height = ViewGroup.LayoutParams.WRAP_CONTENT
         viewParams.width = ViewGroup.LayoutParams.MATCH_PARENT
         playerUi.layoutParams = viewParams
 
-        btnFullScreen.setImageResource(R.drawable.ic_baseline_fullscreen_24)
+        btnFullScreen.let {
+            it.setImageResource(R.drawable.ic_baseline_fullscreen_24)
+            val layoutParams = it.layoutParams
+            layoutParams.width = ViewGroup.LayoutParams.WRAP_CONTENT
+            layoutParams.height = ViewGroup.LayoutParams.WRAP_CONTENT
+            it.layoutParams = layoutParams
+        }
+        btnChatVisible.let {
+            isChatVisible = true
+            it.visibility = View.GONE
+            it.setImageResource(R.drawable.ic_baseline_arrow_forward_ios_24)
+        }
     }
 
     fun awayFromYoutubePlayer() {

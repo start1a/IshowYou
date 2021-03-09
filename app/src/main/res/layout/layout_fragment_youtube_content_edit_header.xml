@@ -21,18 +21,18 @@
             android:textStyle="bold" />
 
         <TextView
-            android:id="@+id/textVideoDesc"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:lines="3"
-            android:layout_marginTop="8dp" />
-
-        <TextView
             android:background="@drawable/borderline_layout"
             android:id="@+id/textVideoChannelTitle"
             android:padding="8dp"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
+            android:layout_marginTop="8dp" />
+
+        <TextView
+            android:id="@+id/textVideoDesc"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:lines="3"
             android:layout_marginTop="8dp" />
 
     </LinearLayout>

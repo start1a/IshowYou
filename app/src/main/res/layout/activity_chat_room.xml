@@ -20,11 +20,11 @@
         android:layout_height="wrap_content"
         app:layout_constraintTop_toBottomOf="@+id/chatroom_contentViewFrame">
 
-    <com.google.android.material.bottomnavigation.BottomNavigationView
-        android:id="@+id/bottom_navigation_chatroom"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        app:menu="@menu/bottom_nav_menu_chatroom" />
+        <com.google.android.material.bottomnavigation.BottomNavigationView
+            android:id="@+id/bottom_navigation_chatroom"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            app:menu="@menu/bottom_nav_menu_chatroom" />
 
     </LinearLayout>
 
@@ -35,23 +35,5 @@
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintTop_toBottomOf="@id/bottom_menu_layout_chatroom"
         tools:layout_editor_absoluteX="0dp" />
-
-    <androidx.drawerlayout.widget.DrawerLayout
-        android:id="@+id/chatroom_drawer_layout"
-        android:layout_width="300dp"
-        android:layout_height="match_parent"
-        android:fitsSystemWindows="true"
-        android:visibility="gone"
-        app:layout_constraintStart_toStartOf="parent"
-        tools:context=".room.ChatRoomActivity"
-        tools:openDrawer="start">
-
-        <include
-            layout="@layout/info_chatroom"
-            app:layout_constraintBottom_toBottomOf="parent"
-            app:layout_constraintLeft_toLeftOf="parent"
-            app:layout_constraintTop_toTopOf="parent" />
-
-    </androidx.drawerlayout.widget.DrawerLayout>
 
 </androidx.constraintlayout.widget.ConstraintLayout>

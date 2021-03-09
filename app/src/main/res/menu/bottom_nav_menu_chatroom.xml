@@ -8,6 +8,12 @@
         android:title="@string/content"/>
 
     <item
+        android:id="@+id/action_member"
+        android:enabled="true"
+        android:icon="@drawable/ic_baseline_people_24"
+        android:title="@string/member"/>
+
+    <item
         android:id="@+id/action_chat"
         android:enabled="true"
         android:icon="@drawable/ic_baseline_chat_24"

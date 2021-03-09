@@ -8,29 +8,23 @@ import android.content.res.Configuration.ORIENTATION_PORTRAIT
 import android.graphics.Rect
 import android.os.Bundle
 import android.view.View
-import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
-import androidx.core.view.GravityCompat
-import androidx.drawerlayout.widget.DrawerLayout
 import androidx.lifecycle.ViewModelProvider
-import androidx.recyclerview.widget.LinearLayoutManager
 import com.rw.keyboardlistener.KeyboardUtils
 import com.start3a.ishowyou.R
 import com.start3a.ishowyou.contentapi.YoutubeSearchData
 import com.start3a.ishowyou.data.Content
 import com.start3a.ishowyou.data.FullScreenController
 import com.start3a.ishowyou.data.RoomRequest
-import com.start3a.ishowyou.room.chat.ChatMemberAdapter
 import com.start3a.ishowyou.room.chat.RealTimeChatFragment
 import com.start3a.ishowyou.room.content.YoutubeContentEditFragment
 import com.start3a.ishowyou.room.content.YoutubePlayerFragment
+import com.start3a.ishowyou.room.member.RoomMemberFragment
 import kotlinx.android.synthetic.main.activity_chat_room.*
-import kotlinx.android.synthetic.main.info_chatroom.*
 
 class ChatRoomActivity : AppCompatActivity() {
 
     private var viewModel: ChatRoomViewModel? = null
-    private var listMemberAdapter: ChatMemberAdapter? = null
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -43,7 +37,6 @@ class ChatRoomActivity : AppCompatActivity() {
 
         viewModel!!.let { vm ->
             initView()
-            initDrawer()
             initRoom()
 
             window.decorView.setOnSystemUiVisibilityChangeListener { visibility ->
@@ -60,7 +53,7 @@ class ChatRoomActivity : AppCompatActivity() {
         viewModel!!.let { vm ->
             if (vm.isFullScreen)
                 vm.mFullScreenController.contentExitFullScreenMode?.invoke()
-            else openChatRoomMenu()
+            // 탭 넘기기
         }
     }
 
@@ -85,22 +78,6 @@ class ChatRoomActivity : AppCompatActivity() {
                 chatroom_talkViewFrame,
             )
 
-            chatroom_drawer_layout.addDrawerListener(object : DrawerLayout.DrawerListener {
-                override fun onDrawerSlide(drawerView: View, slideOffset: Float) {
-                }
-
-                override fun onDrawerOpened(drawerView: View) {
-                }
-
-                override fun onDrawerClosed(drawerView: View) {
-                    chatroom_drawer_layout.visibility = View.GONE
-                }
-
-                override fun onDrawerStateChanged(newState: Int) {
-                }
-
-            })
-
             // 하단 메뉴
             bottom_navigation_chatroom.selectedItemId = R.id.action_contents
             bottom_navigation_chatroom.setOnNavigationItemSelectedListener { item ->
@@ -109,6 +86,10 @@ class ChatRoomActivity : AppCompatActivity() {
                     R.id.action_contents -> {
                         sfm.replace(R.id.chatroom_talkViewFrame, YoutubeContentEditFragment())
                             .commit()
+                        true
+                    }
+                    R.id.action_member -> {
+                        sfm.replace(R.id.chatroom_talkViewFrame, RoomMemberFragment()).commit()
                         true
                     }
                     R.id.action_chat -> {
@@ -136,37 +117,6 @@ class ChatRoomActivity : AppCompatActivity() {
         }
     }
 
-    private fun initDrawer() {
-        viewModel!!.let { vm ->
-            listMemberAdapter = ChatMemberAdapter(vm.listMember)
-
-            btnLeaveRoom.setOnClickListener {
-                leaveRoom()
-            }
-        }
-    }
-
-    private fun openChatRoomMenu() {
-        chatroom_drawer_layout.visibility = View.VISIBLE
-        chatroom_drawer_layout.openDrawer(GravityCompat.START)
-        memberRecyclerView.adapter = listMemberAdapter
-        memberRecyclerView.layoutManager = LinearLayoutManager(this)
-    }
-
-    private fun leaveRoom() {
-        val builder = AlertDialog.Builder(this)
-
-        builder.setMessage("채팅방에서 나가시겠습니까?")
-            .setPositiveButton("확인") { _, _ ->
-
-                viewModel!!.leaveRoom()
-                chatroom_drawer_layout.closeDrawer(GravityCompat.START)
-                finish()
-            }
-            .setNegativeButton("취소", null)
-            .create().show()
-    }
-
     private fun initRoom() {
         val requestcode = intent.getIntExtra("requestcode", -1)
 
@@ -184,7 +134,7 @@ class ChatRoomActivity : AppCompatActivity() {
                                         intent.getParcelableArrayListExtra<YoutubeSearchData>("videos")!!
                                     vm.addVideoToPlaylist_Youtube(videos)
                                     viewModel!!.initRoomCurContent(Content.YOUTUBE)
-                                    vm.curVideoPlayed.value = vm.listPlayYoutube.value!![0]
+                                    vm.curVideoPlayed.value = vm.listPlayYoutube.value!![1]
                                 }
                             }
                         },

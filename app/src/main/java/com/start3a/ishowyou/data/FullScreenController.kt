@@ -4,7 +4,6 @@ import android.content.Context
 import android.content.pm.ActivityInfo
 import android.util.DisplayMetrics
 import android.view.View
-import android.widget.FrameLayout
 import androidx.constraintlayout.widget.ConstraintLayout
 import androidx.constraintlayout.widget.ConstraintSet
 import androidx.fragment.app.FragmentActivity
@@ -30,10 +29,6 @@ class FullScreenController(
 
     fun exitFullScreenView() {
         activity.requestedOrientation = ActivityInfo.SCREEN_ORIENTATION_NOSENSOR
-        parentView.layoutParams = FrameLayout.LayoutParams(
-            FrameLayout.LayoutParams.MATCH_PARENT,
-            FrameLayout.LayoutParams.MATCH_PARENT
-        )
 
         contentViewFrame.layoutParams =
             ConstraintLayout.LayoutParams(ConstraintLayout.LayoutParams.MATCH_PARENT, ConstraintLayout.LayoutParams.WRAP_CONTENT)

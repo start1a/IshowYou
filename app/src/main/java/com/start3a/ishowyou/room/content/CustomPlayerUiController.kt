@@ -3,7 +3,6 @@ package com.start3a.ishowyou.room.content
 import android.content.Context
 import android.os.Handler
 import android.os.Looper
-import android.util.Log
 import android.view.View
 import android.view.ViewGroup
 import android.widget.ImageButton
@@ -120,7 +119,6 @@ class CustomPlayerUiController(
         }
 
         btnFullScreen.setOnClickListener {
-            Log.d("TAGG", isFullscreen.toString())
             if (isFullscreen) youtubePlayerView.exitFullScreen()
             else youtubePlayerView.enterFullScreen()
         }

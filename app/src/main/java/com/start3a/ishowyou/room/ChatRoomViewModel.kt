@@ -14,12 +14,14 @@ class ChatRoomViewModel: ViewModel() {
     // 채팅방 정보
     var isHost = false
     // 메세지
-    val listMessage : ListLiveData<ChatMessage> by lazy {
+    val listMessage: ListLiveData<ChatMessage> by lazy {
         ListLiveData(mutableListOf())
     }
     var isMessageListUpScrolled = false
     // 멤버
-    val listMember = mutableListOf<ChatMember>()
+    val listMember: ListLiveData<ChatMember> by lazy {
+        ListLiveData(mutableListOf())
+    }
 
     // 채팅방 유무 뷰 전환
     lateinit var initRoomCurContent: ((Content) -> Unit)
@@ -193,8 +195,8 @@ class ChatRoomViewModel: ViewModel() {
         },{
             // 멤버 삭제
             var removeIndex = -1
-            for (i in 0 until listMember.size) {
-                if (listMember[i].userName == it) {
+            for (i in 0 until listMember.value!!.size) {
+                if (listMember.value!![i].userName == it) {
                     removeIndex = i
                     break
                 }

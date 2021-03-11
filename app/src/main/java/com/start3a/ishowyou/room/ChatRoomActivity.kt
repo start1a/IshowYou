@@ -54,6 +54,14 @@ class ChatRoomActivity : AppCompatActivity() {
             if (vm.isFullScreen)
                 vm.mFullScreenController.contentExitFullScreenMode?.invoke()
             // 탭 넘기기
+            else {
+                when (bottom_navigation_chatroom.selectedItemId) {
+                    R.id.action_contents -> bottom_navigation_chatroom.selectedItemId = R.id.action_member
+                    R.id.action_member -> bottom_navigation_chatroom.selectedItemId = R.id.action_chat
+                    R.id.action_chat -> bottom_navigation_chatroom.selectedItemId = R.id.action_contents
+                    else -> {}
+                }
+            }
         }
     }
 
@@ -134,7 +142,7 @@ class ChatRoomActivity : AppCompatActivity() {
                                         intent.getParcelableArrayListExtra<YoutubeSearchData>("videos")!!
                                     vm.addVideoToPlaylist_Youtube(videos)
                                     viewModel!!.initRoomCurContent(Content.YOUTUBE)
-                                    vm.curVideoPlayed.value = vm.listPlayYoutube.value!![1]
+                                    vm.curVideoPlayed.value = vm.listPlayYoutube.value!![0]
                                 }
                             }
                         },

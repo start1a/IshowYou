@@ -189,6 +189,15 @@ class ChatRoomViewModel: ViewModel() {
             listMessage.value = list
         }
 
+        if (!isHost) {
+            dbChat.notifyIsRoomDeleted {
+                leaveRoom()
+                roomDeleted()
+            }
+        }
+    }
+
+    fun initMemberList() {
         dbChat.notifyChatMember({
             // 멤버 추가
             listMember.add(it)
@@ -205,12 +214,6 @@ class ChatRoomViewModel: ViewModel() {
                 listMember.removeAt(removeIndex)
         })
 
-        if (!isHost) {
-            dbChat.notifyIsRoomDeleted {
-                leaveRoom()
-                roomDeleted()
-            }
-        }
     }
 
     fun sendChatMessage(message: String) {

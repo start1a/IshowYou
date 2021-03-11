@@ -2,6 +2,8 @@ package com.start3a.ishowyou.contentapi
 
 import android.os.Parcel
 import android.os.Parcelable
+import androidx.room.Entity
+import androidx.room.PrimaryKey
 import java.util.*
 
 // 리스트 아이템용 Object
@@ -62,6 +64,21 @@ data class PlayStateRequested(
     var curVideo: YoutubeSearchData,
     var seekbar: Float
 )
+
+@Entity
+data class YoutubeVideoForRoomDB(
+    var title: String,
+    var desc: String,
+    var channelTitle: String,
+    var videoId: String,
+    var thumbnail: String,
+    var thumbnailSmall: String,
+    var keyword: String,
+) {
+    @PrimaryKey(autoGenerate = true)
+    var id: Int = 0
+    var timeCreated = Date().time
+}
 
 // Json -> Object
 data class YoutubeSearchJsonData(

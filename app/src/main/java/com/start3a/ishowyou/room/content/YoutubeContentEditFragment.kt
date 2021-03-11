@@ -13,7 +13,7 @@ import androidx.fragment.app.Fragment
 import androidx.lifecycle.ViewModelProvider
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.start3a.ishowyou.R
-import com.start3a.ishowyou.YoutubeVideoSelectionActivity
+import com.start3a.ishowyou.room.content.videoselection.YoutubeVideoSelectionActivity
 import com.start3a.ishowyou.contentapi.YoutubeSearchData
 import com.start3a.ishowyou.room.ChatRoomViewModel
 import kotlinx.android.synthetic.main.fragment_youtube_content_edit.*

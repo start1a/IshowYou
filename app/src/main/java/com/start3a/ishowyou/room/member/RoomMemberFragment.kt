@@ -38,6 +38,8 @@ class RoomMemberFragment : Fragment() {
         }
 
         viewModel!!.let { vm ->
+            vm.initMemberList()
+            
             listMemberAdapter = ChatMemberAdapter(vm.listMember.value!!)
             memberRecyclerView.adapter = listMemberAdapter
             memberRecyclerView.layoutManager = LinearLayoutManager(requireContext())

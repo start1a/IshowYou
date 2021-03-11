@@ -16,7 +16,7 @@ import androidx.fragment.app.Fragment
 import androidx.lifecycle.ViewModelProvider
 import com.google.firebase.auth.FirebaseAuth
 import com.start3a.ishowyou.R
-import com.start3a.ishowyou.YoutubeVideoSelectionActivity
+import com.start3a.ishowyou.room.content.videoselection.YoutubeVideoSelectionActivity
 import com.start3a.ishowyou.contentapi.YoutubeSearchData
 import com.start3a.ishowyou.data.RoomRequest
 import com.start3a.ishowyou.main.MainViewModel

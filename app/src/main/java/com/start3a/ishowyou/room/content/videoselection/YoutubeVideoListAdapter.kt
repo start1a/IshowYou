@@ -1,9 +1,11 @@
-package com.start3a.ishowyou
+package com.start3a.ishowyou.room.content.videoselection
 
 import android.view.LayoutInflater
 import android.view.ViewGroup
 import androidx.recyclerview.widget.RecyclerView
 import com.bumptech.glide.Glide
+import com.start3a.ishowyou.ItemViewHolder
+import com.start3a.ishowyou.R
 import com.start3a.ishowyou.contentapi.YoutubeSearchData
 import kotlinx.android.synthetic.main.item_video_searched.view.*
 

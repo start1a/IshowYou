@@ -1,9 +1,8 @@
-package com.start3a.ishowyou
+package com.start3a.ishowyou.room.content.videoselection
 
 import android.app.Activity
 import android.content.Intent
 import android.os.Bundle
-import android.util.Log
 import android.view.Menu
 import android.view.View
 import androidx.appcompat.app.AppCompatActivity
@@ -12,17 +11,12 @@ import androidx.lifecycle.ViewModelProvider
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.pierfrancescosoffritti.androidyoutubeplayer.core.player.YouTubePlayer
 import com.pierfrancescosoffritti.androidyoutubeplayer.core.player.listeners.AbstractYouTubePlayerListener
-import com.start3a.ishowyou.contentapi.RetrofitYoutubeService
+import com.start3a.ishowyou.R
 import com.start3a.ishowyou.contentapi.YoutubeSearchData
-import com.start3a.ishowyou.contentapi.YoutubeSearchJsonData
 import kotlinx.android.synthetic.main.activity_youtube_video_selection.*
-import retrofit2.Call
-import retrofit2.Callback
-import retrofit2.Response
 
 class YoutubeVideoSelectionActivity : AppCompatActivity() {
 
-    private val TAG = "YoutubeVideoSelectionActivity"
     private var viewModel: YoutubeVideoSelectionViewModel? = null
     private var listVideoAdapter: YoutubeVideoListAdapter? = null
     private var listVideoSelectedAdapter: YoutubeVideoSelectedListAdapter? = null
@@ -36,7 +30,9 @@ class YoutubeVideoSelectionActivity : AppCompatActivity() {
 
         viewModel = application!!.let {
             ViewModelProvider(viewModelStore, ViewModelProvider.AndroidViewModelFactory(it))
-                .get(YoutubeVideoSelectionViewModel::class.java)
+                .get(YoutubeVideoSelectionViewModel::class.java).apply {
+                    init(applicationContext)
+                }
         }
 
         viewModel!!.let { vm ->
@@ -153,9 +149,10 @@ class YoutubeVideoSelectionActivity : AppCompatActivity() {
             searchView.maxWidth = Int.MAX_VALUE
             searchView.setOnQueryTextListener(object : SearchView.OnQueryTextListener {
                 override fun onQueryTextSubmit(query: String?): Boolean {
+
                     // 검색 성공
                     if (!query.isNullOrEmpty())
-                        requestVideoList(query)
+                        viewModel!!.getVideosByKeyword(query)
 
                     return true
                 }
@@ -165,41 +162,6 @@ class YoutubeVideoSelectionActivity : AppCompatActivity() {
         }
 
         return super.onCreateOptionsMenu(menu)
-    }
-
-    private fun requestVideoList(query: String) {
-        Runnable {
-            RetrofitYoutubeService.getService().getSearchedVideoList(query)
-                .enqueue(object :
-                    Callback<YoutubeSearchJsonData> {
-                    override fun onResponse(
-                        call: Call<YoutubeSearchJsonData>,
-                        response: Response<YoutubeSearchJsonData>
-                    ) {
-                        if (response.isSuccessful) {
-                            val vList = viewModel!!.listVideo.apply { value!!.clear() }
-
-                            val searchedVideoList = mutableListOf<YoutubeSearchData>()
-                            response.body()!!.items.forEach {
-                                val video = YoutubeSearchData().apply {
-                                    title = it.snippet.title
-                                    desc = it.snippet.description
-                                    channelTitle = it.snippet.channelTitle
-                                    videoId = it.id.videoId
-                                    thumbnail = it.snippet.thumbnails.high.url
-                                    thumbnailSmall = it.snippet.thumbnails.default.url
-                                }
-                                searchedVideoList.add(video)
-                            }
-                            vList.addAll(searchedVideoList)
-                        }
-                    }
-
-                    override fun onFailure(call: Call<YoutubeSearchJsonData>, t: Throwable) {
-                        Log.d(TAG, "youtube video search is failed.\n$t")
-                    }
-                })
-        }.run()
     }
 
     private fun endVideoSelection() {

@@ -8,7 +8,7 @@ import retrofit2.http.Query
 
 
 // Youtube search API
-object RetrofitYoutubeService {
+class RetrofitYoutubeService {
 
     fun getService(): YoutubeApi = retrofit.create(YoutubeApi::class.java)
 

@@ -7,6 +7,7 @@ import android.content.res.Configuration
 import android.content.res.Configuration.ORIENTATION_LANDSCAPE
 import android.content.res.Configuration.ORIENTATION_PORTRAIT
 import android.os.Bundle
+import android.util.Log
 import android.view.View
 import android.widget.Toast
 import androidx.activity.result.ActivityResultLauncher
@@ -64,6 +65,8 @@ class MainActivity : AppCompatActivity() {
             }, {
                 loading_layout.visibility = View.GONE
             })
+            // 로딩 아래의 뷰 클릭 방지
+            loading_layout.setOnClickListener {}
         }
     }
 

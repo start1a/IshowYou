@@ -75,9 +75,7 @@ class YoutubeVideoSelectionActivity : AppCompatActivity() {
             vm.isEndVideoSelection = true
 
             // 저장 중 로딩 Ui 출력
-            progressVideoSelection.let {
-                it.visibility = View.VISIBLE
-            }
+            loading_layout.visibility = View.VISIBLE
         }
         else endVideoSelection()
     }

@@ -74,7 +74,7 @@ class ChatRoomViewModel: ViewModel() {
         // 현재 영상 위치
         var indexSearched = -1
         for (i in 0 until list.size) {
-            if (curVideo === list[i]) {
+            if (curVideo.createdTime == list[i].createdTime) {
                 indexSearched = (i + 1) % list.size
                 // 흐른 시간만큼 다음 영상 이동
                 while (restTime >= list[indexSearched].duration) {

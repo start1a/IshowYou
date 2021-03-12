@@ -113,9 +113,8 @@ class YoutubePlayerFragment : Fragment() {
                                 if (restVideoTime > timeElapsed) {
                                     vm.curSeekbarPos.value = playState.seekbar + timeElapsed
                                     vm.curVideoPlayed.value = playState.curVideo
-                                } else {
-                                    vm.PlayNextVideo(playState.curVideo, timeElapsed - restVideoTime)
                                 }
+                                else vm.PlayNextVideo(playState.curVideo, timeElapsed - restVideoTime)
                             }
                             // 재생바 감지
                             vm.initContent_Youtube {

@@ -407,7 +407,7 @@ class RdbDao(private val db: DatabaseReference) {
 
             // 방 멤버 저장
             db.child("member/$requestedRoomCode/${CurUser.userName}")
-                .setValue(ChatMember(CurUser.userName, false))
+                .setValue(ChatMember(CurUser.userName, isHostJoinRoom))
         }
 
         // 방 제거 여부

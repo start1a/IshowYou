@@ -40,6 +40,7 @@ class CustomPlayerUiController(
     private val btnRewind: ImageButton = playerUi.findViewById(R.id.btnRewind)
     private val btnChatVisible: ImageButton = playerUi.findViewById(R.id.btnChatVisible)
     private val rbtnRealTime: RadioButton = playerUi.findViewById(R.id.rbtnRealtime)
+    private val loadingView: View = playerUi.findViewById(R.id.loading_layout)
 
     private val playerTracker: YouTubePlayerTracker = YouTubePlayerTracker()
     private var isFullscreen = false
@@ -147,14 +148,15 @@ class CustomPlayerUiController(
         super.onStateChange(youTubePlayer, state)
 
         when (state) {
-            PlayerConstants.PlayerState.PLAYING,
-            PlayerConstants.PlayerState.PAUSED,
-            PlayerConstants.PlayerState.VIDEO_CUED,
+            PlayerConstants.PlayerState.PLAYING -> {
+                loadingView.visibility = View.GONE
+                btnPlay.setImageResource(R.drawable.ic_baseline_pause_24)
+            }
+            PlayerConstants.PlayerState.PAUSED -> {
+                btnPlay.setImageResource(R.drawable.ic_baseline_play_arrow_48)
+            }
             PlayerConstants.PlayerState.BUFFERING-> {
-                if (state == PlayerConstants.PlayerState.PLAYING)
-                    btnPlay.setImageResource(R.drawable.ic_baseline_pause_24)
-                if (state == PlayerConstants.PlayerState.PAUSED)
-                    btnPlay.setImageResource(R.drawable.ic_baseline_play_arrow_48)
+                loadingView.visibility = View.VISIBLE
             }
         }
     }

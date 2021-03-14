@@ -17,6 +17,7 @@ class SigninActivity : AppCompatActivity() {
     private val REQUEST_GOOGLE_AUTH_SIGN_IN = 0
 
     private val providers = arrayListOf(
+        AuthUI.IdpConfig.EmailBuilder().build(),
         AuthUI.IdpConfig.GoogleBuilder().build()
     )
 
@@ -28,15 +29,6 @@ class SigninActivity : AppCompatActivity() {
             ViewModelProvider(viewModelStore, ViewModelProvider.AndroidViewModelFactory(it))
                 .get(SignInViewModel::class.java)
         }
-
-        btnSignWithGoogle.setOnClickListener {
-            startSignInWithGoogle()
-        }
-
-        btnSignWithPhone.setOnClickListener {
-            val intent = Intent(applicationContext, PhoneSignInActivity::class.java)
-            startActivity(intent)
-        }
     }
 
     override fun onStart() {
@@ -46,6 +38,7 @@ class SigninActivity : AppCompatActivity() {
             startActivity(intent)
             finish()
         }
+        else startSignInWithGoogle()
     }
 
     private fun shouldStartSignIn(): Boolean {
@@ -72,6 +65,7 @@ class SigninActivity : AppCompatActivity() {
                     startActivity(intent)
                     finish()
                 }
+                else startSignInWithGoogle()
             }
         }
     }

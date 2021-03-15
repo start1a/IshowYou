@@ -54,11 +54,12 @@
 
     <ImageButton
         android:id="@+id/btnChatVisible"
-        android:visibility="gone"
         android:layout_width="48dp"
         android:layout_height="48dp"
         android:background="@color/fui_transparent"
+        android:contentDescription="@string/imagerror"
         android:src="@drawable/ic_baseline_arrow_forward_ios_24"
+        android:visibility="gone"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintTop_toTopOf="parent" />
 
@@ -77,6 +78,7 @@
             android:layout_height="wrap_content"
             android:layout_gravity=""
             android:background="@color/fui_transparent"
+            android:contentDescription="@string/imagerror"
             android:src="@drawable/ic_baseline_fast_rewind_24"
             app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintEnd_toStartOf="@+id/btnPlay"
@@ -88,6 +90,7 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:background="@color/fui_transparent"
+            android:contentDescription="@string/imagerror"
             android:src="@drawable/ic_baseline_play_arrow_48"
             app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintEnd_toEndOf="parent"
@@ -100,6 +103,7 @@
             android:layout_height="wrap_content"
             android:layout_weight="1"
             android:background="@color/fui_transparent"
+            android:contentDescription="@string/imagerror"
             android:src="@drawable/ic_baseline_fast_forward_24"
             app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintEnd_toEndOf="parent"
@@ -145,6 +149,7 @@
             android:layout_height="wrap_content"
             android:layout_marginEnd="8dp"
             android:background="@color/fui_transparent"
+            android:contentDescription="@string/imagerror"
             android:src="@drawable/ic_baseline_fullscreen_24"
             app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintEnd_toEndOf="parent"

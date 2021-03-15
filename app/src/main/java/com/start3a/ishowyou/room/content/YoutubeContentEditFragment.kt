@@ -108,7 +108,7 @@ class YoutubeContentEditFragment : Fragment() {
                     val curVideo = vm.curVideoPlayed.value!!
                     if (!vm.isRealtimeUsed.value!!)
                         Toast.makeText(requireActivity(), "실시간 버튼을 켜 주세요.", Toast.LENGTH_LONG).show()
-                    else if (curVideo === list[it])
+                    else if (curVideo.createdTime == list[it].createdTime)
                         Toast.makeText(requireActivity(), "재생 중인 영상은 제거할 수 없습니다.", Toast.LENGTH_LONG).show()
                     else vm.removeVideoPlaylist_Youtube(it)
                 }

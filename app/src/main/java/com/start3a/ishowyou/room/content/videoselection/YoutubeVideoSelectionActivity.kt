@@ -9,6 +9,7 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.appcompat.widget.SearchView
 import androidx.lifecycle.ViewModelProvider
 import androidx.recyclerview.widget.LinearLayoutManager
+import com.pierfrancescosoffritti.androidyoutubeplayer.core.player.PlayerConstants
 import com.pierfrancescosoffritti.androidyoutubeplayer.core.player.YouTubePlayer
 import com.pierfrancescosoffritti.androidyoutubeplayer.core.player.listeners.AbstractYouTubePlayerListener
 import com.start3a.ishowyou.R
@@ -47,7 +48,7 @@ class YoutubeVideoSelectionActivity : AppCompatActivity() {
 
                     setVideoDuration = {
                         youTubePlayer.loadVideo(selList[vm.indexDurationSave].videoId, 0f)
-                        youTubePlayer.mute()
+                        notifyExtractIndex(vm.indexDurationSave)
                     }
                 }
 
@@ -55,12 +56,25 @@ class YoutubeVideoSelectionActivity : AppCompatActivity() {
                     super.onVideoDuration(youTubePlayer, duration)
                     selList[vm.indexDurationSave].duration = duration
                     // 다음 영상이 있으면 계속 작업
-                    if (vm.indexDurationSave + 1 < selList.size)
-                        youTubePlayer.loadVideo(selList[++vm.indexDurationSave].videoId, 0f)
+                    if (vm.indexDurationSave + 1 < selList.size) {
+                        notifyExtractIndex(++vm.indexDurationSave)
+                        youTubePlayer.loadVideo(selList[vm.indexDurationSave].videoId, 0f)
+                    }
+                    // 작업 완료
                     else {
                         if (vm.isEndVideoSelection) endVideoSelection()
                         vm.isLoadVideosStarted = false
+                        notifyExtractIndex(-1)
                     }
+                }
+
+                override fun onStateChange(
+                    youTubePlayer: YouTubePlayer,
+                    state: PlayerConstants.PlayerState
+                ) {
+                    super.onStateChange(youTubePlayer, state)
+                    if (state == PlayerConstants.PlayerState.PLAYING)
+                        youTubePlayer.pause()
                 }
             })
         }
@@ -71,7 +85,7 @@ class YoutubeVideoSelectionActivity : AppCompatActivity() {
         val selList = vm.listVideoSelected.value!!
 
         // 아직 duration 추출 작업 중
-        if (vm.indexDurationSave < selList.size) {
+        if (vm.isLoadVideosStarted) {
             vm.isEndVideoSelection = true
 
             // 저장 중 로딩 Ui 출력
@@ -171,5 +185,12 @@ class YoutubeVideoSelectionActivity : AppCompatActivity() {
             setResult(Activity.RESULT_OK, intent)
         }
         finish()
+    }
+
+    private fun notifyExtractIndex(index: Int) {
+        listVideoSelectedAdapter!!.let {
+            it.indexExtrating = index
+            it.notifyDataSetChanged()
+        }
     }
 }

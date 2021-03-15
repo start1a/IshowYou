@@ -1,6 +1,7 @@
 package com.start3a.ishowyou.room.content.videoselection
 
 import android.view.LayoutInflater
+import android.view.View
 import android.view.ViewGroup
 import androidx.recyclerview.widget.RecyclerView
 import com.bumptech.glide.Glide
@@ -11,6 +12,8 @@ import kotlinx.android.synthetic.main.item_video_selected.view.*
 
 class YoutubeVideoSelectedListAdapter(val list: MutableList<YoutubeSearchData>):
     RecyclerView.Adapter<ItemViewHolder>() {
+
+    var indexExtrating: Int = -1
 
     lateinit var videoClicked: (Int) -> Unit
     lateinit var videoDeleted: (Int) -> Unit
@@ -39,6 +42,15 @@ class YoutubeVideoSelectedListAdapter(val list: MutableList<YoutubeSearchData>):
 
             it.button_remove_video_selected.setOnClickListener {
                 videoDeleted(position)
+            }
+
+            if (indexExtrating == position) {
+                it.loading_layout.visibility = View.VISIBLE
+                it.button_remove_video_selected.visibility = View.GONE
+            }
+            else {
+                it.loading_layout.visibility = View.GONE
+                it.button_remove_video_selected.visibility = View.VISIBLE
             }
 
             it.tag = position

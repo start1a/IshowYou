@@ -114,6 +114,10 @@ class YoutubeVideoSelectionActivity : AppCompatActivity() {
                     // 추가
                     if (indexSearched == -1) {
                         vm.listVideoSelected.add(list[pos])
+                        vm.searchedVideoIndexList.add(pos)
+                        selectionList[pos] = true
+                        notifyItemChanged(pos)
+
                         // 비디오 duration 추출 작업 시작
                         if (!vm.isLoadVideosStarted) {
                             vm.isLoadVideosStarted = true
@@ -147,6 +151,12 @@ class YoutubeVideoSelectionActivity : AppCompatActivity() {
 
                     videoDeleted = { pos ->
                         vm.listVideoSelected.removeAt(pos)
+                        val indexList = vm.searchedVideoIndexList
+                        listVideoAdapter!!.let {
+                            it.selectionList[ indexList[pos] ] = false
+                            it.notifyItemChanged( indexList[pos] )
+                        }
+                        indexList.removeAt(pos)
                         --vm.indexDurationSave
                     }
                 }

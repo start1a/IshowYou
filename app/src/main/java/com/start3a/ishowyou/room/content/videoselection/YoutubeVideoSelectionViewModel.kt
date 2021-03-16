@@ -18,6 +18,9 @@ class YoutubeVideoSelectionViewModel: ViewModel() {
     val listVideoSelected: ListLiveData<YoutubeSearchData> by lazy {
         ListLiveData(mutableListOf())
     }
+    // 선택 비디오들의 탐색 비디오 인덱스가 저장됨
+    // 비디오 삭제 시 참조하여 탐색 비디오 체크 해제
+    var searchedVideoIndexList = mutableListOf<Int>()
 
     // 현재 duration 추출 비디오 인덱스
     var indexDurationSave = -1

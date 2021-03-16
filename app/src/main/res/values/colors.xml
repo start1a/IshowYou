@@ -7,4 +7,5 @@
     <color name="gray">#1A000000</color>
     <color name="red">#FF0000</color>
     <color name="halfBlack">#99000000</color>
+    <color name="item_clicked">#ffffff</color>
 </resources>

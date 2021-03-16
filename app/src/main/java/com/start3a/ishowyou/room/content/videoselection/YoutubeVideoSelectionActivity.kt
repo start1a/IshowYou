@@ -47,7 +47,7 @@ class YoutubeVideoSelectionActivity : AppCompatActivity() {
                     super.onReady(youTubePlayer)
 
                     setVideoDuration = {
-                        youTubePlayer.loadVideo(selList[vm.indexDurationSave].videoId, 0f)
+                        youTubePlayer.loadVideo(selList[++vm.indexDurationSave].videoId, 0f)
                         notifyExtractIndex(vm.indexDurationSave)
                     }
                 }
@@ -82,7 +82,6 @@ class YoutubeVideoSelectionActivity : AppCompatActivity() {
 
     override fun onBackPressed() {
         val vm = viewModel!!
-        val selList = vm.listVideoSelected.value!!
 
         // 아직 duration 추출 작업 중
         if (vm.isLoadVideosStarted) {
@@ -97,9 +96,8 @@ class YoutubeVideoSelectionActivity : AppCompatActivity() {
     private fun initVideoListAdapter() {
         viewModel!!.let { vm ->
             listVideoAdapter = YoutubeVideoListAdapter(vm.listVideo.value!!).apply {
-                // 아이템 추가
+                // 아이템 클릭
                 videoClicked = { pos ->
-                    // 중복 추가 방지
                     val selList = vm.listVideoSelected.value!!
                     var indexSearched = -1
                     for (i in 0 until selList.size)
@@ -108,6 +106,7 @@ class YoutubeVideoSelectionActivity : AppCompatActivity() {
                             break
                         }
 
+                    // 추가
                     if (indexSearched == -1) {
                         vm.listVideoSelected.add(list[pos])
                         // 비디오 duration 추출 작업 시작
@@ -135,7 +134,7 @@ class YoutubeVideoSelectionActivity : AppCompatActivity() {
                     videoClicked = { pos ->
                         val vList = vm.listVideo.value!!
                         for (i in 0 until vList.size)
-                            if (vList[i] == list[pos]) {
+                            if (vList[i] === list[pos]) {
                                 videoRecyclerView.scrollToPosition(i)
                                 break
                             }
@@ -143,6 +142,7 @@ class YoutubeVideoSelectionActivity : AppCompatActivity() {
 
                     videoDeleted = { pos ->
                         vm.listVideoSelected.removeAt(pos)
+                        --vm.indexDurationSave
                     }
                 }
             videoSelectRecyclerView.adapter = listVideoSelectedAdapter

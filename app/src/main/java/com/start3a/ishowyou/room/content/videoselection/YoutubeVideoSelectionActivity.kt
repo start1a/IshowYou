@@ -73,8 +73,13 @@ class YoutubeVideoSelectionActivity : AppCompatActivity() {
                     state: PlayerConstants.PlayerState
                 ) {
                     super.onStateChange(youTubePlayer, state)
-                    if (state == PlayerConstants.PlayerState.PLAYING)
-                        youTubePlayer.pause()
+
+                    when (state) {
+                        PlayerConstants.PlayerState.PLAYING ->
+                            youTubePlayer.pause()
+                        PlayerConstants.PlayerState.BUFFERING ->
+                            youTubePlayer.mute()
+                    }
                 }
             })
         }

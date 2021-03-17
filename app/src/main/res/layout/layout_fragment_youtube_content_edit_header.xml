@@ -50,17 +50,17 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:text="@string/playlist"
-            android:textStyle="bold"
+            android:textAppearance="?attr/textAppearanceBody2"
             app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintStart_toStartOf="parent" />
 
-        <ImageButton
+        <Button
             android:contentDescription="@string/imagerror"
-            android:background="@color/fui_transparent"
             android:id="@+id/btnAddVideo"
+            app:icon="@drawable/ic_baseline_playlist_add_24"
+            android:text="추가"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:src="@drawable/ic_baseline_playlist_add_24"
             app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintEnd_toEndOf="parent" />
 

@@ -67,10 +67,9 @@
                 android:layout_marginStart="16dp"
                 android:layout_marginTop="8dp"
                 android:maxLines="1"
-                android:textAppearance="?attr/textAppearanceOverline"
                 android:padding="8dp"
                 android:text="ChannelTitle"
-                android:textSize="10sp"
+                android:textAppearance="?attr/textAppearanceBody2"
                 android:textStyle="bold" />
 
             <TextView

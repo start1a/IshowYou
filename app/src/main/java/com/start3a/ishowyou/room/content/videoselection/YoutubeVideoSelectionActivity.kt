@@ -93,7 +93,7 @@ class YoutubeVideoSelectionActivity : AppCompatActivity() {
             vm.isEndVideoSelection = true
 
             // 저장 중 로딩 Ui 출력
-            loading_layout.visibility = View.VISIBLE
+            loadingView(true)
         }
         else endVideoSelection()
     }
@@ -179,7 +179,8 @@ class YoutubeVideoSelectionActivity : AppCompatActivity() {
 
                     // 검색 성공
                     if (!query.isNullOrEmpty())
-                        viewModel!!.getVideosByKeyword(query)
+                        loadingView(true)
+                        viewModel!!.getVideosByKeyword(query!!) { loadingView(false) }
 
                     return true
                 }
@@ -207,5 +208,10 @@ class YoutubeVideoSelectionActivity : AppCompatActivity() {
             it.indexExtrating = index
             it.notifyDataSetChanged()
         }
+    }
+
+    private fun loadingView(visible: Boolean) {
+        if (visible) loading_layout.visibility = View.VISIBLE
+        else loading_layout.visibility = View.GONE
     }
 }

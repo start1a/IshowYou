@@ -1,6 +1,7 @@
 package com.start3a.ishowyou.repository
 
 import android.content.Context
+import android.text.Html
 import android.util.Log
 import androidx.room.Room
 import com.start3a.ishowyou.contentapi.RetrofitYoutubeService
@@ -23,7 +24,11 @@ class RepoVideoSelection(context: Context) {
             .build()
     private val youtubeVideoAPI = RetrofitYoutubeService()
 
-    fun getVideosByKeyword(keyword: String, videoList: ListLiveData<YoutubeSearchData>) {
+    fun getVideosByKeyword(
+        keyword: String,
+        videoList: ListLiveData<YoutubeSearchData>,
+        loadingOff: () -> Unit
+    ) {
         val videosByRoom = roomDB.youtubeDao().getVideosByKeyword(keyword)
 
         // Room에 캐시 체크
@@ -40,6 +45,7 @@ class RepoVideoSelection(context: Context) {
                 })
             }
             videoList.addAll(list)
+            loadingOff()
         }
 
         // 캐시 없음
@@ -56,14 +62,17 @@ class RepoVideoSelection(context: Context) {
                                 val searchedVideoList = mutableListOf<YoutubeSearchData>()
                                 val roomSaveList = mutableListOf<YoutubeVideoForRoomDB>()
                                 response.body()!!.items.forEach {
+
                                     val video = YoutubeSearchData().apply {
-                                        title = it.snippet.title
-                                        desc = it.snippet.description
-                                        channelTitle = it.snippet.channelTitle
+                                        title = converHtmlEntity_toString(it.snippet.title)
+                                        desc = converHtmlEntity_toString(it.snippet.description)
+                                        channelTitle =
+                                            converHtmlEntity_toString(it.snippet.channelTitle)
                                         videoId = it.id.videoId
                                         thumbnail = it.snippet.thumbnails.high.url
                                         thumbnailSmall = it.snippet.thumbnails.default.url
                                     }
+
                                     val videoForRoomDB = YoutubeVideoForRoomDB(
                                         video.title,
                                         video.desc,
@@ -75,14 +84,17 @@ class RepoVideoSelection(context: Context) {
                                     )
                                     searchedVideoList.add(video)
                                     roomSaveList.add(videoForRoomDB)
+
                                 }
                                 videoList.addAll(searchedVideoList)
                                 insertVideos(roomSaveList)
                             }
+                            loadingOff()
                         }
 
                         override fun onFailure(call: Call<YoutubeSearchJsonData>, t: Throwable) {
                             Log.d(TAG, "youtube video search is failed.\n$t")
+                            loadingOff()
                         }
                     })
             }.run()
@@ -92,4 +104,8 @@ class RepoVideoSelection(context: Context) {
     private fun insertVideos(videos: List<YoutubeVideoForRoomDB>) {
         roomDB.youtubeDao().insertVideos(videos)
     }
+
+    // html 특수문자 처리 ex) &#38;, &#39; -> &, '
+    private fun converHtmlEntity_toString(str: String) =
+        Html.fromHtml(str, Html.FROM_HTML_MODE_LEGACY).toString()
 }

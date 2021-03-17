@@ -32,8 +32,8 @@ class YoutubeVideoSelectionViewModel: ViewModel() {
         repo = RepoVideoSelection(context)
     }
 
-    fun getVideosByKeyword(keyword: String) {
+    fun getVideosByKeyword(keyword: String, loadingOff: () -> Unit) {
         listVideo.value!!.clear()
-        repo.getVideosByKeyword(keyword, listVideo)
+        repo.getVideosByKeyword(keyword, listVideo, loadingOff)
     }
 }

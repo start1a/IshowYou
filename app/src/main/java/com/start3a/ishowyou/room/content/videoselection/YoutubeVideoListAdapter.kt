@@ -53,4 +53,9 @@ class YoutubeVideoListAdapter(val list: MutableList<YoutubeSearchData>):
             it.tag = position
         }
     }
+
+    fun initSelectionList() {
+        for (i in 0 until selectionList.size)
+            selectionList[i] = false
+    }
 }

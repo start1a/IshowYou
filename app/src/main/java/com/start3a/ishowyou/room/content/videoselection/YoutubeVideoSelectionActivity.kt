@@ -178,9 +178,11 @@ class YoutubeVideoSelectionActivity : AppCompatActivity() {
                 override fun onQueryTextSubmit(query: String?): Boolean {
 
                     // 검색 성공
-                    if (!query.isNullOrEmpty())
+                    if (!query.isNullOrEmpty()) {
                         loadingView(true)
-                        viewModel!!.getVideosByKeyword(query!!) { loadingView(false) }
+                        viewModel!!.getVideosByKeyword(query) { loadingView(false) }
+                        listVideoAdapter?.initSelectionList()
+                    }
 
                     return true
                 }

@@ -23,6 +23,13 @@
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/videoSelectRecyclerView" />
 
+    <androidx.recyclerview.widget.RecyclerView
+        android:id="@+id/historySearchRecyclerView"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:background="@android:color/white"
+        android:visibility="gone" />
+
     <com.pierfrancescosoffritti.androidyoutubeplayer.core.player.views.YouTubePlayerView
         android:id="@+id/videoSelectionPlayer"
         android:layout_width="wrap_content"

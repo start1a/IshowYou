@@ -21,7 +21,9 @@ class YoutubeVideoSelectionActivity : AppCompatActivity() {
     private var viewModel: YoutubeVideoSelectionViewModel? = null
     private var listVideoAdapter: YoutubeVideoListAdapter? = null
     private var listVideoSelectedAdapter: YoutubeVideoSelectedListAdapter? = null
+    private var listSearchHistoryAdapter: SearchHistoryAdapter? = null
 
+    private var mSearchView: SearchView? = null
     private var setVideoDuration: (() -> Unit)? = null
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -39,6 +41,7 @@ class YoutubeVideoSelectionActivity : AppCompatActivity() {
         viewModel!!.let { vm ->
             initVideoListAdapter()
             initVideoSelectedListAdapter()
+            initSearchHistoryListAdapter()
 
             val selList = vm.listVideoSelected.value!!
             lifecycle.addObserver(videoSelectionPlayer)
@@ -94,8 +97,7 @@ class YoutubeVideoSelectionActivity : AppCompatActivity() {
 
             // 저장 중 로딩 Ui 출력
             loadingView(true)
-        }
-        else endVideoSelection()
+        } else endVideoSelection()
     }
 
     private fun initVideoListAdapter() {
@@ -153,8 +155,8 @@ class YoutubeVideoSelectionActivity : AppCompatActivity() {
                         vm.listVideoSelected.removeAt(pos)
                         val indexList = vm.searchedVideoIndexList
                         listVideoAdapter!!.let {
-                            it.selectionList[ indexList[pos] ] = false
-                            it.notifyItemChanged( indexList[pos] )
+                            it.selectionList[indexList[pos]] = false
+                            it.notifyItemChanged(indexList[pos])
                         }
                         indexList.removeAt(pos)
                         --vm.indexDurationSave
@@ -172,26 +174,64 @@ class YoutubeVideoSelectionActivity : AppCompatActivity() {
     override fun onCreateOptionsMenu(menu: Menu?): Boolean {
         menuInflater.inflate(R.menu.menu_toolbar_search, menu)
         // 메뉴에서 검색
-        (menu!!.findItem(R.id.action_search).actionView as SearchView).let { searchView ->
-            searchView.maxWidth = Int.MAX_VALUE
-            searchView.setOnQueryTextListener(object : SearchView.OnQueryTextListener {
-                override fun onQueryTextSubmit(query: String?): Boolean {
-
-                    // 검색 성공
-                    if (!query.isNullOrEmpty()) {
-                        loadingView(true)
-                        viewModel!!.getVideosByKeyword(query) { loadingView(false) }
-                        listVideoAdapter?.initSelectionList()
-                    }
-
-                    return true
-                }
-
-                override fun onQueryTextChange(newText: String?) = true
-            })
+        mSearchView = menu!!.findItem(R.id.action_search).actionView as SearchView
+        mSearchView!!.setOnQueryTextFocusChangeListener { _, hasFocus ->
+            if (hasFocus) {
+                listSearchHistoryAdapter?.notifyDataSetChanged()
+                historySearchRecyclerView.visibility = View.VISIBLE
+            } else historySearchRecyclerView.visibility = View.GONE
         }
 
+        mSearchView!!.maxWidth = Int.MAX_VALUE
+        mSearchView!!.setOnQueryTextListener(object : SearchView.OnQueryTextListener {
+            override fun onQueryTextSubmit(query: String?): Boolean {
+                val vm = viewModel!!
+                // 검색 성공
+                if (query != null && vm.isQueryAvailable(query)) {
+                    listVideoAdapter?.initSelectionList()
+                    queryVideos(query)
+                    vm.insertSearchKeyword(query)
+                }
+
+                if (!query.isNullOrEmpty() && query.isNotBlank())
+                    mSearchView!!.clearFocus()
+
+                return true
+            }
+
+            override fun onQueryTextChange(newText: String?) = true
+        })
+
         return super.onCreateOptionsMenu(menu)
+    }
+
+    private fun initSearchHistoryListAdapter() {
+        viewModel!!.let { vm ->
+            vm.getAllSearchHistory()
+
+            listSearchHistoryAdapter =
+                SearchHistoryAdapter(vm.listSearchHistory).apply {
+                    viewClicked = { pos ->
+                        val keyword = list[pos].keyword
+
+                        if (vm.isQueryAvailable(keyword)) {
+                            listVideoAdapter!!.initSelectionList()
+                            queryVideos(keyword)
+                        }
+                        vm.updateSearchKeyword(pos)
+                        mSearchView!!.run {
+                            setQuery(keyword, false)
+                            clearFocus()
+                        }
+                    }
+
+                    pasteButtonClicked = { pos ->
+                        mSearchView!!.setQuery(list[pos].keyword, false)
+                    }
+                }
+            historySearchRecyclerView.adapter = listSearchHistoryAdapter
+            historySearchRecyclerView.layoutManager = LinearLayoutManager(this)
+        }
     }
 
     private fun endVideoSelection() {
@@ -215,5 +255,36 @@ class YoutubeVideoSelectionActivity : AppCompatActivity() {
     private fun loadingView(visible: Boolean) {
         if (visible) loading_layout.visibility = View.VISIBLE
         else loading_layout.visibility = View.GONE
+    }
+
+    private fun queryVideos(keyword: String) {
+        viewModel!!.let { vm ->
+            loadingView(true)
+            vm.getVideosByKeyword(keyword) {
+                loadingView(false)
+                checkContainVideoInSelectionList()
+            }
+            vm.curQueryKeyword = keyword
+        }
+    }
+
+    private fun checkContainVideoInSelectionList() {
+        viewModel!!.let { vm ->
+            val listVideo = vm.listVideo.value!!
+            val listSelected = vm.listVideoSelected.value!!
+
+            if (listSelected.size == 0)
+                return
+
+            for (i in 0 until listVideo.size) {
+                for (selVideo in listSelected) {
+                    if (listVideo[i] == selVideo) {
+                        listVideoAdapter!!.selectionList[i] = true
+                        break
+                    }
+                }
+            }
+            listVideoAdapter?.notifyDataSetChanged()
+        }
     }
 }

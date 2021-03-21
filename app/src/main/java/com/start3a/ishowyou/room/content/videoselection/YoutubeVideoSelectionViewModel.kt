@@ -4,9 +4,11 @@ import android.content.Context
 import androidx.lifecycle.ViewModel
 import com.start3a.ishowyou.contentapi.YoutubeSearchData
 import com.start3a.ishowyou.data.ListLiveData
+import com.start3a.ishowyou.model.VideoSearchHistory
 import com.start3a.ishowyou.repository.RepoVideoSelection
+import java.util.*
 
-class YoutubeVideoSelectionViewModel: ViewModel() {
+class YoutubeVideoSelectionViewModel : ViewModel() {
 
     lateinit var context: Context
     lateinit var repo: RepoVideoSelection
@@ -18,12 +20,17 @@ class YoutubeVideoSelectionViewModel: ViewModel() {
     val listVideoSelected: ListLiveData<YoutubeSearchData> by lazy {
         ListLiveData(mutableListOf())
     }
+
+    val listSearchHistory = LinkedList<VideoSearchHistory>()
+
     // 선택 비디오들의 탐색 비디오 인덱스가 저장됨
     // 비디오 삭제 시 참조하여 탐색 비디오 체크 해제
     var searchedVideoIndexList = mutableListOf<Int>()
+    var curQueryKeyword = ""
 
     // 현재 duration 추출 비디오 인덱스
     var indexDurationSave = -1
+
     // duration 추출 작업 종료 여부
     var isLoadVideosStarted = false
     var isEndVideoSelection = false
@@ -32,8 +39,47 @@ class YoutubeVideoSelectionViewModel: ViewModel() {
         repo = RepoVideoSelection(context)
     }
 
-    fun getVideosByKeyword(keyword: String, loadingOff: () -> Unit) {
+    fun getVideosByKeyword(keyword: String, queryEnded: () -> Unit) {
         listVideo.value!!.clear()
-        repo.getVideosByKeyword(keyword, listVideo, loadingOff)
+        repo.getVideosByKeyword(keyword, listVideo, queryEnded)
     }
+
+    fun getAllSearchHistory() {
+        repo.getAllSearchHistory(listSearchHistory)
+    }
+
+    fun insertSearchKeyword(keyword: String) {
+        for (i in 0 until listSearchHistory.size) {
+            val item = listSearchHistory[i]
+
+            if (keyword == item.keyword) {
+                updateSearchKeyword(i)
+                return
+            }
+        }
+
+        // 중복 없음
+        val record = VideoSearchHistory(keyword, Date().time)
+
+        repo.insertSearchKeyword(record)
+        listSearchHistory.addFirst(record)
+        if (listSearchHistory.size > VideoSearchHistory.maxItem) {
+            repo.deleteHistory(listSearchHistory.last)
+            listSearchHistory.removeLast()
+        }
+    }
+
+    fun updateSearchKeyword(index: Int) {
+        val record = listSearchHistory[index].run {
+            createdTime = Date().time
+            this
+        }
+
+        repo.insertSearchKeyword(record)
+        listSearchHistory.addFirst(record)
+        listSearchHistory.removeAt(index + 1)
+    }
+
+    fun isQueryAvailable(keyword: String) =
+        curQueryKeyword != keyword && keyword.isNotBlank() && keyword.isNotEmpty()
 }

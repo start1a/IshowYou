@@ -7,12 +7,14 @@ import androidx.room.Room
 import com.start3a.ishowyou.contentapi.RetrofitYoutubeService
 import com.start3a.ishowyou.contentapi.YoutubeSearchData
 import com.start3a.ishowyou.contentapi.YoutubeSearchJsonData
-import com.start3a.ishowyou.contentapi.YoutubeVideoForRoomDB
 import com.start3a.ishowyou.data.ListLiveData
+import com.start3a.ishowyou.model.RoomData_VideoSearch
 import com.start3a.ishowyou.model.RoomDatabase
+import com.start3a.ishowyou.model.VideoSearchHistory
 import retrofit2.Call
 import retrofit2.Callback
 import retrofit2.Response
+import java.util.*
 
 class RepoVideoSelection(context: Context) {
 
@@ -27,7 +29,7 @@ class RepoVideoSelection(context: Context) {
     fun getVideosByKeyword(
         keyword: String,
         videoList: ListLiveData<YoutubeSearchData>,
-        loadingOff: () -> Unit
+        queryEnded: () -> Unit
     ) {
         val videosByRoom = roomDB.youtubeDao().getVideosByKeyword(keyword)
 
@@ -45,7 +47,7 @@ class RepoVideoSelection(context: Context) {
                 })
             }
             videoList.addAll(list)
-            loadingOff()
+            queryEnded()
         }
 
         // 캐시 없음
@@ -60,7 +62,7 @@ class RepoVideoSelection(context: Context) {
                         ) {
                             if (response.isSuccessful) {
                                 val searchedVideoList = mutableListOf<YoutubeSearchData>()
-                                val roomSaveList = mutableListOf<YoutubeVideoForRoomDB>()
+                                val roomSaveList = mutableListOf<RoomData_VideoSearch>()
                                 response.body()!!.items.forEach {
 
                                     val video = YoutubeSearchData().apply {
@@ -73,7 +75,7 @@ class RepoVideoSelection(context: Context) {
                                         thumbnailSmall = it.snippet.thumbnails.default.url
                                     }
 
-                                    val videoForRoomDB = YoutubeVideoForRoomDB(
+                                    val videoForRoomDB = RoomData_VideoSearch(
                                         video.title,
                                         video.desc,
                                         video.channelTitle,
@@ -89,23 +91,39 @@ class RepoVideoSelection(context: Context) {
                                 videoList.addAll(searchedVideoList)
                                 insertVideos(roomSaveList)
                             }
-                            loadingOff()
+                            queryEnded()
                         }
 
                         override fun onFailure(call: Call<YoutubeSearchJsonData>, t: Throwable) {
                             Log.d(TAG, "youtube video search is failed.\n$t")
-                            loadingOff()
+                            queryEnded()
                         }
                     })
             }.run()
         }
     }
 
-    private fun insertVideos(videos: List<YoutubeVideoForRoomDB>) {
+    private fun insertVideos(videos: List<RoomData_VideoSearch>) {
         roomDB.youtubeDao().insertVideos(videos)
+    }
+
+    fun getAllSearchHistory(listSearchHistory: LinkedList<VideoSearchHistory>) {
+        roomDB.youtubeDao().getAllSearchKewordHistory().let { keywordsByRoom ->
+            keywordsByRoom.forEach {
+                listSearchHistory.add(it)
+            }
+        }
+    }
+
+    fun insertSearchKeyword(record: VideoSearchHistory) {
+        roomDB.youtubeDao().insertSearchKeyword(record)
     }
 
     // html 특수문자 처리 ex) &#38;, &#39; -> &, '
     private fun converHtmlEntity_toString(str: String) =
         Html.fromHtml(str, Html.FROM_HTML_MODE_LEGACY).toString()
+
+    fun deleteHistory(item: VideoSearchHistory) {
+        roomDB.youtubeDao().deleteHistory(item)
+    }
 }

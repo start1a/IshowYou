@@ -25,6 +25,7 @@ interface YoutubeApi {
         @Query("q") q: String,
         @Query("key") key: String = ApiKey.key,
         @Query("type") type: String = "video",
+        @Query("eventType") eventType: String = "completed",
         @Query("part") part: String = "snippet",
         @Query("maxResults") maxResult: Int = 50
     ): Call<YoutubeSearchJsonData>

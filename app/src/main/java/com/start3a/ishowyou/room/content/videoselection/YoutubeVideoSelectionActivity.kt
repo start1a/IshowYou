@@ -5,6 +5,7 @@ import android.content.Intent
 import android.os.Bundle
 import android.view.Menu
 import android.view.View
+import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import androidx.appcompat.widget.SearchView
 import androidx.lifecycle.ViewModelProvider
@@ -84,6 +85,35 @@ class YoutubeVideoSelectionActivity : AppCompatActivity() {
                             youTubePlayer.mute()
                     }
                 }
+
+                override fun onError(
+                    youTubePlayer: YouTubePlayer,
+                    error: PlayerConstants.PlayerError
+                ) {
+                    super.onError(youTubePlayer, error)
+
+                    when (error) {
+                        PlayerConstants.PlayerError.VIDEO_NOT_PLAYABLE_IN_EMBEDDED_PLAYER ->
+                            Toast.makeText(
+                                applicationContext,
+                                "재생이 불가능한 비디오입니다.",
+                                Toast.LENGTH_SHORT
+                            ).show()
+                        PlayerConstants.PlayerError.VIDEO_NOT_FOUND -> {
+                            Toast.makeText(applicationContext, "비디오를 찾지 못했습니다.", Toast.LENGTH_SHORT)
+                                .show()
+                        }
+                    }
+
+                    selList.removeAt(vm.indexDurationSave)
+                    if (vm.indexDurationSave < selList.size)
+                        youTubePlayer.loadVideo(selList[vm.indexDurationSave].videoId, 0f)
+                    else {
+                        vm.indexDurationSave--
+                        vm.isLoadVideosStarted = false
+                        notifyExtractIndex(-1)
+                    }
+                }
             })
         }
     }
@@ -105,13 +135,8 @@ class YoutubeVideoSelectionActivity : AppCompatActivity() {
             listVideoAdapter = YoutubeVideoListAdapter(vm.listVideo.value!!).apply {
                 // 아이템 클릭
                 videoClicked = { pos ->
-                    val selList = vm.listVideoSelected.value!!
-                    var indexSearched = -1
-                    for (i in 0 until selList.size)
-                        if (list[pos] == selList[i]) {
-                            indexSearched = i
-                            break
-                        }
+                    // 중복 여부 체크
+                    val indexSearched = vm.listVideoSelected.findIndex(list[pos])
 
                     // 추가
                     if (indexSearched == -1) {
@@ -143,12 +168,9 @@ class YoutubeVideoSelectionActivity : AppCompatActivity() {
                 YoutubeVideoSelectedListAdapter(vm.listVideoSelected.value!!).apply {
                     // 뷰 클릭 시 해당 아이템이 검색된 리스트에 있으면 스크롤
                     videoClicked = { pos ->
-                        val vList = vm.listVideo.value!!
-                        for (i in 0 until vList.size)
-                            if (vList[i] === list[pos]) {
-                                videoRecyclerView.scrollToPosition(i)
-                                break
-                            }
+                        val indexSearched = vm.listVideo.findIndex(list[pos])
+                        if (indexSearched != -1)
+                            videoRecyclerView.scrollToPosition(indexSearched)
                     }
 
                     videoDeleted = { pos ->

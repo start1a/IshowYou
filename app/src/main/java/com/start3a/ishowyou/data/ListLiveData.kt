@@ -22,4 +22,13 @@ class ListLiveData<T>(private val list: MutableList<T>): MutableLiveData<Mutable
         list.removeAt(pos)
         value = list
     }
+
+    fun findIndex(item : T): Int {
+        for (i in 0 until list.size) {
+            if (item == list[i])
+                return i
+        }
+
+        return -1
+    }
 }

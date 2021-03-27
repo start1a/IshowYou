@@ -56,10 +56,14 @@ class ChatRoomActivity : AppCompatActivity() {
             // 탭 넘기기
             else {
                 when (bottom_navigation_chatroom.selectedItemId) {
-                    R.id.action_contents -> bottom_navigation_chatroom.selectedItemId = R.id.action_member
-                    R.id.action_member -> bottom_navigation_chatroom.selectedItemId = R.id.action_chat
-                    R.id.action_chat -> bottom_navigation_chatroom.selectedItemId = R.id.action_contents
-                    else -> {}
+                    R.id.action_contents -> bottom_navigation_chatroom.selectedItemId =
+                        R.id.action_member
+                    R.id.action_member -> bottom_navigation_chatroom.selectedItemId =
+                        R.id.action_chat
+                    R.id.action_chat -> bottom_navigation_chatroom.selectedItemId =
+                        R.id.action_contents
+                    else -> {
+                    }
                 }
             }
         }
@@ -162,20 +166,30 @@ class ChatRoomActivity : AppCompatActivity() {
                     vm.requestJoinRoom(roomCode, vm.isHost,
                         // 방 입장 성공
                         { contentName ->
-                        when (contentName) {
-                            "Youtube" -> {
-                                vm.notifyPrevVideoPlayList()
-                                vm.initRoomCurContent(Content.YOUTUBE)
+
+                            when (contentName) {
+                                "Youtube" -> {
+                                    vm.notifyPrevVideoPlayList()
+                                    vm.initRoomCurContent(Content.YOUTUBE)
+                                }
                             }
-                        }
-                    }, {
+                            vm.notifyDeleteRoom {
+                                val intent = Intent().apply {
+                                    putExtra("message", "방장이 퇴장했습니다.")
+                                }
+                                setResult(Activity.RESULT_CANCELED, intent)
+                                finish()
+                            }
+
+                        },
                         // 방 입장 실패
-                        val intent = Intent().apply {
-                            putExtra("message", "방이 존재하지 않습니다.")
-                        }
-                        setResult(Activity.RESULT_CANCELED, intent)
-                        finish()
-                    })
+                        {
+                            val intent = Intent().apply {
+                                putExtra("message", "방이 존재하지 않습니다.")
+                            }
+                            setResult(Activity.RESULT_CANCELED, intent)
+                            finish()
+                        })
                 }
             }
         }

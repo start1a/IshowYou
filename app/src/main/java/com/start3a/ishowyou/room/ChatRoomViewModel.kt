@@ -181,14 +181,16 @@ class ChatRoomViewModel: ViewModel() {
         dbChat.closeRoom(isHost)
     }
 
-    fun initChatRoom(roomDeleted: () -> Unit) {
+    fun initChatRoom() {
         dbChat.notifyChatMessage {
             // 메시지 감지
             val list = listMessage.value!!
             list.add(it)
             listMessage.value = list
         }
+    }
 
+    fun notifyDeleteRoom(roomDeleted: () -> Unit) {
         if (!isHost) {
             dbChat.notifyIsRoomDeleted {
                 leaveRoom()

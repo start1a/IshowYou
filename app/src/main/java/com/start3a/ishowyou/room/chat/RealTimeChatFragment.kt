@@ -55,14 +55,7 @@ class RealTimeChatFragment : Fragment() {
         viewModel!!.let { vm ->
             initAdapter()
             initView()
-
-            vm.initChatRoom {
-                val intent = Intent().apply {
-                    putExtra("message", "방장이 퇴장했습니다.")
-                }
-                requireActivity().setResult(Activity.RESULT_CANCELED, intent)
-                requireActivity().finish()
-            }
+            vm.initChatRoom()
 
             btnSendMessage.setOnClickListener {
                 val message = editSendMessage.text.toString()

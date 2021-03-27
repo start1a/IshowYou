@@ -39,20 +39,20 @@ class RdbDao(private val db: DatabaseReference) {
 
             seekbarChangedListener =
                 db.child(PATH_REALTIME_SEEKBAR).addChildEventListener(object : ChildEventListener {
-                        override fun onChildAdded(snapshot: DataSnapshot, previousChildName: String?) {}
+                    override fun onChildAdded(snapshot: DataSnapshot, previousChildName: String?) {}
 
-                        override fun onChildChanged(snapshot: DataSnapshot, previousChildName: String?) {
-                            snapshot.getValue<Float>()?.let { time ->
-                                changeSeekbar(time)
-                            }
+                    override fun onChildChanged(snapshot: DataSnapshot, previousChildName: String?) {
+                        snapshot.getValue<Float>()?.let { time ->
+                            changeSeekbar(time)
                         }
+                    }
 
-                        override fun onChildRemoved(snapshot: DataSnapshot) {}
-                        override fun onChildMoved(snapshot: DataSnapshot, previousChildName: String?) {}
-                        override fun onCancelled(error: DatabaseError) {
-                            Log.d(TAG, "notifying seekbar change is Cancelled.\n$error")
-                        }
-                    })
+                    override fun onChildRemoved(snapshot: DataSnapshot) {}
+                    override fun onChildMoved(snapshot: DataSnapshot, previousChildName: String?) {}
+                    override fun onCancelled(error: DatabaseError) {
+                        Log.d(TAG, "notifying seekbar change is Cancelled.\n$error")
+                    }
+                })
         }
 
         override fun close() {
@@ -126,22 +126,22 @@ class RdbDao(private val db: DatabaseReference) {
             if (newVideoSelectedListener != null) return
 
             newVideoSelectedListener =
-            db.child(PATH_REALTIME_NEW_VIDEO).addChildEventListener(object : ChildEventListener {
-                override fun onChildAdded(snapshot: DataSnapshot, previousChildName: String?) {}
+                db.child(PATH_REALTIME_NEW_VIDEO).addChildEventListener(object : ChildEventListener {
+                    override fun onChildAdded(snapshot: DataSnapshot, previousChildName: String?) {}
 
-                override fun onChildChanged(snapshot: DataSnapshot, previousChildName: String?) {
-                    snapshot.getValue<String>()?.let { videoId ->
-                        newVideoPlayed(videoId)
+                    override fun onChildChanged(snapshot: DataSnapshot, previousChildName: String?) {
+                        snapshot.getValue<String>()?.let { videoId ->
+                            newVideoPlayed(videoId)
+                        }
                     }
-                }
-                override fun onChildRemoved(snapshot: DataSnapshot) {}
-                override fun onChildMoved(snapshot: DataSnapshot, previousChildName: String?) {}
+                    override fun onChildRemoved(snapshot: DataSnapshot) {}
+                    override fun onChildMoved(snapshot: DataSnapshot, previousChildName: String?) {}
 
-                override fun onCancelled(error: DatabaseError) {
-                    Log.d(TAG, "Notifying new video selection is Cancelled.\n$error")
-                }
+                    override fun onCancelled(error: DatabaseError) {
+                        Log.d(TAG, "Notifying new video selection is Cancelled.\n$error")
+                    }
 
-            })
+                })
 
         }
 
@@ -164,39 +164,39 @@ class RdbDao(private val db: DatabaseReference) {
         fun requestVideoPlayState(requestPlayState: (PlayStateRequested, Long, Long) -> Unit) {
             db.child(PATH_CURRENT_PLAY_STATE)
                 .addListenerForSingleValueEvent(object : ValueEventListener {
-                override fun onDataChange(snapshot: DataSnapshot) {
-                    if (snapshot.exists()) {
-                        val video = snapshot.child("curVideo/curVideo").getValue<YoutubeSearchData>()!!
-                        val seekBar = snapshot.child("curVideo/seekbar").getValue<Float>()!!
-                        val videoInfo = PlayStateRequested(video, seekBar)
-                        var videoInfoSaveTime = snapshot.child("timeRecorded").getValue<Long>()?:0L
+                    override fun onDataChange(snapshot: DataSnapshot) {
+                        if (snapshot.exists()) {
+                            val video = snapshot.child("curVideo/curVideo").getValue<YoutubeSearchData>()!!
+                            val seekBar = snapshot.child("curVideo/seekbar").getValue<Float>()!!
+                            val videoInfo = PlayStateRequested(video, seekBar)
+                            var videoInfoSaveTime = snapshot.child("timeRecorded").getValue<Long>()?:0L
 
-                        // 현재 서버 시간 가져오기
-                        val serverTimeRef = db.child("ServerTime")
-                        serverTimeRef.setValue(ServerValue.TIMESTAMP).addOnSuccessListener {
-                            serverTimeRef.addListenerForSingleValueEvent(object : ValueEventListener {
-                                override fun onDataChange(snapshot: DataSnapshot) {
-                                    snapshot.getValue<Long>()?.let { serverTime ->
-                                        if (videoInfoSaveTime == 0L)
-                                            videoInfoSaveTime = serverTime
-                                        requestPlayState(videoInfo, serverTime, videoInfoSaveTime)
+                            // 현재 서버 시간 가져오기
+                            val serverTimeRef = db.child("ServerTime")
+                            serverTimeRef.setValue(ServerValue.TIMESTAMP).addOnSuccessListener {
+                                serverTimeRef.addListenerForSingleValueEvent(object : ValueEventListener {
+                                    override fun onDataChange(snapshot: DataSnapshot) {
+                                        snapshot.getValue<Long>()?.let { serverTime ->
+                                            if (videoInfoSaveTime == 0L)
+                                                videoInfoSaveTime = serverTime
+                                            requestPlayState(videoInfo, serverTime, videoInfoSaveTime)
+                                        }
                                     }
-                                }
 
-                                override fun onCancelled(error: DatabaseError) {
-                                    Log.d(TAG, "getting serverTime is Cancelled.\n$error")
-                                }
+                                    override fun onCancelled(error: DatabaseError) {
+                                        Log.d(TAG, "getting serverTime is Cancelled.\n$error")
+                                    }
 
-                            })
+                                })
+                            }
                         }
                     }
-                }
 
-                override fun onCancelled(error: DatabaseError) {
-                    Log.d(TAG, "Request video play state is Cancelled.\n$error")
-                }
+                    override fun onCancelled(error: DatabaseError) {
+                        Log.d(TAG, "Request video play state is Cancelled.\n$error")
+                    }
 
-            })
+                })
         }
 
         fun inActiveYoutubeRealtimeListener() {
@@ -290,7 +290,7 @@ class RdbDao(private val db: DatabaseReference) {
             val joinRoomTime = Date().time.toString()
 
             messageNotifyListener =
-                // 새 멤버는 입장 이후 시간의 메세지만 추가됨
+                    // 새 멤버는 입장 이후 시간의 메세지만 추가됨
                 db.child("message/$roomCode").orderByKey().startAt(joinRoomTime)
                     .addChildEventListener(object : ChildEventListener {
 

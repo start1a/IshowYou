@@ -41,6 +41,7 @@ class YoutubeVideoSelectionActivity : AppCompatActivity() {
         }
 
         viewModel!!.let { vm ->
+            initView()
             initVideoListAdapter()
             initVideoSelectedListAdapter()
             initSearchHistoryListAdapter()
@@ -126,15 +127,23 @@ class YoutubeVideoSelectionActivity : AppCompatActivity() {
     }
 
     override fun onBackPressed() {
+        finish()
+    }
+
+    private fun initView() {
         val vm = viewModel!!
 
-        // 아직 duration 추출 작업 중
-        if (vm.isLoadVideosStarted) {
-            vm.isEndVideoSelection = true
+        btnRoomCreate.setOnClickListener {
+            // 아직 duration 추출 작업 중
+            if (vm.isLoadVideosStarted) {
+                vm.isEndVideoSelection = true
 
-            // 저장 중 로딩 Ui 출력
-            loadingView(true)
-        } else endVideoSelection()
+                // 저장 중 로딩 Ui 출력
+                loadingView(true)
+            } else endVideoSelection()
+        }
+
+        loading_layout.setOnClickListener {}
     }
 
     private fun initVideoListAdapter() {
@@ -210,8 +219,12 @@ class YoutubeVideoSelectionActivity : AppCompatActivity() {
             videoSelectRecyclerView.adapter = listVideoSelectedAdapter
             videoSelectRecyclerView.layoutManager =
                 LinearLayoutManager(this, LinearLayoutManager.HORIZONTAL, false)
+
             vm.listVideoSelected.observe(this) {
                 listVideoSelectedAdapter?.notifyDataSetChanged()
+
+                if (it.size > 0) btnRoomCreate.visibility = View.VISIBLE
+                else btnRoomCreate.visibility = View.GONE
             }
         }
     }
@@ -220,32 +233,38 @@ class YoutubeVideoSelectionActivity : AppCompatActivity() {
         menuInflater.inflate(R.menu.menu_toolbar_search, menu)
         // 메뉴에서 검색
         mSearchView = menu!!.findItem(R.id.action_search).actionView as SearchView
-        mSearchView!!.setOnQueryTextFocusChangeListener { _, hasFocus ->
-            if (hasFocus) {
-                listSearchHistoryAdapter?.notifyDataSetChanged()
-                historySearchRecyclerView.visibility = View.VISIBLE
-            } else historySearchRecyclerView.visibility = View.GONE
-        }
 
-        mSearchView!!.maxWidth = Int.MAX_VALUE
-        mSearchView!!.setOnQueryTextListener(object : SearchView.OnQueryTextListener {
-            override fun onQueryTextSubmit(query: String?): Boolean {
-                val vm = viewModel!!
-                // 검색 성공
-                if (query != null && vm.isQueryAvailable(query)) {
-                    listVideoAdapter?.initSelectionList()
-                    queryVideos(query)
-                    vm.insertSearchKeyword(query)
+        mSearchView!!.let {
+            it.maxWidth  = Int.MAX_VALUE
+
+            it.setOnQueryTextListener(object : SearchView.OnQueryTextListener {
+                override fun onQueryTextSubmit(query: String?): Boolean {
+                    val vm = viewModel!!
+                    // 검색 성공
+                    if (query != null && vm.isQueryAvailable(query)) {
+                        listVideoAdapter?.initSelectionList()
+                        queryVideos(query)
+                        vm.insertSearchKeyword(query)
+                    }
+
+                    if (!query.isNullOrEmpty() && query.isNotBlank())
+                        mSearchView!!.clearFocus()
+
+                    return true
                 }
 
-                if (!query.isNullOrEmpty() && query.isNotBlank())
-                    mSearchView!!.clearFocus()
+                override fun onQueryTextChange(newText: String?) = true
+            })
 
-                return true
+            it.setOnQueryTextFocusChangeListener { _, hasFocus ->
+                if (hasFocus) {
+                    listSearchHistoryAdapter?.notifyDataSetChanged()
+                    historySearchRecyclerView.visibility = View.VISIBLE
+                } else historySearchRecyclerView.visibility = View.GONE
             }
 
-            override fun onQueryTextChange(newText: String?) = true
-        })
+            it.isIconified = false
+        }
 
         return super.onCreateOptionsMenu(menu)
     }

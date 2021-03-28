@@ -23,7 +23,7 @@ class JoinChatRoomActivity : AppCompatActivity() {
         registerForActivityResult(
             ActivityResultContracts.StartActivityForResult()
         ) { activityResult ->
-            if (activityResult.resultCode == Activity.RESULT_OK && activityResult.data != null) {
+            if (activityResult.resultCode == Activity.RESULT_CANCELED && activityResult.data != null) {
                 val text = activityResult.data!!.getStringExtra("message")
                 Toast.makeText(this, text, Toast.LENGTH_LONG).show()
             }

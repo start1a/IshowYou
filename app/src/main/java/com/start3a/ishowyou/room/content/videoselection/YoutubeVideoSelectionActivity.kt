@@ -14,6 +14,7 @@ import com.pierfrancescosoffritti.androidyoutubeplayer.core.player.PlayerConstan
 import com.pierfrancescosoffritti.androidyoutubeplayer.core.player.YouTubePlayer
 import com.pierfrancescosoffritti.androidyoutubeplayer.core.player.listeners.AbstractYouTubePlayerListener
 import com.start3a.ishowyou.R
+import com.start3a.ishowyou.contentapi.VideoSelectInfo
 import com.start3a.ishowyou.contentapi.YoutubeSearchData
 import kotlinx.android.synthetic.main.activity_youtube_video_selection.*
 
@@ -73,17 +74,17 @@ class YoutubeVideoSelectionActivity : AppCompatActivity() {
                 }
 
                 override fun onStateChange(
-                    youTubePlayer: YouTubePlayer,
-                    state: PlayerConstants.PlayerState
-                ) {
-                    super.onStateChange(youTubePlayer, state)
+                        youTubePlayer: YouTubePlayer,
+                        state: PlayerConstants.PlayerState
+                    ) {
+                        super.onStateChange(youTubePlayer, state)
 
-                    when (state) {
-                        PlayerConstants.PlayerState.PLAYING ->
-                            youTubePlayer.pause()
-                        PlayerConstants.PlayerState.BUFFERING ->
-                            youTubePlayer.mute()
-                    }
+                        when (state) {
+                            PlayerConstants.PlayerState.PLAYING ->
+                                youTubePlayer.pause()
+                            PlayerConstants.PlayerState.BUFFERING ->
+                                youTubePlayer.mute()
+                        }
                 }
 
                 override fun onError(
@@ -94,18 +95,24 @@ class YoutubeVideoSelectionActivity : AppCompatActivity() {
 
                     when (error) {
                         PlayerConstants.PlayerError.VIDEO_NOT_PLAYABLE_IN_EMBEDDED_PLAYER ->
-                            Toast.makeText(
-                                applicationContext,
-                                "재생이 불가능한 비디오입니다.",
-                                Toast.LENGTH_SHORT
-                            ).show()
-                        PlayerConstants.PlayerError.VIDEO_NOT_FOUND -> {
-                            Toast.makeText(applicationContext, "비디오를 찾지 못했습니다.", Toast.LENGTH_SHORT)
-                                .show()
-                        }
+                            Toast.makeText(applicationContext, "재생이 불가능한 비디오입니다.", Toast.LENGTH_SHORT).show()
+                        PlayerConstants.PlayerError.VIDEO_NOT_FOUND ->
+                            Toast.makeText(applicationContext, "비디오를 찾지 못했습니다.", Toast.LENGTH_SHORT).show()
+                        else -> Toast.makeText(applicationContext, "error : $error", Toast.LENGTH_SHORT).show()
                     }
 
-                    selList.removeAt(vm.indexDurationSave)
+                    // 선택 삭제
+                    vm.selectedVideoInfoList.let {
+                        if (it[vm.indexDurationSave].keyword == vm.curQueryKeyword) {
+                            val index = it[vm.indexDurationSave].indexToSearchList
+                            notifySearchedVideoCheck(index, -1)
+                        }
+                        selList.removeAt(vm.indexDurationSave)
+                        it.removeAt(vm.indexDurationSave)
+                        repositionVideoChecking(vm.indexDurationSave)
+                    }
+
+                    // 다음
                     if (vm.indexDurationSave < selList.size)
                         youTubePlayer.loadVideo(selList[vm.indexDurationSave].videoId, 0f)
                     else {
@@ -138,17 +145,32 @@ class YoutubeVideoSelectionActivity : AppCompatActivity() {
                     // 중복 여부 체크
                     val indexSearched = vm.listVideoSelected.findIndex(list[pos])
 
+                    val selVidInfoList = vm.selectedVideoInfoList
                     // 추가
                     if (indexSearched == -1) {
+
                         vm.listVideoSelected.add(list[pos])
-                        vm.searchedVideoIndexList.add(pos)
-                        selectionList[pos] = true
-                        notifyItemChanged(pos)
+                        selVidInfoList.add(VideoSelectInfo(vm.curQueryKeyword, pos))
+                        notifySearchedVideoCheck(pos, selVidInfoList.lastIndex)
 
                         // 비디오 duration 추출 작업 시작
                         if (!vm.isLoadVideosStarted) {
                             vm.isLoadVideosStarted = true
                             setVideoDuration?.invoke()
+                        }
+                    }
+                    // 삭제
+                    else {
+                        // 추출 중이면
+                        if (vm.isLoadVideosStarted && vm.indexDurationSave == selectionList[pos])
+                            Toast.makeText(applicationContext, "로딩이 완료된 후 제거가 가능합니다.", Toast.LENGTH_SHORT).show()
+
+                        else {
+                            vm.listVideoSelected.removeAt(selectionList[pos])
+                            selVidInfoList.removeAt(selectionList[pos])
+                            repositionVideoChecking(selectionList[pos])
+                            selectionList[pos] = -1
+                            --vm.indexDurationSave
                         }
                     }
                 }
@@ -174,13 +196,14 @@ class YoutubeVideoSelectionActivity : AppCompatActivity() {
                     }
 
                     videoDeleted = { pos ->
+                        val selInfoList = vm.selectedVideoInfoList
+
                         vm.listVideoSelected.removeAt(pos)
-                        val indexList = vm.searchedVideoIndexList
-                        listVideoAdapter!!.let {
-                            it.selectionList[indexList[pos]] = false
-                            it.notifyItemChanged(indexList[pos])
-                        }
-                        indexList.removeAt(pos)
+                        val index = selInfoList[pos].indexToSearchList
+                        if (selInfoList[pos].keyword == vm.curQueryKeyword)
+                            notifySearchedVideoCheck(index, -1)
+                        selInfoList.removeAt(pos)
+                        repositionVideoChecking(pos)
                         --vm.indexDurationSave
                     }
                 }
@@ -274,6 +297,13 @@ class YoutubeVideoSelectionActivity : AppCompatActivity() {
         }
     }
 
+    private fun notifySearchedVideoCheck(index: Int, selectedIndex: Int) {
+        listVideoAdapter!!.let {
+            it.selectionList[index] = selectedIndex
+            it.notifyItemChanged(index)
+        }
+    }
+
     private fun loadingView(visible: Boolean) {
         if (visible) loading_layout.visibility = View.VISIBLE
         else loading_layout.visibility = View.GONE
@@ -281,32 +311,46 @@ class YoutubeVideoSelectionActivity : AppCompatActivity() {
 
     private fun queryVideos(keyword: String) {
         viewModel!!.let { vm ->
+            vm.curQueryKeyword = keyword
             loadingView(true)
             vm.getVideosByKeyword(keyword) {
                 loadingView(false)
                 checkContainVideoInSelectionList()
             }
-            vm.curQueryKeyword = keyword
         }
     }
 
     private fun checkContainVideoInSelectionList() {
         viewModel!!.let { vm ->
-            val listVideo = vm.listVideo.value!!
-            val listSelected = vm.listVideoSelected.value!!
+            val listSelected = vm.listVideoSelected
 
-            if (listSelected.size == 0)
+            if (listSelected.value!!.size == 0)
                 return
 
-            for (i in 0 until listVideo.size) {
-                for (selVideo in listSelected) {
-                    if (listVideo[i] == selVideo) {
-                        listVideoAdapter!!.selectionList[i] = true
-                        break
-                    }
+            for (i in 0 until vm.selectedVideoInfoList.size) {
+                val item = vm.selectedVideoInfoList[i]
+
+                if (item.keyword == vm.curQueryKeyword)
+                    listVideoAdapter!!.selectionList[item.indexToSearchList] = i
+            }
+
+            listVideoAdapter?.notifyDataSetChanged()
+        }
+    }
+
+    // 선택한 비디오를 삭제 후 뒷 번호의 비디오의 체크 위치 1칸 조정
+    private fun repositionVideoChecking(startIndex: Int) {
+        viewModel!!.let { vm ->
+            val selInfolist = vm.selectedVideoInfoList
+            val size = vm.listVideoSelected.value!!.size
+
+            for (i in startIndex until size) {
+                if (selInfolist[i].keyword == vm.curQueryKeyword) {
+                    val index = selInfolist[i].indexToSearchList
+                    listVideoAdapter!!.selectionList[index] -= 1
                 }
             }
-            listVideoAdapter?.notifyDataSetChanged()
+            listVideoAdapter!!.notifyDataSetChanged()
         }
     }
 }

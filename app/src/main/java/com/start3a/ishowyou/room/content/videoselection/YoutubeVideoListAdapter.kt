@@ -14,9 +14,9 @@ class YoutubeVideoListAdapter(val list: MutableList<YoutubeSearchData>):
     RecyclerView.Adapter<ItemViewHolder>() {
 
     lateinit var videoClicked: (Int) -> Unit
-    val selectionList = mutableListOf<Boolean>().apply {
+    val selectionList = mutableListOf<Int>().apply {
         for (i in 0 until 50)
-            add(false)
+            add(-1)
     }
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ItemViewHolder {
@@ -45,7 +45,7 @@ class YoutubeVideoListAdapter(val list: MutableList<YoutubeSearchData>):
                 .error(R.drawable.ic_baseline_search_24)
                 .into(it.image_thumbnail)
 
-            if (selectionList[position])
+            if (selectionList[position] != -1)
                 it.image_checked.visibility = View.VISIBLE
             else it.image_checked.visibility = View.GONE
 
@@ -56,6 +56,6 @@ class YoutubeVideoListAdapter(val list: MutableList<YoutubeSearchData>):
 
     fun initSelectionList() {
         for (i in 0 until selectionList.size)
-            selectionList[i] = false
+            selectionList[i] = -1
     }
 }

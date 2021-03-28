@@ -63,6 +63,13 @@ data class PlayStateRequested(
     var seekbar: Float
 )
 
+// 비디오 선택 리스트 정보
+data class VideoSelectInfo(
+    var keyword: String,
+    // 검색한 비디오에서의 위치
+    var indexToSearchList: Int
+)
+
 // Json -> Object
 data class YoutubeSearchJsonData(
     var regionCode: String = "",

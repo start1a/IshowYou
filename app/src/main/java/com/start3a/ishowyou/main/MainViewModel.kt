@@ -16,22 +16,15 @@ class MainViewModel : ViewModel() {
     lateinit var createChatRoom: ((String) -> Unit)
 
     // Dao
-    private var dbYoutube: RdbDao.YoutubeDao
     private var dbChat: RdbDao.ChatDao
 
-    // View
-    var isFullScreen = false
-    lateinit var mFullScreenController: FullScreenController
-    var timeCurVideo = -1f
     // 임시 방 생성 제목 저장
     lateinit var titleTemp: String
 
     init {
         val db = RdbDao(FirebaseDatabase.getInstance().reference)
-        dbYoutube = db.YoutubeDao()
         dbChat = db.ChatDao()
     }
-
 
     fun checkPrevRoomJoin(requestJoin: (String, Boolean) -> Unit, loadingOff: () -> Unit) {
         dbChat.checkPrevRoomJoin(requestJoin, loadingOff)

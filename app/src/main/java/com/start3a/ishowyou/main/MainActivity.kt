@@ -112,37 +112,6 @@ class MainActivity : AppCompatActivity() {
             .create().show()
     }
 
-    override fun onConfigurationChanged(newConfig: Configuration) {
-        super.onConfigurationChanged(newConfig)
-
-        viewModel!!.let { vm ->
-            // 화면 회전 시 풀스크린 on / off
-            if (resources.configuration.orientation == ORIENTATION_LANDSCAPE) {
-                vm.isFullScreen = true
-                hideSystemUI()
-                vm.mFullScreenController.enterFullScreenView(1.0f, 0.0f)
-            } else if (resources.configuration.orientation == ORIENTATION_PORTRAIT) {
-                vm.isFullScreen = false
-                showSystemUI()
-                vm.mFullScreenController.exitFullScreenView()
-            }
-        }
-    }
-
-    private fun hideSystemUI() {
-        window.decorView.systemUiVisibility = (View.SYSTEM_UI_FLAG_IMMERSIVE
-                or View.SYSTEM_UI_FLAG_LAYOUT_STABLE
-                or View.SYSTEM_UI_FLAG_LAYOUT_HIDE_NAVIGATION
-                or View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN
-                or View.SYSTEM_UI_FLAG_HIDE_NAVIGATION
-                or View.SYSTEM_UI_FLAG_IMMERSIVE_STICKY
-                or View.SYSTEM_UI_FLAG_FULLSCREEN)
-    }
-
-    private fun showSystemUI() {
-        window.decorView.systemUiVisibility = View.SYSTEM_UI_FLAG_LAYOUT_STABLE
-    }
-
     private val requestActivityForJoinRoom: ActivityResultLauncher<Intent> =
         registerForActivityResult(
             ActivityResultContracts.StartActivityForResult()

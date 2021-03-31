@@ -1,22 +1,23 @@
 package com.start3a.ishowyou.main
 
+import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import com.google.firebase.database.FirebaseDatabase
-import com.start3a.ishowyou.data.Content
+import com.start3a.ishowyou.data.ChatRoom
 import com.start3a.ishowyou.data.FullScreenController
 import com.start3a.ishowyou.model.RdbDao
-import com.start3a.ishowyou.data.ContentSetting
 
 class MainViewModel : ViewModel() {
 
+    var listRoom = MutableLiveData<MutableList<ChatRoom>>().apply { value = mutableListOf() }
+    var isRoomJoined = false
+
     // 채팅방 유무 뷰 전환
     lateinit var createChatRoom: ((String) -> Unit)
-    lateinit var initLobbyCurContent: ((Content) -> Unit)
 
     // Dao
     private var dbYoutube: RdbDao.YoutubeDao
     private var dbChat: RdbDao.ChatDao
-    private var curRoomContent: ContentSetting? = null
 
     // View
     var isFullScreen = false
@@ -31,17 +32,21 @@ class MainViewModel : ViewModel() {
         dbChat = db.ChatDao()
     }
 
-    // 컨텐츠 --------------------------------------
-    fun changeContent(content: Content) {
-        curRoomContent?.close()
-
-        when (content) {
-            Content.YOUTUBE -> curRoomContent = dbYoutube
-        }
-        initLobbyCurContent(content)
-    }
 
     fun checkPrevRoomJoin(requestJoin: (String, Boolean) -> Unit, loadingOff: () -> Unit) {
         dbChat.checkPrevRoomJoin(requestJoin, loadingOff)
+    }
+
+    fun loadRoomList(loadingOff: (() -> Unit)?) {
+        dbChat.requestUserChatRoomList { rooms ->
+            val list = listRoom.value!!
+            list.clear()
+
+            rooms.forEach {
+                list.add(it)
+            }
+            this.listRoom.value = list
+            loadingOff?.invoke()
+        }
     }
 }

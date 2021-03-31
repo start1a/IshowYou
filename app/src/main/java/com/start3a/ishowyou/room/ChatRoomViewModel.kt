@@ -169,7 +169,7 @@ class ChatRoomViewModel: ViewModel() {
         roomInfoChangedListener: (ChatRoom) -> Unit
     ) {
         isHost = true
-        dbChat.createChatRoom(ChatRoom(title, "Youtube"), successListener, roomInfoChangedListener)
+        dbChat.createChatRoom(title, successListener, roomInfoChangedListener)
     }
 
     fun requestJoinRoom(roomCode: String, isHostJoinRoom: Boolean, successJoined: (String) -> Unit, failJoined: () -> Unit) {

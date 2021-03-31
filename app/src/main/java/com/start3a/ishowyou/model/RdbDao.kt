@@ -6,7 +6,6 @@ import com.google.firebase.database.ktx.getValue
 import com.start3a.ishowyou.contentapi.PlayStateRequested
 import com.start3a.ishowyou.contentapi.YoutubeSearchData
 import com.start3a.ishowyou.data.*
-import java.util.*
 
 class RdbDao(private val db: DatabaseReference) {
 
@@ -222,13 +221,13 @@ class RdbDao(private val db: DatabaseReference) {
         private var hostDeleteRoomNotifyListener: ValueEventListener? = null
 
         fun createChatRoom(
-            chatRoom: ChatRoom,
+            title: String,
             successListener: (String) -> Unit,
             roomInfoChangedListener: (ChatRoom) -> Unit
         ) {
-            roomCode = Date().time.toString()
-
-            val roomRef = db.child("chat/$roomCode")
+            val roomRef = db.child("chat").push()
+            roomCode = roomRef.key
+            val chatRoom = ChatRoom(roomCode!!, title, "Youtube")
 
             roomRef.setValue(chatRoom)
                 .addOnSuccessListener {
@@ -252,6 +251,13 @@ class RdbDao(private val db: DatabaseReference) {
                         .setValue(ChatMember(CurUser.userName, true))
                     // 사용자 방 접속 기록 갱신
                     setUserRoomRecord(true)
+
+                    // 서버 시간 설정
+                    val roomUpdates = hashMapOf<String, Any>().apply {
+                        put("timeCreated", ServerValue.TIMESTAMP)
+                    }
+                    roomRef.updateChildren(roomUpdates)
+
                 }
                 .addOnFailureListener {
                     Log.d(TAG, "Creating ChatRoom is Failed\n$it")
@@ -287,34 +293,23 @@ class RdbDao(private val db: DatabaseReference) {
 
         fun notifyChatMessage(messageAdded: (ChatMessage) -> Unit) {
             if (messageNotifyListener != null) return
-            val joinRoomTime = Date().time.toString()
+            val ref = db.child("message/$roomCode")
+            val startKey = ref.push().key
 
             messageNotifyListener =
                     // 새 멤버는 입장 이후 시간의 메세지만 추가됨
-                db.child("message/$roomCode").orderByKey().startAt(joinRoomTime)
+                ref.orderByKey().startAt(startKey)
                     .addChildEventListener(object : ChildEventListener {
 
-                        override fun onChildAdded(
-                            snapshot: DataSnapshot,
-                            previousChildName: String?
-                        ) {
+                        override fun onChildAdded(snapshot: DataSnapshot, previousChildName: String?) {
                             snapshot.getValue<ChatMessage>()?.let {
                                 messageAdded(it)
                             }
                         }
 
-                        override fun onChildChanged(
-                            snapshot: DataSnapshot,
-                            previousChildName: String?
-                        ) {
-                        }
-
+                        override fun onChildChanged(snapshot: DataSnapshot, previousChildName: String?) {}
                         override fun onChildRemoved(snapshot: DataSnapshot) {}
-                        override fun onChildMoved(
-                            snapshot: DataSnapshot,
-                            previousChildName: String?
-                        ) {
-                        }
+                        override fun onChildMoved(snapshot: DataSnapshot, previousChildName: String?) {}
 
                         override fun onCancelled(error: DatabaseError) {
                             Log.d(TAG, "Notifying Chat Message is Cancelled.\n$error")
@@ -355,10 +350,12 @@ class RdbDao(private val db: DatabaseReference) {
         }
 
         fun sendChatMessage(message: String) {
-            val time = Date().time
-            db.child("message/$roomCode/$time").setValue(
-                ChatMessage(CurUser.userName, message, time)
-            )
+            val ref = db.child("message/$roomCode").push()
+            val messageObj = ChatMessage(CurUser.userName, message, 0)
+
+            ref.setValue(messageObj).addOnSuccessListener {
+                ref.child("timeStamp").setValue(ServerValue.TIMESTAMP)
+            }
         }
 
         fun requestUserChatRoomList(firstRequestRoomListSucceed: (MutableList<ChatRoom>) -> Unit) {

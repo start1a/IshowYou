@@ -3,6 +3,7 @@ package com.start3a.ishowyou.data
 import java.util.*
 
 data class ChatRoom(
+    var id: String = "",
     var title: String = "",
     var contentName: String = "NONE",
     var countMember: Int = 1,

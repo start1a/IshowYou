@@ -7,7 +7,6 @@ import android.content.res.Configuration
 import android.content.res.Configuration.ORIENTATION_LANDSCAPE
 import android.content.res.Configuration.ORIENTATION_PORTRAIT
 import android.os.Bundle
-import android.util.Log
 import android.view.View
 import android.widget.Toast
 import androidx.activity.result.ActivityResultLauncher
@@ -16,10 +15,7 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.lifecycle.ViewModelProvider
 import com.firebase.ui.auth.AuthUI
 import com.start3a.ishowyou.R
-import com.start3a.ishowyou.data.Content
-import com.start3a.ishowyou.data.FullScreenController
 import com.start3a.ishowyou.data.RoomRequest
-import com.start3a.ishowyou.main.content.LobbyYoutubeFragment
 import com.start3a.ishowyou.main.menu.NoRoomFragment
 import com.start3a.ishowyou.room.ChatRoomActivity
 import com.start3a.ishowyou.signin.SigninActivity
@@ -32,7 +28,6 @@ class MainActivity : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
-        supportActionBar?.hide()
 
         viewModel = application!!.let {
             ViewModelProvider(viewModelStore, ViewModelProvider.AndroidViewModelFactory(it))
@@ -43,40 +38,32 @@ class MainActivity : AppCompatActivity() {
             initMainView()
 
             supportFragmentManager.beginTransaction()
-                .add(R.id.contentViewFrame, LobbyYoutubeFragment())
                 .add(R.id.roomMenuViewFrame, NoRoomFragment())
                 .commit()
 
-            window.decorView.setOnSystemUiVisibilityChangeListener { visibility ->
-                if (visibility and View.SYSTEM_UI_FLAG_FULLSCREEN == 0) {
-                    if (vm.isFullScreen) {
-                        hideSystemUI()
-                    }
-                }
-            }
+            if (!vm.isRoomJoined) {
+                loading_layout.visibility = View.VISIBLE
 
-            vm.checkPrevRoomJoin({ roomCode, isHost ->
-                val intent = Intent(this, ChatRoomActivity::class.java).apply {
-                    putExtra("requestcode", RoomRequest.JOIN_ROOM.num)
-                    putExtra("roomcode", roomCode)
-                    putExtra("ishost", isHost)
-                }
-                requestActivityForJoinRoom.launch(intent)
-            }, {
-                loading_layout.visibility = View.GONE
-            })
+                vm.checkPrevRoomJoin({ roomCode, isHost ->
+                    vm.isRoomJoined = true
+                    val intent = Intent(this, ChatRoomActivity::class.java).apply {
+                        putExtra("requestcode", RoomRequest.JOIN_ROOM.num)
+                        putExtra("roomcode", roomCode)
+                        putExtra("ishost", isHost)
+                    }
+                    requestActivityForJoinRoom.launch(intent)
+                }, {
+                    loading_layout.visibility = View.GONE
+                })
+            }
             // 로딩 아래의 뷰 클릭 방지
             loading_layout.setOnClickListener {}
         }
     }
 
     override fun onBackPressed() {
-        viewModel!!.let { vm ->
-            if (vm.isFullScreen) {
-                vm.mFullScreenController.contentExitFullScreenMode?.invoke()
-            }
-            else signOut()
-        }
+        if (!viewModel!!.isRoomJoined)
+            signOut()
     }
 
     private fun initMainView() {
@@ -90,24 +77,6 @@ class MainActivity : AppCompatActivity() {
                 }
                 startActivity(intent)
             }
-
-            // 로비 컨텐츠 뷰 변경
-            vm.initLobbyCurContent = { content ->
-                val ft = supportFragmentManager.beginTransaction()
-                when (content) {
-                    Content.YOUTUBE ->
-                        ft.replace(R.id.contentViewFrame, LobbyYoutubeFragment()).commit()
-                }
-            }
-
-            // 화면 회전
-            vm.mFullScreenController = FullScreenController(
-                this,
-                main_layout,
-                contentViewFrame,
-                bottom_menu_layout,
-                roomMenuViewFrame
-            )
 
             // 하단 메뉴
             bottom_navigation.selectedItemId = R.id.action_menu
@@ -181,6 +150,7 @@ class MainActivity : AppCompatActivity() {
             if (activityResult.resultCode == Activity.RESULT_OK && activityResult.data != null) {
                 val text = activityResult.data!!.getStringExtra("message")
                 Toast.makeText(this, text, Toast.LENGTH_LONG).show()
+                viewModel!!.isRoomJoined = false
             }
         }
 }

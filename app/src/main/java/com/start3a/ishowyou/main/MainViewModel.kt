@@ -11,6 +11,7 @@ class MainViewModel : ViewModel() {
 
     var listRoom = MutableLiveData<MutableList<ChatRoom>>().apply { value = mutableListOf() }
     var isRoomJoined = false
+    var curQueryKeyword = ""
 
     // 채팅방 유무 뷰 전환
     lateinit var createChatRoom: ((String) -> Unit)
@@ -35,11 +36,27 @@ class MainViewModel : ViewModel() {
             val list = listRoom.value!!
             list.clear()
 
-            rooms.forEach {
-                list.add(it)
-            }
+            list.addAll(rooms)
             this.listRoom.value = list
             loadingOff?.invoke()
+        }
+    }
+
+    fun isQueryAvailable(keyword: String) =
+        curQueryKeyword != keyword && keyword.isNotBlank() && keyword.isNotEmpty()
+
+    fun searchRoomByKeyword(keyword: String, messageNoItem: () -> Unit, loadingOff: () -> Unit) {
+        dbChat.searchRoomByKeyword(keyword) { rooms ->
+            if (rooms.isNotEmpty()) {
+                val list = listRoom.value!!
+
+                list.clear()
+                list.addAll(rooms)
+                listRoom.value = list
+            }
+            else messageNoItem()
+
+            loadingOff()
         }
     }
 }

@@ -7,11 +7,13 @@ import android.content.res.Configuration
 import android.content.res.Configuration.ORIENTATION_LANDSCAPE
 import android.content.res.Configuration.ORIENTATION_PORTRAIT
 import android.os.Bundle
+import android.view.Menu
 import android.view.View
 import android.widget.Toast
 import androidx.activity.result.ActivityResultLauncher
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AppCompatActivity
+import androidx.appcompat.widget.SearchView
 import androidx.lifecycle.ViewModelProvider
 import com.firebase.ui.auth.AuthUI
 import com.start3a.ishowyou.R
@@ -24,6 +26,7 @@ import kotlinx.android.synthetic.main.activity_main.*
 class MainActivity : AppCompatActivity() {
 
     private var viewModel: MainViewModel? = null
+    private var mSearchView: SearchView? = null
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -97,6 +100,34 @@ class MainActivity : AppCompatActivity() {
         }
     }
 
+    override fun onCreateOptionsMenu(menu: Menu?): Boolean {
+        menuInflater.inflate(R.menu.menu_toolbar_search, menu)
+        mSearchView = menu!!.findItem(R.id.action_search).actionView as SearchView
+
+        mSearchView!!.let {
+            it.maxWidth = Int.MAX_VALUE
+
+            it.setOnQueryTextListener(object : SearchView.OnQueryTextListener {
+                override fun onQueryTextSubmit(query: String?): Boolean {
+                    val vm = viewModel!!
+                    // 검색 성공
+                    if (query != null && vm.isQueryAvailable(query)) {
+                        loading_layout.visibility = View.VISIBLE
+                        vm.searchRoomByKeyword(query,
+                            { Toast.makeText(applicationContext, "일치하는 제목의 방이 존재하지 않습니다.", Toast.LENGTH_LONG).show() },
+                            { loading_layout.visibility = View.GONE })
+                    }
+
+                    return true
+                }
+
+                override fun onQueryTextChange(newText: String?) = true
+            })
+        }
+
+        return super.onCreateOptionsMenu(menu)
+    }
+
     private fun signOut() {
         val builder = AlertDialog.Builder(this)
 
@@ -122,4 +153,6 @@ class MainActivity : AppCompatActivity() {
                 viewModel!!.isRoomJoined = false
             }
         }
+
+
 }

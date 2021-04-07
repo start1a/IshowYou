@@ -462,5 +462,24 @@ class RdbDao(private val db: DatabaseReference) {
             db.child("user/${CurUser.userName}/room").setValue(roomCode)
             db.child("user/${CurUser.userName}/isHost").setValue(isHost)
         }
+
+        fun searchRoomByKeyword(keyword: String, getRooms: (List<ChatRoom>) -> Unit) {
+            db.child("chat").addListenerForSingleValueEvent(object : ValueEventListener {
+                override fun onDataChange(snapshot: DataSnapshot) {
+                    val list = mutableListOf<ChatRoom>()
+                    snapshot.children.forEach {
+                        it.getValue<ChatRoom>()?.let { room ->
+                            if (room.title.contains(keyword))
+                                list.add(room)
+                        }
+                    }
+                    getRooms(list)
+                }
+
+                override fun onCancelled(error: DatabaseError) {
+                    Log.d(TAG, "Searching room is Cancelled.\n$error")
+                }
+            })
+        }
     }
 }

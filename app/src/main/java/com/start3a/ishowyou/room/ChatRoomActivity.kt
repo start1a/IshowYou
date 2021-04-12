@@ -1,7 +1,9 @@
 package com.start3a.ishowyou.room
 
 import android.app.Activity
+import android.app.AlertDialog
 import android.content.Intent
+import android.content.pm.ActivityInfo
 import android.content.res.Configuration
 import android.content.res.Configuration.ORIENTATION_LANDSCAPE
 import android.content.res.Configuration.ORIENTATION_PORTRAIT
@@ -10,6 +12,8 @@ import android.os.Bundle
 import android.view.View
 import androidx.appcompat.app.AppCompatActivity
 import androidx.lifecycle.ViewModelProvider
+import com.firebase.ui.auth.AuthUI
+import com.hoanganhtuan95ptit.draggable.DraggablePanel
 import com.rw.keyboardlistener.KeyboardUtils
 import com.start3a.ishowyou.R
 import com.start3a.ishowyou.contentapi.YoutubeSearchData
@@ -20,7 +24,10 @@ import com.start3a.ishowyou.room.chat.RealTimeChatFragment
 import com.start3a.ishowyou.room.content.YoutubeContentEditFragment
 import com.start3a.ishowyou.room.content.YoutubePlayerFragment
 import com.start3a.ishowyou.room.member.RoomMemberFragment
+import com.start3a.ishowyou.signin.SigninActivity
 import kotlinx.android.synthetic.main.activity_chat_room.*
+import kotlinx.android.synthetic.main.layout_draggable_bottom.*
+import kotlinx.android.synthetic.main.layout_draggable_top.*
 
 class ChatRoomActivity : AppCompatActivity() {
 
@@ -36,6 +43,7 @@ class ChatRoomActivity : AppCompatActivity() {
         }
 
         viewModel!!.let { vm ->
+            vm.isJoinRoom = true
             initView()
             initRoom()
 
@@ -51,32 +59,45 @@ class ChatRoomActivity : AppCompatActivity() {
 
     override fun onBackPressed() {
         viewModel!!.let { vm ->
-            if (vm.isFullScreen)
-                vm.mFullScreenController.contentExitFullScreenMode?.invoke()
-            // 탭 넘기기
-            else {
-                when (bottom_navigation_chatroom.selectedItemId) {
-                    R.id.action_contents -> bottom_navigation_chatroom.selectedItemId =
-                        R.id.action_member
-                    R.id.action_member -> bottom_navigation_chatroom.selectedItemId =
-                        R.id.action_chat
-                    R.id.action_chat -> bottom_navigation_chatroom.selectedItemId =
-                        R.id.action_contents
-                    else -> {
+            if (vm.isJoinRoom) {
+                if (vm.isFullScreen) {
+                    vm.mFullScreenController.contentExitFullScreenMode?.invoke()
+                }
+                else {
+                    bottom_navigation_chatroom.selectedItemId =
+                        when (bottom_navigation_chatroom.selectedItemId) {
+                        R.id.action_contents -> R.id.action_member
+                        R.id.action_member -> R.id.action_chat
+                        else -> R.id.action_contents
                     }
                 }
             }
+            else signOut()
         }
     }
 
     private fun initView() {
         viewModel!!.let { vm ->
+            chatroom_layout.viewTreeObserver.addOnGlobalLayoutListener {
+                if (!vm.isActivitySizeMeasured) {
+                    vm.isActivitySizeMeasured = true
+
+                    val activity_width = chatroom_layout.width
+                    val activity_height = chatroom_layout.height
+                    // 가로
+                    if (activity_width > activity_height)
+                        draggablePanel.setHeightMax(activity_height)
+                    else
+                        draggablePanel.setHeightMax( (activity_width / 16) * 9 )
+                }
+            }
+
             vm.initRoomCurContent = { content ->
                 val ft = supportFragmentManager.beginTransaction()
                 when (content) {
                     Content.YOUTUBE -> {
-                        ft.replace(R.id.chatroom_contentViewFrame, YoutubePlayerFragment())
-                            .replace(R.id.chatroom_talkViewFrame, YoutubeContentEditFragment())
+                        ft.replace(R.id.frameTop, YoutubePlayerFragment())
+                            .replace(R.id.frameBottom, YoutubeContentEditFragment())
                             .commit()
                     }
                 }
@@ -85,9 +106,8 @@ class ChatRoomActivity : AppCompatActivity() {
             vm.mFullScreenController = FullScreenController(
                 this,
                 chatroom_layout,
-                chatroom_contentViewFrame,
-                bottom_menu_layout_chatroom,
-                chatroom_talkViewFrame,
+                frameTop,
+                frameTopRightTab,
             )
 
             // 하단 메뉴
@@ -96,21 +116,34 @@ class ChatRoomActivity : AppCompatActivity() {
                 val sfm = supportFragmentManager.beginTransaction()
                 when (item.itemId) {
                     R.id.action_contents -> {
-                        sfm.replace(R.id.chatroom_talkViewFrame, YoutubeContentEditFragment())
+                        sfm.replace(R.id.frameBottom, YoutubeContentEditFragment())
                             .commit()
                         true
                     }
                     R.id.action_member -> {
-                        sfm.replace(R.id.chatroom_talkViewFrame, RoomMemberFragment()).commit()
+                        sfm.replace(R.id.frameBottom, RoomMemberFragment()).commit()
                         true
                     }
                     R.id.action_chat -> {
-                        sfm.replace(R.id.chatroom_talkViewFrame, RealTimeChatFragment()).commit()
+                        sfm.replace(R.id.frameBottom, RealTimeChatFragment()).commit()
                         true
                     }
                     else -> false
                 }
             }
+
+            draggablePanel.setDraggableListener(object : DraggablePanel.DraggableListener {
+                override fun onChangeState(state: DraggablePanel.State) {
+                    if (state == DraggablePanel.State.MAX)
+                        min_panel_layout.visibility = View.GONE
+                    else if (state == DraggablePanel.State.MIN)
+                        min_panel_layout.visibility = View.VISIBLE
+                }
+
+                override fun onChangePercent(percent: Float) {
+                    alpha.alpha = 1 - percent
+                }
+            })
 
             // 키보드 활성화 / 비활성화
             KeyboardUtils.addKeyboardToggleListener(this) { isVisible ->
@@ -202,15 +235,17 @@ class ChatRoomActivity : AppCompatActivity() {
             // 화면 회전 시 풀스크린 on / off
             if (resources.configuration.orientation == ORIENTATION_LANDSCAPE) {
                 vm.isFullScreen = true
+                requestedOrientation = ActivityInfo.SCREEN_ORIENTATION_SENSOR_LANDSCAPE
                 hideSystemUI()
-                vm.mFullScreenController.enterFullScreenView(7.0f, 3.0f)
                 // 채팅 뷰로 전환
                 swapToChat()
-            } else if (resources.configuration.orientation == ORIENTATION_PORTRAIT) {
-                vm.isFullScreen = false
-                showSystemUI()
-                vm.mFullScreenController.exitFullScreenView()
             }
+            else if (resources.configuration.orientation == ORIENTATION_PORTRAIT) {
+                vm.isFullScreen = false
+                requestedOrientation = ActivityInfo.SCREEN_ORIENTATION_NOSENSOR
+                showSystemUI()
+            }
+            vm.isActivitySizeMeasured = false
         }
     }
 
@@ -238,8 +273,23 @@ class ChatRoomActivity : AppCompatActivity() {
     private fun swapToChat() {
         // 채팅 뷰만 보기
         supportFragmentManager.beginTransaction()
-            .replace(R.id.chatroom_talkViewFrame, RealTimeChatFragment()).commit()
-
+            .replace(R.id.frameBottom, RealTimeChatFragment()).commit()
         bottom_navigation_chatroom.selectedItemId = R.id.action_chat
     }
+
+    private fun signOut() {
+        val builder = AlertDialog.Builder(this)
+
+        builder.setMessage("로그아웃 하시겠습니까?")
+            .setPositiveButton("확인") { _, _ ->
+                AuthUI.getInstance().signOut(applicationContext).addOnSuccessListener {
+                    val intent = Intent(applicationContext, SigninActivity::class.java)
+                    startActivity(intent)
+                    finish()
+                }
+            }
+            .setNegativeButton("취소", null)
+            .create().show()
+    }
+
 }

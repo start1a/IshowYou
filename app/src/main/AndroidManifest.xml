@@ -17,7 +17,6 @@
         <activity
             android:name=".room.ChatRoomActivity"
             android:configChanges="orientation|screenSize|screenLayout|keyboardHidden|smallestScreenSize" />
-        <activity android:name=".main.joinroom.JoinChatRoomActivity" />
         <activity android:name=".signin.PhoneVerifyActivity" />
         <activity android:name=".signin.PhoneSignInActivity" />
         <activity

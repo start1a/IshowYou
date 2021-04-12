@@ -10,30 +10,27 @@
     <FrameLayout
         android:id="@+id/chatroom_contentViewFrame"
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        app:layout_constraintBottom_toTopOf="@+id/bottom_menu_layout_chatroom"
-        app:layout_constraintTop_toTopOf="parent" />
+        android:layout_height="match_parent" />
 
-    <LinearLayout
-        android:id="@+id/bottom_menu_layout_chatroom"
+    <View
+        android:id="@+id/alpha"
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        app:layout_constraintTop_toBottomOf="@+id/chatroom_contentViewFrame">
+        android:layout_height="match_parent"
+        android:background="#fff"
+        tools:visibility="gone" />
 
-        <com.google.android.material.bottomnavigation.BottomNavigationView
-            android:id="@+id/bottom_navigation_chatroom"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            app:menu="@menu/bottom_nav_menu_chatroom" />
-
-    </LinearLayout>
-
-    <FrameLayout
-        android:id="@+id/chatroom_talkViewFrame"
+    <com.start3a.ishowyou.data.DraggableRoom
+        android:id="@+id/draggablePanel"
         android:layout_width="match_parent"
-        android:layout_height="0dp"
+        android:layout_height="match_parent"
+        app:height_when_min="80dp"
         app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintTop_toBottomOf="@id/bottom_menu_layout_chatroom"
-        tools:layout_editor_absoluteX="0dp" />
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
+        app:margin_bottom_when_min="8dp"
+        app:margin_edge_when_min="8dp"
+        app:percent_when_middle="0.9"
+        app:state="MAX" />
 
 </androidx.constraintlayout.widget.ConstraintLayout>

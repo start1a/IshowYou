@@ -12,7 +12,6 @@ class FullScreenController(
     private val activity: FragmentActivity,
     private val parentView: ConstraintLayout,
     private val contentViewFrame: View,
-    private val navMenuView: View,
     private val talkViewFrame: View
 ) {
     var contentExitFullScreenMode: (() -> Unit)? = null
@@ -35,7 +34,6 @@ class FullScreenController(
         talkViewFrame.layoutParams =
             ConstraintLayout.LayoutParams(ConstraintLayout.LayoutParams.MATCH_PARENT, ConstraintLayout.LayoutParams.MATCH_CONSTRAINT)
 
-        changeConstraint(talkViewFrame, navMenuView, ConstraintSet.TOP, ConstraintSet.BOTTOM, 0.0f)
         changeConstraint(talkViewFrame, parentView, ConstraintSet.BOTTOM, ConstraintSet.BOTTOM, 0.0f)
         changeWeight(false)
     }

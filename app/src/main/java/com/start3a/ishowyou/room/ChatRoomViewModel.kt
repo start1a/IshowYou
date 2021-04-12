@@ -13,6 +13,7 @@ class ChatRoomViewModel: ViewModel() {
 
     // 채팅방 정보
     var isHost = false
+    var isJoinRoom = false
     // 메세지
     val listMessage: ListLiveData<ChatMessage> by lazy {
         ListLiveData(mutableListOf())
@@ -36,6 +37,7 @@ class ChatRoomViewModel: ViewModel() {
     lateinit var mFullScreenController: FullScreenController
     var hideKeyboard: (() -> Unit)? = null
     var contentAvailability: ((Boolean) -> Unit)? = null
+    var isActivitySizeMeasured = false
 
     init {
         val db = RdbDao(FirebaseDatabase.getInstance().reference)

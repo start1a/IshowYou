@@ -1,5 +1,6 @@
 package com.start3a.ishowyou.room.content
 
+import android.content.pm.ActivityInfo
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
@@ -82,7 +83,6 @@ class YoutubePlayerFragment : Fragment() {
                             vm.mFullScreenController.rotate(false)
                         }
                     })
-
                     // 영상 선택
                     vm.curVideoSelected.observe(viewLifecycleOwner) {
                         vm.setNewYoutubeVideoSelected(it.videoId)

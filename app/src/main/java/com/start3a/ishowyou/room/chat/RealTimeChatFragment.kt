@@ -29,6 +29,8 @@ class RealTimeChatFragment : Fragment() {
     private lateinit var messageListView: RecyclerView
     private var posLastItem = -1
 
+    private lateinit var mContext: Context
+
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
         savedInstanceState: Bundle?
@@ -49,6 +51,7 @@ class RealTimeChatFragment : Fragment() {
             )
                 .get(ChatRoomViewModel::class.java).apply {
                     isMessageListUpScrolled = false
+                    mContext = requireContext()
                 }
         }
 
@@ -151,10 +154,11 @@ class RealTimeChatFragment : Fragment() {
                 btnShowNewMessage.visibility = View.GONE
             }
 
-            vm.hideKeyboard = {
-                val imm =
-                    requireActivity().getSystemService(Context.INPUT_METHOD_SERVICE) as InputMethodManager
-                imm.hideSoftInputFromWindow(editSendMessage.windowToken, 0)
+            if (vm.hideKeyboard == null) {
+                vm.hideKeyboard = {
+                    val imm = mContext.getSystemService(Context.INPUT_METHOD_SERVICE) as InputMethodManager
+                    imm.hideSoftInputFromWindow(editSendMessage.windowToken, 0)
+                }
             }
         }
     }

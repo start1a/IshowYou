@@ -5,6 +5,7 @@ import android.util.AttributeSet
 import com.hoanganhtuan95ptit.draggable.DraggablePanel
 import com.hoanganhtuan95ptit.draggable.utils.inflate
 import com.hoanganhtuan95ptit.draggable.utils.reWidth
+import com.hoanganhtuan95ptit.draggable.widget.DragFrame
 import com.start3a.ishowyou.R
 import kotlinx.android.synthetic.main.layout_draggable_top.view.*
 
@@ -16,9 +17,14 @@ class DraggableRoom @JvmOverloads constructor(
     var mWidthWhenMiddle = 0
     var mWidthWhenMin = 0
 
+    var tempOnTouchListener: DragFrame.OnTouchListener
+    val frameDrag = getFrameDrag() as DragFrame
+
     init {
         getFrameFirst().addView(inflate(R.layout.layout_draggable_top))
         getFrameSecond().addView(inflate(R.layout.layout_draggable_bottom))
+
+        tempOnTouchListener = frameDrag.onTouchListener!!
     }
 
     override fun initFrame() {
@@ -45,5 +51,11 @@ class DraggableRoom @JvmOverloads constructor(
 
     fun resizeFraneFirstWidth(w: Int) {
         getFrameFirst().content_frame.reWidth(w)
+    }
+
+    fun enableDragFrame(enable: Boolean) {
+        frameDrag.onTouchListener =
+            if (enable) tempOnTouchListener
+            else null
     }
 }

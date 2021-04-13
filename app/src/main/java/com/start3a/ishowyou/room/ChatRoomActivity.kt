@@ -34,6 +34,7 @@ class ChatRoomActivity : AppCompatActivity() {
 
     private var viewModel: ChatRoomViewModel? = null
     private var isKeyboardUp = false
+    private var keyboardheight = -1
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -148,9 +149,8 @@ class ChatRoomActivity : AppCompatActivity() {
 
                     if (state == DraggablePanel.State.MAX)
                         frameTopRightTab.visibility = View.VISIBLE
-                    else if (state == DraggablePanel.State.MIN) {
+                    else if (state == DraggablePanel.State.MIN)
                         frameTopRightTab.visibility = View.GONE
-                    }
                 }
 
                 override fun onChangePercent(percent: Float) {
@@ -168,7 +168,9 @@ class ChatRoomActivity : AppCompatActivity() {
                         draggablePanel.run {
                             setHeightMax(getVisibleViewHeight())
                             changeWeightContentFrame(vm.activity_width / 2, vm.activity_width / 2)
+                            enableDragFrame(false)
                         }
+
                     }
                     else {
                         if (isKeyboardUp) {
@@ -176,6 +178,7 @@ class ChatRoomActivity : AppCompatActivity() {
                             draggablePanel.run {
                                 setHeightMax(vm.activity_height)
                                 changeWeightContentFrame((vm.activity_width * 0.7).toInt(), (vm.activity_width * 0.3).toInt())
+                                enableDragFrame(true)
                             }
                         }
                     }
@@ -286,10 +289,13 @@ class ChatRoomActivity : AppCompatActivity() {
     }
 
     private fun getVisibleViewHeight(): Int {
+        if (keyboardheight != -1) return keyboardheight
+
         val visibleFrameSize = Rect()
         chatroom_layout.getWindowVisibleDisplayFrame(visibleFrameSize)
+        keyboardheight = visibleFrameSize.bottom - visibleFrameSize.top
 
-        return visibleFrameSize.bottom - visibleFrameSize.top
+        return keyboardheight
     }
 
     private fun signOut() {

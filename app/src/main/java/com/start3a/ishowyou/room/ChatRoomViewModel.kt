@@ -38,6 +38,9 @@ class ChatRoomViewModel: ViewModel() {
     var hideKeyboard: (() -> Unit)? = null
     var contentAvailability: ((Boolean) -> Unit)? = null
     var isActivitySizeMeasured = false
+    var activity_width = 0
+    var activity_height = 0
+    var openFullScreenChatView: ((Boolean) -> Unit)? = null
 
     init {
         val db = RdbDao(FirebaseDatabase.getInstance().reference)

@@ -6,7 +6,6 @@ import com.hoanganhtuan95ptit.draggable.DraggablePanel
 import com.hoanganhtuan95ptit.draggable.utils.inflate
 import com.hoanganhtuan95ptit.draggable.utils.reWidth
 import com.start3a.ishowyou.R
-import kotlinx.android.synthetic.main.fragment_youtube_player.view.*
 import kotlinx.android.synthetic.main.layout_draggable_top.view.*
 
 class DraggableRoom @JvmOverloads constructor(
@@ -42,5 +41,9 @@ class DraggableRoom @JvmOverloads constructor(
         }
 
         frameTop.reWidth(width.toInt())
+    }
+
+    fun resizeFraneFirstWidth(w: Int) {
+        getFrameFirst().content_frame.reWidth(w)
     }
 }

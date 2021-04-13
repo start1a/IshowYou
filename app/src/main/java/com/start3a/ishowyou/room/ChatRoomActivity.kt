@@ -14,6 +14,7 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.lifecycle.ViewModelProvider
 import com.firebase.ui.auth.AuthUI
 import com.hoanganhtuan95ptit.draggable.DraggablePanel
+import com.hoanganhtuan95ptit.draggable.utils.reWidth
 import com.rw.keyboardlistener.KeyboardUtils
 import com.start3a.ishowyou.R
 import com.start3a.ishowyou.contentapi.YoutubeSearchData
@@ -32,6 +33,7 @@ import kotlinx.android.synthetic.main.layout_draggable_top.*
 class ChatRoomActivity : AppCompatActivity() {
 
     private var viewModel: ChatRoomViewModel? = null
+    private var isKeyboardUp = false
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -82,13 +84,14 @@ class ChatRoomActivity : AppCompatActivity() {
                 if (!vm.isActivitySizeMeasured) {
                     vm.isActivitySizeMeasured = true
 
-                    val activity_width = chatroom_layout.width
-                    val activity_height = chatroom_layout.height
+                    vm.activity_width = chatroom_layout.width
+                    vm.activity_height = chatroom_layout.height
+                    draggablePanel.resizeFraneFirstWidth(vm.activity_width)
                     // 가로
-                    if (activity_width > activity_height)
-                        draggablePanel.setHeightMax(activity_height)
+                    if (vm.activity_width > vm.activity_height)
+                        draggablePanel.setHeightMax(vm.activity_height)
                     else
-                        draggablePanel.setHeightMax( (activity_width / 16) * 9 )
+                        draggablePanel.setHeightMax((vm.activity_width / 16) * 9)
                 }
             }
 
@@ -98,6 +101,7 @@ class ChatRoomActivity : AppCompatActivity() {
                     Content.YOUTUBE -> {
                         ft.replace(R.id.frameTop, YoutubePlayerFragment())
                             .replace(R.id.frameBottom, YoutubeContentEditFragment())
+                            .replace(R.id.frameTopRightTab, RealTimeChatFragment())
                             .commit()
                     }
                 }
@@ -109,6 +113,13 @@ class ChatRoomActivity : AppCompatActivity() {
                 frameTop,
                 frameTopRightTab,
             )
+
+            vm.openFullScreenChatView = { visible ->
+                if (visible) {
+                    changeWeightContentFrame((vm.activity_width * 0.7).toInt(), (vm.activity_width * 0.3).toInt())
+                }
+                else frameTop.reWidth(vm.activity_width)
+            }
 
             // 하단 메뉴
             bottom_navigation_chatroom.selectedItemId = R.id.action_contents
@@ -134,10 +145,12 @@ class ChatRoomActivity : AppCompatActivity() {
 
             draggablePanel.setDraggableListener(object : DraggablePanel.DraggableListener {
                 override fun onChangeState(state: DraggablePanel.State) {
+
                     if (state == DraggablePanel.State.MAX)
-                        min_panel_layout.visibility = View.GONE
-                    else if (state == DraggablePanel.State.MIN)
-                        min_panel_layout.visibility = View.VISIBLE
+                        frameTopRightTab.visibility = View.VISIBLE
+                    else if (state == DraggablePanel.State.MIN) {
+                        frameTopRightTab.visibility = View.GONE
+                    }
                 }
 
                 override fun onChangePercent(percent: Float) {
@@ -151,11 +164,20 @@ class ChatRoomActivity : AppCompatActivity() {
                     vm.contentAvailability?.invoke(isVisible)
                     // 비율 조절
                     if (isVisible) {
-                        vm.mFullScreenController.resizeScreenHeight(getVisibleViewHeight())
-                        vm.mFullScreenController.changeWeight(true, 5.0f, 5.0f)
-                    } else {
-                        vm.mFullScreenController.resizeScreenHeight()
-                        vm.mFullScreenController.changeWeight(true, 7.0f, 3.0f)
+                        isKeyboardUp = true
+                        draggablePanel.run {
+                            setHeightMax(getVisibleViewHeight())
+                            changeWeightContentFrame(vm.activity_width / 2, vm.activity_width / 2)
+                        }
+                    }
+                    else {
+                        if (isKeyboardUp) {
+                            isKeyboardUp = false
+                            draggablePanel.run {
+                                setHeightMax(vm.activity_height)
+                                changeWeightContentFrame((vm.activity_width * 0.7).toInt(), (vm.activity_width * 0.3).toInt())
+                            }
+                        }
                     }
                 }
             }
@@ -236,12 +258,12 @@ class ChatRoomActivity : AppCompatActivity() {
             if (resources.configuration.orientation == ORIENTATION_LANDSCAPE) {
                 vm.isFullScreen = true
                 requestedOrientation = ActivityInfo.SCREEN_ORIENTATION_SENSOR_LANDSCAPE
+                draggablePanel.getFrameSecond().visibility = View.GONE
                 hideSystemUI()
-                // 채팅 뷰로 전환
-                swapToChat()
             }
             else if (resources.configuration.orientation == ORIENTATION_PORTRAIT) {
                 vm.isFullScreen = false
+                draggablePanel.getFrameSecond().visibility = View.VISIBLE
                 requestedOrientation = ActivityInfo.SCREEN_ORIENTATION_NOSENSOR
                 showSystemUI()
             }
@@ -270,13 +292,6 @@ class ChatRoomActivity : AppCompatActivity() {
         return visibleFrameSize.bottom - visibleFrameSize.top
     }
 
-    private fun swapToChat() {
-        // 채팅 뷰만 보기
-        supportFragmentManager.beginTransaction()
-            .replace(R.id.frameBottom, RealTimeChatFragment()).commit()
-        bottom_navigation_chatroom.selectedItemId = R.id.action_chat
-    }
-
     private fun signOut() {
         val builder = AlertDialog.Builder(this)
 
@@ -292,4 +307,8 @@ class ChatRoomActivity : AppCompatActivity() {
             .create().show()
     }
 
+    private fun changeWeightContentFrame(w1: Int, w2: Int) {
+        frameTop.reWidth(w1)
+        frameTopRightTab.reWidth(w2)
+    }
 }

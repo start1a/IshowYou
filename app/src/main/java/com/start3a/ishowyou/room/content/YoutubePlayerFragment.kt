@@ -1,6 +1,5 @@
 package com.start3a.ishowyou.room.content
 
-import android.content.pm.ActivityInfo
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
@@ -13,7 +12,9 @@ import com.pierfrancescosoffritti.androidyoutubeplayer.core.player.listeners.Abs
 import com.pierfrancescosoffritti.androidyoutubeplayer.core.player.listeners.YouTubePlayerFullScreenListener
 import com.start3a.ishowyou.R
 import com.start3a.ishowyou.room.ChatRoomViewModel
+import kotlinx.android.synthetic.main.activity_chat_room.*
 import kotlinx.android.synthetic.main.fragment_youtube_player.*
+import kotlinx.android.synthetic.main.layout_draggable_top.view.*
 
 class YoutubePlayerFragment : Fragment() {
 
@@ -62,11 +63,8 @@ class YoutubePlayerFragment : Fragment() {
                             vm.seekbarYoutubeClicked(time)
                             vm.curSeekbarPos.value = time
                         }
-                        changeChatVisibility = {
-                            if (it)
-                                vm.mFullScreenController.changeWeight(vm.isFullScreen, 7.0f, 3.0f)
-                            else
-                                vm.mFullScreenController.changeWeight(vm.isFullScreen, 1f, 0f)
+                        changeChatVisibility = { visible ->
+                            vm.openFullScreenChatView?.invoke(visible)
                         }
                     }
                     youTubePlayer.addListener(vm.customPlayerUiController)
@@ -93,6 +91,7 @@ class YoutubePlayerFragment : Fragment() {
                         youTubePlayer.loadVideo(it.videoId, vm.curSeekbarPos.value?:0.0f)
                         vm.customPlayerUiController.newVideoPlayed()
                         vm.setNewYoutubeVideoPlayed(it, vm.curSeekbarPos.value?:0.0f)
+                        requireActivity().draggablePanel.getFrameFirst().curPlayVideoTitle.text = it.title
                     }
 
                     // SeekBar의 위치 변동됨

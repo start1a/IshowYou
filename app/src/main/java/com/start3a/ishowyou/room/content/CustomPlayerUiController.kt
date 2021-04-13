@@ -44,7 +44,7 @@ class CustomPlayerUiController(
 
     private val playerTracker: YouTubePlayerTracker = YouTubePlayerTracker()
     private var isFullscreen = false
-    private var isChatVisible = true
+    private var isChatVisible = false
     lateinit var changeChatVisibility: (Boolean) -> Unit
 
     // 실시간
@@ -207,9 +207,9 @@ class CustomPlayerUiController(
             it.layoutParams = layoutParams
         }
         btnChatVisible.let {
-            isChatVisible = true
+            isChatVisible = false
             it.visibility = View.GONE
-            it.setImageResource(R.drawable.ic_baseline_arrow_forward_ios_24)
+            it.setImageResource(R.drawable.ic_baseline_arrow_back_ios_24)
         }
     }
 

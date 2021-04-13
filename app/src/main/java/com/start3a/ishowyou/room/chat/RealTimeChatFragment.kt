@@ -1,6 +1,8 @@
 package com.start3a.ishowyou.room.chat
 
 import android.content.Context
+import android.content.res.Configuration
+import android.graphics.Color
 import android.os.Bundle
 import android.os.Handler
 import android.text.Editable
@@ -160,5 +162,33 @@ class RealTimeChatFragment : Fragment() {
     private fun scrollToLastItem() {
         if (posLastItem != -1)
             messageListView.scrollToPosition(posLastItem)
+    }
+
+    override fun onConfigurationChanged(newConfig: Configuration) {
+        super.onConfigurationChanged(newConfig)
+
+        if (resources.configuration.orientation == Configuration.ORIENTATION_LANDSCAPE) {
+            chat_layout.setBackgroundColor(Color.BLACK)
+
+            listChatAdapter?.let {
+                it.isFullScreen = true
+                it.notifyDataSetChanged()
+            }
+
+            editSendMessage.run {
+                setTextColor(Color.WHITE)
+                setHintTextColor(Color.LTGRAY)
+            }
+        }
+
+        else if (resources.configuration.orientation == Configuration.ORIENTATION_PORTRAIT) {
+            chat_layout.setBackgroundColor(Color.WHITE)
+
+            listChatAdapter?.let {
+                it.isFullScreen = false
+                it.notifyDataSetChanged()
+            }
+            editSendMessage.setTextColor(Color.BLACK)
+        }
     }
 }

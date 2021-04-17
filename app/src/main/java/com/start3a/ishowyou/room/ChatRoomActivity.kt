@@ -35,7 +35,6 @@ class ChatRoomActivity : AppCompatActivity() {
     private var fragBottom: YoutubeContentEditFragment? = null
 
     private var isKeyboardUp = false
-    private var keyboardheight = -1
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -232,13 +231,10 @@ class ChatRoomActivity : AppCompatActivity() {
     }
 
     private fun getVisibleViewHeight(): Int {
-        if (keyboardheight != -1) return keyboardheight
-
         val visibleFrameSize = Rect()
         chatroom_layout.getWindowVisibleDisplayFrame(visibleFrameSize)
-        keyboardheight = visibleFrameSize.bottom - visibleFrameSize.top
 
-        return keyboardheight
+        return visibleFrameSize.bottom - visibleFrameSize.top
     }
 
     private fun signOut() {

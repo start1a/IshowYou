@@ -8,4 +8,5 @@
     <color name="item_clicked">#ffffff</color>
     <color name="lightGray">#DCDCDC</color>
     <color name="red">#FF0000</color>
+    <color name="chat_bubble_my_message">#ffbb22dd</color>
 </resources>

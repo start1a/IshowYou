@@ -23,7 +23,7 @@ import com.start3a.ishowyou.R
 import com.start3a.ishowyou.contentapi.YoutubeSearchData
 import com.start3a.ishowyou.room.ChatRoomViewModel
 import com.start3a.ishowyou.room.content.videoselection.YoutubeVideoSelectionActivity
-import kotlinx.android.synthetic.main.activity_main.*
+import kotlinx.android.synthetic.main.activity_chat_room.*
 import kotlinx.android.synthetic.main.fragment_no_room.*
 
 class NoRoomFragment : Fragment() {
@@ -119,6 +119,10 @@ class NoRoomFragment : Fragment() {
                 }
             }
             vm.listRoom.observe(viewLifecycleOwner) {
+                if (it.size == 0)
+                    no_room_layout.visibility = View.VISIBLE
+                else no_room_layout.visibility = View.GONE
+
                 listRoomAdapter.notifyDataSetChanged()
             }
         }

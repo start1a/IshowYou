@@ -49,6 +49,7 @@
         android:text="@string/realtime"
         android:textColor="@android:color/white"
         android:textSize="12sp"
+        android:buttonTint="@color/red"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent" />
 

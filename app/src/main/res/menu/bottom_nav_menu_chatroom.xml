@@ -10,8 +10,8 @@
     <item
         android:id="@+id/action_member"
         android:enabled="true"
-        android:icon="@drawable/ic_baseline_people_24"
-        android:title="@string/member"/>
+        android:icon="@drawable/ic_baseline_dehaze_24"
+        android:title="@string/menu"/>
 
     <item
         android:id="@+id/action_chat"

@@ -7,6 +7,7 @@ import android.os.Bundle
 import android.os.Handler
 import android.text.Editable
 import android.text.TextWatcher
+import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -75,7 +76,7 @@ class RealTimeChatFragment : Fragment() {
     private fun initAdapter() {
         viewModel!!.let { vm ->
             // 메세지 리스트
-            listChatAdapter = ChatMessageAdapter(vm.listMessage.value!!)
+            listChatAdapter = ChatMessageAdapter(vm.listMessage.value!!, requireContext())
 
             messageListView.adapter = listChatAdapter
             messageListView.layoutManager = LinearLayoutManager(activity)
@@ -110,6 +111,7 @@ class RealTimeChatFragment : Fragment() {
 
             // 메세지 수신
             vm.listMessage.observe(viewLifecycleOwner) {
+                Log.d("TAGG", "message size: ${vm.listMessage.value!!.size}")
                 listChatAdapter?.notifyDataSetChanged()
                 if (it.size > 0)
                     posLastItem = it.size - 1

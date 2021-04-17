@@ -1,5 +1,6 @@
 package com.start3a.ishowyou.room.chat
 
+import android.graphics.Color
 import android.view.LayoutInflater
 import android.view.ViewGroup
 import androidx.recyclerview.widget.RecyclerView
@@ -24,8 +25,15 @@ class ChatMemberAdapter(val list: MutableList<ChatMember>)
     override fun onBindViewHolder(holder: ItemViewHolder, position: Int) {
         holder.containerView.let {
             it.textMemberName.text = list[position].userName
-            if (list[position].isHost)
-                it.textMemberName.append(" (방장)")
+            if (list[position].isHost) {
+                it.textMemberName.append("  (방장)")
+                it.textMemberName.setTextColor(Color.parseColor("#6200EE"))
+                it.image_chatroom_member.setImageResource(R.drawable.ic_baseline_person_host_24)
+            }
+            else {
+                it.textMemberName.setTextColor(Color.parseColor("#99000000"))
+                it.image_chatroom_member.setImageResource(R.drawable.ic_baseline_person_24)
+            }
         }
     }
 }

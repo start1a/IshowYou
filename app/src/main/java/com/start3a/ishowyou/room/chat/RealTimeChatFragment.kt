@@ -58,7 +58,9 @@ class RealTimeChatFragment : Fragment() {
         viewModel!!.let { vm ->
             initAdapter()
             initView()
-            vm.initChatRoom()
+            vm.isJoinRoom.observe(viewLifecycleOwner) {
+                if (it) vm.initChatRoom()
+            }
 
             btnSendMessage.setOnClickListener {
                 val message = editSendMessage.text.toString()

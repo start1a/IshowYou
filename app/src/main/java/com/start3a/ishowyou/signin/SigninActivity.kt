@@ -8,8 +8,7 @@ import androidx.lifecycle.ViewModelProvider
 import com.firebase.ui.auth.AuthUI
 import com.google.firebase.auth.FirebaseAuth
 import com.start3a.ishowyou.R
-import com.start3a.ishowyou.main.MainActivity
-import kotlinx.android.synthetic.main.activity_signin.*
+import com.start3a.ishowyou.room.ChatRoomActivity
 
 class SigninActivity : AppCompatActivity() {
 
@@ -34,7 +33,7 @@ class SigninActivity : AppCompatActivity() {
     override fun onStart() {
         super.onStart()
         if (!shouldStartSignIn()) {
-            val intent = Intent(applicationContext, MainActivity::class.java)
+            val intent = Intent(applicationContext, ChatRoomActivity::class.java)
             startActivity(intent)
             finish()
         }
@@ -61,7 +60,7 @@ class SigninActivity : AppCompatActivity() {
         when(requestCode) {
             REQUEST_GOOGLE_AUTH_SIGN_IN -> {
                 if (resultCode == Activity.RESULT_OK) {
-                    val intent = Intent(applicationContext, MainActivity::class.java)
+                    val intent = Intent(applicationContext, ChatRoomActivity::class.java)
                     startActivity(intent)
                     finish()
                 }

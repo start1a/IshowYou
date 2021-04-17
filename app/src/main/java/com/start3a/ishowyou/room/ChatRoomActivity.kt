@@ -1,6 +1,5 @@
 package com.start3a.ishowyou.room
 
-import android.app.Activity
 import android.app.AlertDialog
 import android.content.Intent
 import android.content.pm.ActivityInfo
@@ -17,14 +16,12 @@ import com.hoanganhtuan95ptit.draggable.DraggablePanel
 import com.hoanganhtuan95ptit.draggable.utils.reWidth
 import com.rw.keyboardlistener.KeyboardUtils
 import com.start3a.ishowyou.R
-import com.start3a.ishowyou.contentapi.YoutubeSearchData
-import com.start3a.ishowyou.data.Content
 import com.start3a.ishowyou.data.FullScreenController
-import com.start3a.ishowyou.data.RoomRequest
 import com.start3a.ishowyou.room.chat.RealTimeChatFragment
 import com.start3a.ishowyou.room.content.YoutubeContentEditFragment
 import com.start3a.ishowyou.room.content.YoutubePlayerFragment
-import com.start3a.ishowyou.room.member.RoomMemberFragment
+import com.start3a.ishowyou.room.joinroom.NoRoomFragment
+import com.start3a.ishowyou.room.roominfo.RoomMemberFragment
 import com.start3a.ishowyou.signin.SigninActivity
 import kotlinx.android.synthetic.main.activity_chat_room.*
 import kotlinx.android.synthetic.main.layout_draggable_bottom.*
@@ -33,6 +30,10 @@ import kotlinx.android.synthetic.main.layout_draggable_top.*
 class ChatRoomActivity : AppCompatActivity() {
 
     private var viewModel: ChatRoomViewModel? = null
+
+    private var fragTop: YoutubePlayerFragment? = null
+    private var fragBottom: YoutubeContentEditFragment? = null
+
     private var isKeyboardUp = false
     private var keyboardheight = -1
 
@@ -46,9 +47,12 @@ class ChatRoomActivity : AppCompatActivity() {
         }
 
         viewModel!!.let { vm ->
-            vm.isJoinRoom = true
             initView()
-            initRoom()
+
+            supportFragmentManager.beginTransaction()
+                .replace(R.id.frameTopRightTab, RealTimeChatFragment())
+                .replace(R.id.main_view_frame, NoRoomFragment())
+                .commit()
 
             window.decorView.setOnSystemUiVisibilityChangeListener { visibility ->
                 if (visibility and View.SYSTEM_UI_FLAG_FULLSCREEN == 0) {
@@ -62,7 +66,7 @@ class ChatRoomActivity : AppCompatActivity() {
 
     override fun onBackPressed() {
         viewModel!!.let { vm ->
-            if (vm.isJoinRoom) {
+            if (vm.isJoinRoom.value!!) {
                 if (vm.isFullScreen) {
                     vm.mFullScreenController.contentExitFullScreenMode?.invoke()
                 }
@@ -93,18 +97,6 @@ class ChatRoomActivity : AppCompatActivity() {
                         draggablePanel.setHeightMax(vm.activity_height)
                     else
                         draggablePanel.setHeightMax((vm.activity_width / 16) * 9)
-                }
-            }
-
-            vm.initRoomCurContent = { content ->
-                val ft = supportFragmentManager.beginTransaction()
-                when (content) {
-                    Content.YOUTUBE -> {
-                        ft.replace(R.id.frameTop, YoutubePlayerFragment())
-                            .replace(R.id.frameBottom, YoutubeContentEditFragment())
-                            .replace(R.id.frameTopRightTab, RealTimeChatFragment())
-                            .commit()
-                    }
                 }
             }
 
@@ -170,7 +162,6 @@ class ChatRoomActivity : AppCompatActivity() {
                             changeWeightContentFrame(vm.activity_width / 2, vm.activity_width / 2)
                             enableDragFrame(false)
                         }
-
                     }
                     else {
                         if (isKeyboardUp) {
@@ -184,72 +175,24 @@ class ChatRoomActivity : AppCompatActivity() {
                     }
                 }
             }
-        }
-    }
 
-    private fun initRoom() {
-        val requestcode = intent.getIntExtra("requestcode", -1)
-
-        viewModel!!.let { vm ->
-            when (requestcode) {
-                // 방 생성
-                RoomRequest.CREATE_ROOM.num -> {
-                    val title = intent.getStringExtra("title")!!
-                    vm.createChatRoom(title,
-                        // 방 생성 성공
-                        { contentName ->
-                            when (contentName) {
-                                "Youtube" -> {
-                                    val videos =
-                                        intent.getParcelableArrayListExtra<YoutubeSearchData>("videos")!!
-                                    vm.addVideoToPlaylist_Youtube(videos)
-                                    viewModel!!.initRoomCurContent(Content.YOUTUBE)
-                                    vm.curVideoPlayed.value = vm.listPlayYoutube.value!![0]
-                                }
-                            }
-                        },
-                        // 방 정보 변경
-                        {
-
-                        }
-                    )
-                }
-
-                // 방 입장
-                RoomRequest.JOIN_ROOM.num -> {
-                    val roomCode = intent.getStringExtra("roomcode")!!
-                    // 방장이 방에 재접속일 경우 체크
-                    vm.isHost = intent.getBooleanExtra("ishost", false)
-
-                    vm.requestJoinRoom(roomCode, vm.isHost,
-                        // 방 입장 성공
-                        { contentName ->
-
-                            when (contentName) {
-                                "Youtube" -> {
-                                    vm.notifyPrevVideoPlayList()
-                                    vm.initRoomCurContent(Content.YOUTUBE)
-                                }
-                            }
-                            vm.notifyDeleteRoom {
-                                val intent = Intent().apply {
-                                    putExtra("message", "방장이 퇴장했습니다.")
-                                }
-                                setResult(Activity.RESULT_CANCELED, intent)
-                                finish()
-                            }
-
-                        },
-                        // 방 입장 실패
-                        {
-                            val intent = Intent().apply {
-                                putExtra("message", "방이 존재하지 않습니다.")
-                            }
-                            setResult(Activity.RESULT_CANCELED, intent)
-                            finish()
-                        })
-                }
+            vm.showDraggablePanel = { visible ->
+                if (visible) draggablePanel.maximize()
+                else draggablePanel.close()
             }
+
+            vm.setRoomAttr = { isOpen, isHost ->
+                val host = vm.isHost
+                vm.isHost = isHost
+                vm.isJoinRoom.value = isOpen
+                vm.showDraggablePanel(isOpen)
+
+                if (isOpen) replaceRoom()
+                else vm.leaveRoom(host)
+            }
+
+            // 로딩 아래의 뷰 클릭 방지
+            loading_layout.setOnClickListener {}
         }
     }
 
@@ -316,5 +259,19 @@ class ChatRoomActivity : AppCompatActivity() {
     private fun changeWeightContentFrame(w1: Int, w2: Int) {
         frameTop.reWidth(w1)
         frameTopRightTab.reWidth(w2)
+    }
+
+    private fun replaceRoom() {
+        val sft = supportFragmentManager.beginTransaction()
+
+        if (fragTop != null && fragBottom != null)
+            sft.remove(fragTop!!).remove(fragBottom!!)
+
+        fragTop = YoutubePlayerFragment()
+        fragBottom = YoutubeContentEditFragment()
+        sft.replace(R.id.frameTop, fragTop!!)
+            .replace(R.id.frameBottom, fragBottom!!)
+            .commit()
+        bottom_navigation_chatroom.selectedItemId = R.id.action_contents
     }
 }

@@ -13,9 +13,9 @@ import androidx.fragment.app.Fragment
 import androidx.lifecycle.ViewModelProvider
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.start3a.ishowyou.R
-import com.start3a.ishowyou.room.content.videoselection.YoutubeVideoSelectionActivity
 import com.start3a.ishowyou.contentapi.YoutubeSearchData
 import com.start3a.ishowyou.room.ChatRoomViewModel
+import com.start3a.ishowyou.room.content.videoselection.YoutubeVideoSelectionActivity
 import kotlinx.android.synthetic.main.fragment_youtube_content_edit.*
 
 
@@ -58,16 +58,18 @@ class YoutubeContentEditFragment : Fragment() {
         }
 
         viewModel!!.let { vm ->
-            initView()
+            initListData()
             initAdapter()
         }
     }
 
-    private fun initView() {
+    private fun initListData() {
         viewModel!!.let { vm ->
             vm.curVideoPlayed.observe(viewLifecycleOwner) {
-                listVideoAdapter?.videoPlayed = it
-                listVideoAdapter?.notifyDataSetChanged()
+                if (it.duration != -1f) {
+                    listVideoAdapter?.videoPlayed = it
+                    listVideoAdapter?.notifyDataSetChanged()
+                }
             }
 
             vm.initContentEdit_Youtube(
@@ -95,13 +97,17 @@ class YoutubeContentEditFragment : Fragment() {
             listVideoAdapter = YoutubePlayListAdapter(vm.listPlayYoutube.value!!, vm.curVideoPlayed.value, vm.isHost).apply {
                 // 영상 클릭 시 정보 텍스트 표시
                 videoClicked = {
-                    if (!vm.isHost)
-                        vm.customPlayerUiController.uncheckRealtime()
-
                     val video = vm.listPlayYoutube.value!![it]
-                    vm.curVideoSelected.value = video
-                    vm.curSeekbarPos.value = 0.0f
-                    vm.curVideoPlayed.value = video
+                    val curVideo = vm.curVideoPlayed.value!!
+
+                    if (video.createdTime != curVideo.createdTime) {
+                        if (!vm.isHost)
+                            vm.customPlayerUiController.checkRealtime(false)
+
+                        vm.curSeekbarPos.value = 0.0f
+                        vm.curVideoSelected.value = video
+                        vm.curVideoPlayed.value = video
+                    }
                 }
                 // 비디오 삭제 버튼 클릭
                 videoRemoved = {

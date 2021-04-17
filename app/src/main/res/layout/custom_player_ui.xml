@@ -76,7 +76,6 @@
             android:id="@+id/btnRewind"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_gravity=""
             android:background="@color/fui_transparent"
             android:contentDescription="@string/imagerror"
             android:src="@drawable/ic_baseline_fast_rewind_24"
@@ -138,6 +137,9 @@
         <com.google.android.material.slider.Slider
             android:id="@+id/progressPlay"
             android:layout_width="0dp"
+            app:trackColorActive="@color/red"
+            app:thumbColor="@color/red"
+            app:trackColorInactive="@color/lightGray"
             android:layout_height="wrap_content"
             app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintEnd_toStartOf="@+id/btnFullScreen"

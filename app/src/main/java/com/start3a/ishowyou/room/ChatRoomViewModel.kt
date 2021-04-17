@@ -11,9 +11,11 @@ import com.start3a.ishowyou.room.content.CustomPlayerUiController
 
 class ChatRoomViewModel: ViewModel() {
 
-    // 채팅방 정보
+    // 채팅방 정보 ------------
     var isHost = false
-    var isJoinRoom = false
+    var isJoinRoom = MutableLiveData<Boolean>().apply { value = false }
+    var listRoom = MutableLiveData<MutableList<ChatRoom>>().apply { value = mutableListOf() }
+
     // 메세지
     val listMessage: ListLiveData<ChatMessage> by lazy {
         ListLiveData(mutableListOf())
@@ -24,39 +26,34 @@ class ChatRoomViewModel: ViewModel() {
         ListLiveData(mutableListOf())
     }
 
-    // 채팅방 유무 뷰 전환
-    lateinit var initRoomCurContent: ((Content) -> Unit)
-
     // Dao
     private var dbYoutube: RdbDao.YoutubeDao
     private var dbChat: RdbDao.ChatDao
-    private var curRoomContent: ContentSetting? = null
 
-    // View
+    // View attr ----------------
     var isFullScreen = false
     lateinit var mFullScreenController: FullScreenController
+    var openFullScreenChatView: ((isVisible: Boolean) -> Unit)? = null
+
     var hideKeyboard: (() -> Unit)? = null
     var contentAvailability: ((Boolean) -> Unit)? = null
+
+    lateinit var showDraggablePanel: (isVisible: Boolean) -> Unit
+    lateinit var setRoomAttr:((isOpen: Boolean, isHost: Boolean) -> Unit)
+
     var isActivitySizeMeasured = false
     var activity_width = 0
     var activity_height = 0
-    var openFullScreenChatView: ((Boolean) -> Unit)? = null
+
+    var curQueryKeyword = ""
+
+    // 임시 방 생성 제목 저장
+    lateinit var titleTemp: String
 
     init {
         val db = RdbDao(FirebaseDatabase.getInstance().reference)
         dbYoutube = db.YoutubeDao()
         dbChat = db.ChatDao()
-    }
-
-
-    // 컨텐츠 --------------------------------------
-    fun changeContent(content: Content) {
-        curRoomContent?.close()
-
-        when (content) {
-            Content.YOUTUBE -> curRoomContent = dbYoutube
-        }
-        initRoomCurContent(content)
     }
 
 
@@ -177,13 +174,23 @@ class ChatRoomViewModel: ViewModel() {
         dbChat.createChatRoom(title, successListener, roomInfoChangedListener)
     }
 
-    fun requestJoinRoom(roomCode: String, isHostJoinRoom: Boolean, successJoined: (String) -> Unit, failJoined: () -> Unit) {
-        dbChat.requestJoinRoom(roomCode, isHostJoinRoom, successJoined, failJoined)
+    fun requestJoinRoom(roomCode: String, successJoined: (String) -> Unit, failJoined: () -> Unit) {
+        dbChat.requestJoinRoom(roomCode, successJoined, failJoined)
     }
 
-    fun leaveRoom() {
+    fun leaveRoom(host: Boolean) {
         // 방 정보 삭제
-        dbChat.closeRoom(isHost)
+        if (!isHost) dbYoutube.closeRoom()
+        dbChat.closeRoom(host)
+
+        listMember.value?.clear()
+        listPlayYoutube.value?.clear()
+        listMessage.value?.clear()
+
+        curSeekbarPos.value = -1f
+        curVideoPlayed.value = YoutubeSearchData()
+        curVideoSelected.value = YoutubeSearchData()
+        isRealtimeUsed.value = false
     }
 
     fun initChatRoom() {
@@ -198,8 +205,9 @@ class ChatRoomViewModel: ViewModel() {
     fun notifyDeleteRoom(roomDeleted: () -> Unit) {
         if (!isHost) {
             dbChat.notifyIsRoomDeleted {
-                leaveRoom()
+                leaveRoom(false)
                 roomDeleted()
+                setRoomAttr(false, false)
             }
         }
     }
@@ -225,5 +233,38 @@ class ChatRoomViewModel: ViewModel() {
 
     fun sendChatMessage(message: String) {
         dbChat.sendChatMessage(message)
+    }
+
+    fun loadRoomList(loadingOff: (() -> Unit)?) {
+        dbChat.requestUserChatRoomList { rooms ->
+            val list = listRoom.value!!
+            list.clear()
+
+            list.addAll(rooms)
+            this.listRoom.value = list
+            loadingOff?.invoke()
+        }
+    }
+
+    fun checkPrevRoomJoin(requestJoin: (Boolean) -> Unit, loadingOff: () -> Unit) {
+        dbChat.checkPrevRoomJoin(requestJoin, loadingOff)
+    }
+
+    fun isQueryAvailable(keyword: String) =
+        curQueryKeyword != keyword && keyword.isNotBlank() && keyword.isNotEmpty()
+
+    fun searchRoomByKeyword(keyword: String, messageNoItem: () -> Unit, loadingOff: () -> Unit) {
+        dbChat.searchRoomByKeyword(keyword) { rooms ->
+            if (rooms.isNotEmpty()) {
+                val list = listRoom.value!!
+
+                list.clear()
+                list.addAll(rooms)
+                listRoom.value = list
+            }
+            else messageNoItem()
+
+            loadingOff()
+        }
     }
 }

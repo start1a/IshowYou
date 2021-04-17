@@ -1,4 +1,4 @@
-package com.start3a.ishowyou.room.member
+package com.start3a.ishowyou.room.roominfo
 
 import android.os.Bundle
 import android.view.LayoutInflater
@@ -38,7 +38,9 @@ class RoomMemberFragment : Fragment() {
         }
 
         viewModel!!.let { vm ->
-            vm.initMemberList()
+            vm.isJoinRoom.observe(viewLifecycleOwner) {
+                if (it) vm.initMemberList()
+            }
             
             listMemberAdapter = ChatMemberAdapter(vm.listMember.value!!)
             memberRecyclerView.adapter = listMemberAdapter
@@ -60,8 +62,7 @@ class RoomMemberFragment : Fragment() {
         builder.setMessage("채팅방에서 나가시겠습니까?")
             .setPositiveButton("확인") { _, _ ->
 
-                viewModel!!.leaveRoom()
-                requireActivity().finish()
+                viewModel!!.setRoomAttr(false, false)
             }
             .setNegativeButton("취소", null)
             .create().show()

@@ -1,6 +1,7 @@
 package com.start3a.ishowyou.room.content
 
 import android.os.Bundle
+import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -81,40 +82,46 @@ class YoutubePlayerFragment : Fragment() {
                             vm.mFullScreenController.rotate(false)
                         }
                     })
+
                     // 영상 선택
                     vm.curVideoSelected.observe(viewLifecycleOwner) {
-                        vm.setNewYoutubeVideoSelected(it.videoId)
+                        if (it.duration != -1f)
+                            vm.setNewYoutubeVideoSelected(it.videoId)
                     }
 
                     // 새 영상이 실행됨
                     vm.curVideoPlayed.observe(viewLifecycleOwner) {
-                        youTubePlayer.loadVideo(it.videoId, vm.curSeekbarPos.value?:0.0f)
-                        vm.customPlayerUiController.newVideoPlayed()
-                        vm.setNewYoutubeVideoPlayed(it, vm.curSeekbarPos.value?:0.0f)
-                        requireActivity().draggablePanel.getFrameFirst().curPlayVideoTitle.text = it.title
+                        if (it.duration != -1f) {
+                            youTubePlayer.loadVideo(it.videoId, vm.curSeekbarPos.value ?: 0.0f)
+                            vm.customPlayerUiController.newVideoPlayed()
+                            vm.setNewYoutubeVideoPlayed(it, vm.curSeekbarPos.value ?: 0.0f)
+                            requireActivity().draggablePanel.getFrameFirst().curPlayVideoTitle.text =
+                                it.title
+                        }
                     }
 
                     // SeekBar의 위치 변동됨
                     vm.curSeekbarPos.observe(viewLifecycleOwner) {
-                        vm.setYoutubeVideoSeekbarChanged(it)
+                        if (it != -1f)
+                            vm.setYoutubeVideoSeekbarChanged(it)
                     }
 
                     // 실시간 정보 on / off
                     vm.isRealtimeUsed.observe(viewLifecycleOwner) {
                         if (it) {
                             // 현재 재생 정보 요청
-                            vm.requestVideoPlayState { playState, curTime, saveTime ->
-                                // 흐른 시간 계산
-                                val timeElapsed = (curTime - saveTime).toFloat() / 1000
-                                val restVideoTime = playState.curVideo.duration - playState.seekbar
+                           vm.requestVideoPlayState { playState, curTime, saveTime ->
+                               // 흐른 시간 계산
+                               val timeElapsed = (curTime - saveTime).toFloat() / 1000
+                               val restVideoTime = playState.curVideo.duration - playState.seekbar
 
-                                // 현재 영상이 끝나지 않음
-                                if (restVideoTime > timeElapsed) {
-                                    vm.curSeekbarPos.value = playState.seekbar + timeElapsed
-                                    vm.curVideoPlayed.value = playState.curVideo
-                                }
-                                else vm.PlayNextVideo(playState.curVideo, timeElapsed - restVideoTime)
-                            }
+                               // 현재 영상이 끝나지 않음
+                               if (restVideoTime > timeElapsed) {
+                                   vm.curSeekbarPos.value = playState.seekbar + timeElapsed
+                                   vm.curVideoPlayed.value = playState.curVideo
+                               }
+                               else vm.PlayNextVideo(playState.curVideo, timeElapsed - restVideoTime)
+                           }
                             // 재생바 감지
                             vm.initContent_Youtube {
                                 youTubePlayer.seekTo(it)
@@ -129,6 +136,11 @@ class YoutubePlayerFragment : Fragment() {
                             }
                         }
                         else vm.inActiveYoutubeRealtimeListener()
+                    }
+
+                    vm.isJoinRoom.observe(viewLifecycleOwner) {
+                        if (it) vm.customPlayerUiController.checkRealtime(true)
+                        else youTubePlayer.pause()
                     }
                 }
 

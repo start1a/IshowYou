@@ -1,4 +1,4 @@
-package com.start3a.ishowyou.main.joinroom
+package com.start3a.ishowyou.room.joinroom
 
 import android.view.LayoutInflater
 import android.view.ViewGroup

@@ -38,7 +38,11 @@ class RdbDao(private val db: DatabaseReference) {
 
             seekbarChangedListener =
                 db.child(PATH_REALTIME_SEEKBAR).addChildEventListener(object : ChildEventListener {
-                    override fun onChildAdded(snapshot: DataSnapshot, previousChildName: String?) {}
+                    override fun onChildAdded(snapshot: DataSnapshot, previousChildName: String?) {
+                        snapshot.getValue<Float>()?.let { time ->
+                            changeSeekbar(time)
+                        }
+                    }
 
                     override fun onChildChanged(snapshot: DataSnapshot, previousChildName: String?) {
                         snapshot.getValue<Float>()?.let { time ->
@@ -126,7 +130,11 @@ class RdbDao(private val db: DatabaseReference) {
 
             newVideoSelectedListener =
                 db.child(PATH_REALTIME_NEW_VIDEO).addChildEventListener(object : ChildEventListener {
-                    override fun onChildAdded(snapshot: DataSnapshot, previousChildName: String?) {}
+                    override fun onChildAdded(snapshot: DataSnapshot, previousChildName: String?) {
+                        snapshot.getValue<String>()?.let { videoId ->
+                            newVideoPlayed(videoId)
+                        }
+                    }
 
                     override fun onChildChanged(snapshot: DataSnapshot, previousChildName: String?) {
                         snapshot.getValue<String>()?.let { videoId ->
@@ -148,6 +156,7 @@ class RdbDao(private val db: DatabaseReference) {
             val curPlayState = PlayStateRequested(video, seekBar)
             val playState = hashMapOf<String, Any>().apply {
                 put("$PATH_CURRENT_PLAY_STATE/curVideo", curPlayState)
+                put("$PATH_CURRENT_PLAY_STATE/timeRecorded", ServerValue.TIMESTAMP)
             }
             db.updateChildren(playState)
         }
@@ -206,6 +215,14 @@ class RdbDao(private val db: DatabaseReference) {
             newVideoSelectedListener?.let {
                 db.child(PATH_REALTIME_NEW_VIDEO).removeEventListener(it)
                 newVideoSelectedListener = null
+            }
+        }
+
+        fun closeRoom() {
+            inActiveYoutubeRealtimeListener()
+            playlistChangedListener?.let {
+                db.child(PATH_PLAY_LIST).removeEventListener(it)
+                playlistChangedListener = null
             }
         }
     }
@@ -273,7 +290,7 @@ class RdbDao(private val db: DatabaseReference) {
                 db.child("content/$roomCode").removeValue()
             } else {
                 db.child("member/$roomCode/${CurUser.userName}").removeValue()
-                removeListener(hostDeleteRoomNotifyListener, "member/$roomCode")
+                removeListener(hostDeleteRoomNotifyListener, "chat/$roomCode")
                 hostDeleteRoomNotifyListener = null
             }
 
@@ -285,7 +302,6 @@ class RdbDao(private val db: DatabaseReference) {
             messageNotifyListener = null
             memberNotifyListener = null
 
-            // 현재 사용자의 방 접속 기록 제거
             db.child("user/${CurUser.userName}").removeValue()
 
             roomCode = null
@@ -379,7 +395,6 @@ class RdbDao(private val db: DatabaseReference) {
 
         fun requestJoinRoom(
             requestedRoomCode: String,
-            isHostJoinRoom: Boolean,
             successJoined: (String) -> Unit,
             failJoined: () -> Unit
         ) {
@@ -392,7 +407,7 @@ class RdbDao(private val db: DatabaseReference) {
                             snapshot.getValue<ChatRoom>()?.let {
                                 roomCode = requestedRoomCode
                                 successJoined(it.contentName)
-                                setUserRoomRecord(isHostJoinRoom)
+                                setUserRoomRecord(false)
                             }
                         } else failJoined()
                     }
@@ -404,7 +419,7 @@ class RdbDao(private val db: DatabaseReference) {
 
             // 방 멤버 저장
             db.child("member/$requestedRoomCode/${CurUser.userName}")
-                .setValue(ChatMember(CurUser.userName, isHostJoinRoom))
+                .setValue(ChatMember(CurUser.userName, false))
         }
 
         // 방 제거 여부
@@ -438,7 +453,7 @@ class RdbDao(private val db: DatabaseReference) {
             }
         }
 
-        fun checkPrevRoomJoin(requestJoin: (String, Boolean) -> Unit, loadingOff: () -> Unit) {
+        fun checkPrevRoomJoin(requestJoin: (Boolean) -> Unit, loadingOff: () -> Unit) {
             db.child("user/${CurUser.userName}")
                 .addListenerForSingleValueEvent(object : ValueEventListener {
                     override fun onDataChange(snapshot: DataSnapshot) {
@@ -446,7 +461,8 @@ class RdbDao(private val db: DatabaseReference) {
                         if (snapshot.exists()) {
                             val userRoomCode = snapshot.child("room").getValue<String>()!!
                             val isHost = snapshot.child("isHost").getValue<Boolean>()!!
-                            requestJoin(userRoomCode, isHost)
+                            roomCode = userRoomCode
+                            requestJoin(isHost)
                         }
                     }
 

@@ -104,7 +104,7 @@ class CustomPlayerUiController(
         btnPlay.setOnClickListener {
             if (playerTracker.state == PlayerConstants.PlayerState.PLAYING) {
                 youtubePlayer.pause()
-                uncheckRealtime()
+                checkRealtime(false)
             }
             else if (playerTracker.state == PlayerConstants.PlayerState.PAUSED)
                 youtubePlayer.play()
@@ -135,7 +135,7 @@ class CustomPlayerUiController(
                 youtubePlayer.seekTo(slider.value)
 
                 if (!isHost)
-                    uncheckRealtime()
+                    checkRealtime(false)
             }
         })
     }
@@ -274,7 +274,7 @@ class CustomPlayerUiController(
         seekbarChanged(playerTracker.currentSecond + intervalSeek)
 
         if (!isHost)
-            uncheckRealtime()
+            checkRealtime(false)
     }
 
     private fun changeUiVisibility(visibility: Int) {
@@ -299,9 +299,9 @@ class CustomPlayerUiController(
         isPlaySeeking = false
     }
 
-    fun uncheckRealtime() {
-        isRealtimeUsed = false
-        rbtnRealTime.isChecked = false
-        realtimeChecked(false)
+    fun checkRealtime(isChecked: Boolean) {
+        isRealtimeUsed = isChecked
+        rbtnRealTime.isChecked = isChecked
+        realtimeChecked(isChecked)
     }
 }

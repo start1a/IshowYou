@@ -110,15 +110,17 @@ class YoutubePlayListAdapter(
 
             // 영상 정보 헤더
             else {
-                videoPlayed?.let { video ->
-                    it.textVideoTitle.text = video.title
-                    it.textVideoDesc.text = video.desc
-                    it.textVideoChannelTitle.text = video.channelTitle
+                if (videoPlayed != null && videoPlayed!!.duration != -1f) {
+                    videoPlayed?.let { video ->
+                        it.textVideoTitle.text = video.title
+                        it.textVideoDesc.text = video.desc
+                        it.textVideoChannelTitle.text = video.channelTitle
 
-                    if (!isHost)
-                        it.btnAddVideo.visibility = View.GONE
-                    else
-                        it.btnAddVideo.setOnClickListener { videoAdd() }
+                        if (!isHost)
+                            it.btnAddVideo.visibility = View.GONE
+                        else
+                            it.btnAddVideo.setOnClickListener { videoAdd() }
+                    }
                 }
             }
         }

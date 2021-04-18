@@ -1,13 +1,18 @@
 package com.start3a.ishowyou.room
 
+import android.content.Context
+import android.util.Log
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
+import androidx.room.Room
 import com.google.firebase.database.FirebaseDatabase
 import com.start3a.ishowyou.contentapi.PlayStateRequested
 import com.start3a.ishowyou.contentapi.YoutubeSearchData
 import com.start3a.ishowyou.data.*
 import com.start3a.ishowyou.model.RdbDao
+import com.start3a.ishowyou.model.RoomDatabase
 import com.start3a.ishowyou.room.content.CustomPlayerUiController
+import java.util.*
 
 class ChatRoomViewModel: ViewModel() {
 
@@ -160,6 +165,29 @@ class ChatRoomViewModel: ViewModel() {
         }
 
         return null
+    }
+
+    fun refreshVideoSearchCacaheList(context: Context) {
+        val roomDB = Room.databaseBuilder(context, RoomDatabase::class.java, "database-room")
+            .allowMainThreadQueries()
+            .build()
+
+        val videos = roomDB.youtubeDao().getAllCacheVideos()
+        if (videos.isNotEmpty()) {
+            val curTime = Date().time
+            val millisecOfDay = 24 * 3600 * 1000
+            val keyList = mutableListOf<String>()
+
+            videos.forEach {
+                if (keyList.size == 0 || keyList[keyList.lastIndex] != it.keyword) {
+                    if (curTime - it.timeCreated >= millisecOfDay) {
+                        keyList.add(it.keyword)
+                    }
+                }
+            }
+
+            keyList.forEach { roomDB.youtubeDao().deleteCacheVideo(it) }
+        }
     }
 
     private fun isControlMember() = isHost && isRealtimeUsed.value!!

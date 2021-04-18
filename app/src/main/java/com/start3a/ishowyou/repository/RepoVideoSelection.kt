@@ -31,7 +31,7 @@ class RepoVideoSelection(context: Context) {
         videoList: ListLiveData<YoutubeSearchData>,
         queryEnded: () -> Unit
     ) {
-        val videosByRoom = roomDB.youtubeDao().getVideosByKeyword(keyword)
+        val videosByRoom = roomDB.youtubeDao().getCacheVideosByKeyword(keyword)
 
         // Room에 캐시 체크
         if (videosByRoom.isNotEmpty()) {

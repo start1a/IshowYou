@@ -46,6 +46,7 @@ class ChatRoomActivity : AppCompatActivity() {
         }
 
         viewModel!!.let { vm ->
+            vm.refreshVideoSearchCacaheList(applicationContext)
             initView()
 
             supportFragmentManager.beginTransaction()

@@ -6,13 +6,13 @@ import androidx.room.*
 interface YoutubeDao {
 
     @Query("SELECT * FROM RoomData_VideoSearch WHERE keyword = :keyword")
-    fun getVideosByKeyword(keyword: String): List<RoomData_VideoSearch>
+    fun getCacheVideosByKeyword(keyword: String): List<RoomData_VideoSearch>
 
     @Insert
     fun insertVideos(videos: List<RoomData_VideoSearch>)
 
-    @Delete
-    fun deleteVideosByKeyword(vararg videos: RoomData_VideoSearch)
+    @Query("DELETE FROM RoomData_VideoSearch WHERE keyword = :keyword")
+    fun deleteCacheVideo(keyword: String)
 
     @Query("SELECT * FROM VideoSearchHistory ORDER BY createdTime DESC LIMIT 20")
     fun getAllSearchKewordHistory(): List<VideoSearchHistory>
@@ -22,4 +22,7 @@ interface YoutubeDao {
 
     @Delete
     fun deleteHistory(item: VideoSearchHistory)
+
+    @Query("SELECT * FROM RoomData_VideoSearch ORDER BY timeCreated")
+    fun getAllCacheVideos(): List<RoomData_VideoSearch>
 }

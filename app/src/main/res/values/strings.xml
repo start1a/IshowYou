@@ -32,4 +32,6 @@
     <string name="imagerror">이미지 오류</string>
     <string name="add">추가</string>
     <string name="fab_content_desc">Floating Button</string>
+    <string name="room">방</string>
+    <string name="settings">설정</string>
 </resources>

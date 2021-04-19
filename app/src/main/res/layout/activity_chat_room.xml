@@ -10,7 +10,23 @@
     <FrameLayout
         android:id="@+id/main_view_frame"
         android:layout_width="match_parent"
-        android:layout_height="match_parent" />
+        android:layout_height="0dp"
+        app:layout_constraintBottom_toTopOf="@+id/bottom_menu_layout_lobby"
+        app:layout_constraintTop_toTopOf="parent" />
+
+    <LinearLayout
+        android:id="@+id/bottom_menu_layout_lobby"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        app:layout_constraintBottom_toBottomOf="parent">
+
+        <com.google.android.material.bottomnavigation.BottomNavigationView
+            android:id="@+id/bottom_navigation_lobby"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            app:menu="@menu/bottom_nav_menu_lobby" />
+
+    </LinearLayout>
 
     <View
         android:id="@+id/alpha"
@@ -28,8 +44,7 @@
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent"
-        app:margin_bottom_when_min="8dp"
-        app:margin_edge_when_min="8dp"
+        app:margin_bottom_when_min="56dp"
         app:percent_when_middle="0.9"
         app:state="CLOSE" />
 

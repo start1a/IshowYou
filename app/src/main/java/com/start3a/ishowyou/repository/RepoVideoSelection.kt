@@ -126,4 +126,24 @@ class RepoVideoSelection(context: Context) {
     fun deleteHistory(item: VideoSearchHistory) {
         roomDB.youtubeDao().deleteHistory(item)
     }
+
+    fun getCurWatchedVideos(): List<YoutubeSearchData> {
+        val watchedVideos = roomDB.youtubeDao().getCurWatchedVideos()
+        val list = mutableListOf<YoutubeSearchData>()
+
+        watchedVideos.forEach {
+            val video = YoutubeSearchData().apply {
+                title = it.title
+                desc = it.desc
+                channelTitle = it.channelTitle
+                videoId = it.videoId
+                thumbnail = it.thumbnail
+                thumbnailSmall = it.thumbnailSmall
+                duration = it.duration
+            }
+            list.add(video)
+        }
+
+        return list
+    }
 }

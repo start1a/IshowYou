@@ -2,15 +2,15 @@
 <menu xmlns:android="http://schemas.android.com/apk/res/android">
 
     <item
-        android:id="@+id/action_contents"
+        android:id="@+id/action_room"
         android:enabled="true"
-        android:icon="@drawable/ic_baseline_content_24"
-        android:title="@string/content"/>
+        android:icon="@drawable/ic_baseline_meeting_room_24"
+        android:title="@string/room"/>
 
     <item
-        android:id="@+id/action_menu"
+        android:id="@+id/action_settings"
         android:enabled="true"
-        android:icon="@drawable/ic_baseline_dehaze_24"
-        android:title="@string/menu"/>
+        android:icon="@drawable/ic_baseline_settings_24"
+        android:title="@string/settings"/>
 
 </menu>

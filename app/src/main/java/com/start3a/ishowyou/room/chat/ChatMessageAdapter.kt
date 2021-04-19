@@ -70,10 +70,6 @@ class ChatMessageAdapter(val list: MutableList<ChatMessage>, private val context
         }
     }
 
-    private fun equalsToPrevMessageUser(position: Int): Boolean {
-        Log.d("TAGG", "position: $position")
-        if (position != 0)
-            Log.d("TAGG", "top: ${list[position - 1].userName}, bottom: ${list[position].userName}")
-        return position != 0 && list[position].userName == list[position - 1].userName
-    }
+    private fun equalsToPrevMessageUser(position: Int): Boolean =
+        position != 0 && list[position].userName == list[position - 1].userName
 }

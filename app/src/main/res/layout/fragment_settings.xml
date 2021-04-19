@@ -1,0 +1,41 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical"
+    tools:context=".room.lobby.SettingsFragment">
+
+    <com.google.android.material.switchmaterial.SwitchMaterial
+        android:id="@+id/switchStopCurWatchedVideos"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="시청 기록 저장 중지"
+        android:paddingHorizontal="16dp" />
+
+    <com.google.android.material.switchmaterial.SwitchMaterial
+        android:id="@+id/switchStopSearchKeywords"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="최근 검색 기록 저장 중지"
+        android:paddingHorizontal="16dp" />
+
+    <Button
+        android:id="@+id/btnRemoveCurSavedVideos"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:background="@color/fui_transparent"
+        android:text="최근 시청한 영상 기록 제거"
+        android:textAlignment="textStart"
+        android:textColor="@android:color/black" />
+
+    <Button
+        android:id="@+id/btnRemoveSearchKeywords"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:background="@color/fui_transparent"
+        android:text="최근 검색한 기록 제거"
+        android:textAlignment="textStart"
+        android:textColor="@android:color/black" />
+
+</LinearLayout>

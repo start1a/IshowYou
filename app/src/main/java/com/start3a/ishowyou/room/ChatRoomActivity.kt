@@ -21,7 +21,8 @@ import com.start3a.ishowyou.room.chat.RealTimeChatFragment
 import com.start3a.ishowyou.room.content.YoutubeContentEditFragment
 import com.start3a.ishowyou.room.content.YoutubePlayerFragment
 import com.start3a.ishowyou.room.joinroom.NoRoomFragment
-import com.start3a.ishowyou.room.roominfo.RoomMemberFragment
+import com.start3a.ishowyou.room.lobby.RoomMemberFragment
+import com.start3a.ishowyou.room.lobby.SettingsFragment
 import com.start3a.ishowyou.signin.SigninActivity
 import kotlinx.android.synthetic.main.activity_chat_room.*
 import kotlinx.android.synthetic.main.layout_draggable_bottom.*
@@ -46,7 +47,6 @@ class ChatRoomActivity : AppCompatActivity() {
         }
 
         viewModel!!.let { vm ->
-            vm.refreshVideoSearchCacaheList(applicationContext)
             initView()
 
             supportFragmentManager.beginTransaction()
@@ -71,11 +71,22 @@ class ChatRoomActivity : AppCompatActivity() {
                     vm.mFullScreenController.contentExitFullScreenMode?.invoke()
                 }
                 else {
-                    bottom_navigation_chatroom.selectedItemId =
-                        when (bottom_navigation_chatroom.selectedItemId) {
-                        R.id.action_contents -> R.id.action_member
-                        R.id.action_member -> R.id.action_chat
-                        else -> R.id.action_contents
+                    val state = draggablePanel.mCurrentState
+                    // 방 최대화 상태
+                    if (state == DraggablePanel.State.MAX) {
+                        bottom_navigation_chatroom.selectedItemId =
+                            when (bottom_navigation_chatroom.selectedItemId) {
+                                R.id.action_contents -> R.id.action_member
+                                R.id.action_member -> R.id.action_chat
+                                else -> R.id.action_contents
+                            }
+                    }
+                    else {
+                        bottom_navigation_lobby.selectedItemId =
+                        when (bottom_navigation_lobby.selectedItemId) {
+                            R.id.action_room -> R.id.action_settings
+                            else -> R.id.action_room
+                        }
                     }
                 }
             }
@@ -85,6 +96,9 @@ class ChatRoomActivity : AppCompatActivity() {
 
     private fun initView() {
         viewModel!!.let { vm ->
+            vm.init(applicationContext)
+            vm.refreshVideoSearchCacaheList()
+
             chatroom_layout.viewTreeObserver.addOnGlobalLayoutListener {
                 if (!vm.isActivitySizeMeasured) {
                     vm.isActivitySizeMeasured = true
@@ -114,7 +128,25 @@ class ChatRoomActivity : AppCompatActivity() {
                 else frameTop.reWidth(vm.activity_width)
             }
 
-            // 하단 메뉴
+            // 로비 하단 메뉴
+            bottom_navigation_lobby.setOnNavigationItemSelectedListener { item ->
+                val sfm = supportFragmentManager.beginTransaction()
+                when (item.itemId) {
+                    R.id.action_room -> {
+                        sfm.replace(R.id.main_view_frame, NoRoomFragment())
+                            .commit()
+                        true
+                    }
+                    R.id.action_settings -> {
+                        sfm.replace(R.id.main_view_frame, SettingsFragment())
+                            .commit()
+                        true
+                    }
+                    else -> false
+                }
+            }
+
+            // 룸 하단 메뉴
             bottom_navigation_chatroom.selectedItemId = R.id.action_contents
             bottom_navigation_chatroom.setOnNavigationItemSelectedListener { item ->
                 val sfm = supportFragmentManager.beginTransaction()

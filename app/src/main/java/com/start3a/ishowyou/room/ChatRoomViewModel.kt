@@ -1,18 +1,13 @@
 package com.start3a.ishowyou.room
 
 import android.content.Context
-import android.util.Log
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
-import androidx.room.Room
-import com.google.firebase.database.FirebaseDatabase
 import com.start3a.ishowyou.contentapi.PlayStateRequested
 import com.start3a.ishowyou.contentapi.YoutubeSearchData
 import com.start3a.ishowyou.data.*
-import com.start3a.ishowyou.model.RdbDao
-import com.start3a.ishowyou.model.RoomDatabase
+import com.start3a.ishowyou.repository.RepoChatRoom
 import com.start3a.ishowyou.room.content.CustomPlayerUiController
-import java.util.*
 
 class ChatRoomViewModel: ViewModel() {
 
@@ -26,14 +21,21 @@ class ChatRoomViewModel: ViewModel() {
         ListLiveData(mutableListOf())
     }
     var isMessageListUpScrolled = false
+
     // 멤버
     val listMember: ListLiveData<ChatMember> by lazy {
         ListLiveData(mutableListOf())
     }
 
+    // 로비
+    var isStopSavingCurWatchedVideo: Boolean =
+        MyApplication.prefs.getString("isStopSavingCurWatchedVideo", "false").toBoolean()
+    var isStopSearchKeywords: Boolean =
+        MyApplication.prefs.getString("isStopCurWatchedVideos", "false").toBoolean()
+
     // Dao
-    private var dbYoutube: RdbDao.YoutubeDao
-    private var dbChat: RdbDao.ChatDao
+    private lateinit var repo: RepoChatRoom
+
 
     // View attr ----------------
     var isFullScreen = false
@@ -55,13 +57,6 @@ class ChatRoomViewModel: ViewModel() {
     // 임시 방 생성 제목 저장
     lateinit var titleTemp: String
 
-    init {
-        val db = RdbDao(FirebaseDatabase.getInstance().reference)
-        dbYoutube = db.YoutubeDao()
-        dbChat = db.ChatDao()
-    }
-
-
     // 유튜브 --------------------------------------
     lateinit var customPlayerUiController: CustomPlayerUiController
 
@@ -74,6 +69,10 @@ class ChatRoomViewModel: ViewModel() {
     // 재생 시간 복원 데이터
     val curVideoPlayed = MutableLiveData<YoutubeSearchData>()
     val curSeekbarPos = MutableLiveData<Float>()
+
+    fun init(context: Context) {
+        repo = RepoChatRoom(context)
+    }
 
     fun PlayNextVideo(curVideo: YoutubeSearchData, time: Float) {
         var restTime = time
@@ -101,58 +100,58 @@ class ChatRoomViewModel: ViewModel() {
         }
     }
 
-    fun initContent_Youtube(changeSeekbar: (Float) -> Unit) {
+    fun setSeekbarChangedListener(changeSeekbar: (Float) -> Unit) {
         if (!isHost)
-            dbYoutube.setSeekbarChangedListener(changeSeekbar)
+            repo.setSeekbarChangedListener(changeSeekbar)
     }
 
-    fun initContentEdit_Youtube(playlistAdded: (YoutubeSearchData) -> Unit, playlistRemoved: (YoutubeSearchData) -> Unit) {
+    fun notifyPlayListChanged(playlistAdded: (YoutubeSearchData) -> Unit, playlistRemoved: (YoutubeSearchData) -> Unit) {
         if (!isHost)
-            dbYoutube.notifyPlayListChanged(playlistAdded, playlistRemoved)
+            repo.notifyPlayListChanged(playlistAdded, playlistRemoved)
     }
 
     fun notifyPrevVideoPlayList() {
         if (isHost)
-            dbYoutube.notifyPrevVideoPlayList { listPlayYoutube.add(it) }
+            repo.notifyPrevVideoPlayList { listPlayYoutube.add(it) }
     }
 
     fun addVideoToPlaylist_Youtube(list: List<YoutubeSearchData>) {
         listPlayYoutube.addAll(list)
-        dbYoutube.addVideoToPlaylist(list)
+        repo.addVideoToPlaylist(list)
     }
 
     fun removeVideoPlaylist_Youtube(pos: Int) {
         val createdTime = listPlayYoutube.value!![pos].createdTime
-        dbYoutube.removeVideoToPlaylist(createdTime)
+        repo.removeVideoPlaylist_Youtube(createdTime)
         listPlayYoutube.removeAt(pos)
     }
 
     fun setNewYoutubeVideoSelected(video: String) {
-        if (isControlMember()) dbYoutube.setNewYoutubeVideoSelected(video)
+        if (isControlMember()) repo.setNewYoutubeVideoSelected(video)
     }
 
     fun setNewYoutubeVideoPlayed(video: YoutubeSearchData, seekBar: Float) {
-        if (isControlMember()) dbYoutube.setNewYoutubeVideoPlayed(video, seekBar)
+        if (isControlMember()) repo.setNewYoutubeVideoPlayed(video, seekBar)
     }
 
     fun notifyNewVideoSelected(newVideoPlayed: (String) -> Unit) {
-        if (!isHost) dbYoutube.notifyNewVideoSelected(newVideoPlayed)
+        if (!isHost) repo.notifyNewVideoSelected(newVideoPlayed)
     }
 
     fun seekbarYoutubeClicked(time: Float) {
-        if (isControlMember()) dbYoutube.seekbarYoutubeClicked(time)
+        if (isControlMember()) repo.seekbarYoutubeClicked(time)
     }
 
     fun setYoutubeVideoSeekbarChanged(seekbar: Float) {
-        if (isControlMember()) dbYoutube.setYoutubeVideoSeekbarChanged(seekbar)
+        if (isControlMember()) repo.setYoutubeVideoSeekbarChanged(seekbar)
     }
 
     fun requestVideoPlayState(requestPlayState: (PlayStateRequested, Long, Long) -> Unit) {
-        dbYoutube.requestVideoPlayState(requestPlayState)
+        repo.requestVideoPlayState(requestPlayState)
     }
 
     fun inActiveYoutubeRealtimeListener() {
-        if (!isHost) dbYoutube.inActiveYoutubeRealtimeListener()
+        if (!isHost) repo.inActiveYoutubeRealtimeListener()
     }
 
     fun retriveVideoById(videoId: String): YoutubeSearchData? {
@@ -167,30 +166,25 @@ class ChatRoomViewModel: ViewModel() {
         return null
     }
 
-    fun refreshVideoSearchCacaheList(context: Context) {
-        val roomDB = Room.databaseBuilder(context, RoomDatabase::class.java, "database-room")
-            .allowMainThreadQueries()
-            .build()
+    fun refreshVideoSearchCacaheList() {
+        repo.refreshVideoSearchCacaheList()
+    }
 
-        val videos = roomDB.youtubeDao().getAllCacheVideos()
-        if (videos.isNotEmpty()) {
-            val curTime = Date().time
-            val millisecOfDay = 24 * 3600 * 1000
-            val keyList = mutableListOf<String>()
+    fun removeAllCurWatchedVideo() {
+        repo.removeAllCurWatchedVideo()
+    }
 
-            videos.forEach {
-                if (keyList.size == 0 || keyList[keyList.lastIndex] != it.keyword) {
-                    if (curTime - it.timeCreated >= millisecOfDay) {
-                        keyList.add(it.keyword)
-                    }
-                }
-            }
+    fun removeAllSearchKeywords() {
+        repo.removeAllSearchKeywords()
+    }
 
-            keyList.forEach { roomDB.youtubeDao().deleteCacheVideo(it) }
-        }
+    fun insertCurWatchedVideo(video: YoutubeSearchData) {
+        if (!isStopSavingCurWatchedVideo) repo.insertCurWatchedVideo(video)
     }
 
     private fun isControlMember() = isHost && isRealtimeUsed.value!!
+
+
 
     // 채팅방 ----------------------------------------
     fun createChatRoom(
@@ -199,17 +193,16 @@ class ChatRoomViewModel: ViewModel() {
         roomInfoChangedListener: (ChatRoom) -> Unit
     ) {
         isHost = true
-        dbChat.createChatRoom(title, successListener, roomInfoChangedListener)
+        repo.createChatRoom(title, successListener, roomInfoChangedListener)
     }
 
     fun requestJoinRoom(roomCode: String, successJoined: (String) -> Unit, failJoined: () -> Unit) {
-        dbChat.requestJoinRoom(roomCode, successJoined, failJoined)
+        repo.requestJoinRoom(roomCode, successJoined, failJoined)
     }
 
     fun leaveRoom(host: Boolean) {
         // 방 정보 삭제
-        if (!isHost) dbYoutube.closeRoom()
-        dbChat.closeRoom(host)
+        repo.leaveRoom(host)
 
         listMember.value?.clear()
         listPlayYoutube.value?.clear()
@@ -218,11 +211,10 @@ class ChatRoomViewModel: ViewModel() {
         curSeekbarPos.value = -1f
         curVideoPlayed.value = YoutubeSearchData()
         curVideoSelected.value = YoutubeSearchData()
-        isRealtimeUsed.value = false
     }
 
     fun initChatRoom() {
-        dbChat.notifyChatMessage {
+        repo.notifyChatMessage {
             // 메시지 감지
             val list = listMessage.value!!
             list.add(it)
@@ -232,7 +224,7 @@ class ChatRoomViewModel: ViewModel() {
 
     fun notifyDeleteRoom(roomDeleted: () -> Unit) {
         if (!isHost) {
-            dbChat.notifyIsRoomDeleted {
+            repo.notifyIsRoomDeleted {
                 leaveRoom(false)
                 roomDeleted()
                 setRoomAttr(false, false)
@@ -241,7 +233,7 @@ class ChatRoomViewModel: ViewModel() {
     }
 
     fun initMemberList() {
-        dbChat.notifyChatMember({
+        repo.notifyChatMember({
             // 멤버 추가
             listMember.add(it)
         },{
@@ -260,11 +252,11 @@ class ChatRoomViewModel: ViewModel() {
     }
 
     fun sendChatMessage(message: String) {
-        dbChat.sendChatMessage(message)
+        repo.sendChatMessage(message)
     }
 
     fun loadRoomList(loadingOff: (() -> Unit)?) {
-        dbChat.requestUserChatRoomList { rooms ->
+        repo.requestUserChatRoomList { rooms ->
             val list = listRoom.value!!
             list.clear()
 
@@ -275,14 +267,14 @@ class ChatRoomViewModel: ViewModel() {
     }
 
     fun checkPrevRoomJoin(requestJoin: (Boolean) -> Unit, loadingOff: () -> Unit) {
-        dbChat.checkPrevRoomJoin(requestJoin, loadingOff)
+        repo.checkPrevRoomJoin(requestJoin, loadingOff)
     }
 
     fun isQueryAvailable(keyword: String) =
         curQueryKeyword != keyword && keyword.isNotBlank() && keyword.isNotEmpty()
 
     fun searchRoomByKeyword(keyword: String, messageNoItem: () -> Unit, loadingOff: () -> Unit) {
-        dbChat.searchRoomByKeyword(keyword) { rooms ->
+        repo.searchRoomByKeyword(keyword) { rooms ->
             if (rooms.isNotEmpty()) {
                 val list = listRoom.value!!
 

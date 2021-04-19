@@ -1,4 +1,4 @@
-package com.start3a.ishowyou.room.roominfo
+package com.start3a.ishowyou.room.lobby
 
 import android.os.Bundle
 import android.view.LayoutInflater

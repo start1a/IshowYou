@@ -133,6 +133,15 @@ class YoutubeVideoSelectionActivity : AppCompatActivity() {
     private fun initView() {
         val vm = viewModel!!
 
+        btnShowCurWatchedVideos.setOnClickListener {
+            vm.getCurWatchedVideos({
+                btnShowCurWatchedVideos.visibility = View.GONE
+                listVideoAdapter!!.initSelectionList()
+            }, {
+                Toast.makeText(applicationContext, "검색 결과가 존재하지 않습니다.", Toast.LENGTH_LONG).show()
+            })
+        }
+
         btnRoomCreate.setOnClickListener {
             // 아직 duration 추출 작업 중
             if (vm.isLoadVideosStarted) {
@@ -231,6 +240,7 @@ class YoutubeVideoSelectionActivity : AppCompatActivity() {
 
     override fun onCreateOptionsMenu(menu: Menu?): Boolean {
         menuInflater.inflate(R.menu.menu_toolbar_search, menu)
+
         // 메뉴에서 검색
         mSearchView = menu!!.findItem(R.id.action_search).actionView as SearchView
 
@@ -245,6 +255,7 @@ class YoutubeVideoSelectionActivity : AppCompatActivity() {
                         listVideoAdapter?.initSelectionList()
                         queryVideos(query)
                         vm.insertSearchKeyword(query)
+                        btnShowCurWatchedVideos.visibility = View.VISIBLE
                     }
 
                     if (!query.isNullOrEmpty() && query.isNotBlank())
@@ -260,7 +271,11 @@ class YoutubeVideoSelectionActivity : AppCompatActivity() {
                 if (hasFocus) {
                     listSearchHistoryAdapter?.notifyDataSetChanged()
                     historySearchRecyclerView.visibility = View.VISIBLE
-                } else historySearchRecyclerView.visibility = View.GONE
+                    btnShowCurWatchedVideos.visibility = View.GONE
+                } else {
+                    historySearchRecyclerView.visibility = View.GONE
+                    btnShowCurWatchedVideos.visibility = View.VISIBLE
+                }
             }
 
             it.isIconified = false

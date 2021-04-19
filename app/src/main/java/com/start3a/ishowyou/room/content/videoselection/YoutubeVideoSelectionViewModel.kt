@@ -82,4 +82,16 @@ class YoutubeVideoSelectionViewModel : ViewModel() {
 
     fun isQueryAvailable(keyword: String) =
         curQueryKeyword != keyword && keyword.isNotBlank() && keyword.isNotEmpty()
+
+    fun getCurWatchedVideos(newListInit: () -> Unit, noItemShowed: () -> Unit) {
+        val videos = repo.getCurWatchedVideos()
+
+        if (videos.isNotEmpty()) {
+            curQueryKeyword = ""
+            newListInit()
+            listVideo.value!!.clear()
+            listVideo.addAll(videos)
+        }
+        else noItemShowed()
+    }
 }

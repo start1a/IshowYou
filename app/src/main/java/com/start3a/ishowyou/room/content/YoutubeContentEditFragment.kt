@@ -72,7 +72,7 @@ class YoutubeContentEditFragment : Fragment() {
                 }
             }
 
-            vm.initContentEdit_Youtube(
+            vm.notifyPlayListChanged(
                 // 비디오 리스트에 추가
                 { vm.listPlayYoutube.add(it) },
 

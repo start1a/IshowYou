@@ -31,6 +31,10 @@ data class RoomData_CurWatchedVideo(
     var duration: Float
 ) {
     var timeCreated = Date().time
+
+    companion object {
+        val maxItem = 50
+    }
 }
 
 @Entity

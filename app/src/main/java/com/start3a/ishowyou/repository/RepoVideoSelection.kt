@@ -8,6 +8,7 @@ import com.start3a.ishowyou.contentapi.RetrofitYoutubeService
 import com.start3a.ishowyou.contentapi.YoutubeSearchData
 import com.start3a.ishowyou.contentapi.YoutubeSearchJsonData
 import com.start3a.ishowyou.data.ListLiveData
+import com.start3a.ishowyou.model.RoomData_CurWatchedVideo
 import com.start3a.ishowyou.model.RoomData_VideoSearch
 import com.start3a.ishowyou.model.RoomDatabase
 import com.start3a.ishowyou.model.VideoSearchHistory
@@ -129,21 +130,35 @@ class RepoVideoSelection(context: Context) {
 
     fun getCurWatchedVideos(): List<YoutubeSearchData> {
         val watchedVideos = roomDB.youtubeDao().getCurWatchedVideos()
-        val list = mutableListOf<YoutubeSearchData>()
 
-        watchedVideos.forEach {
-            val video = YoutubeSearchData().apply {
-                title = it.title
-                desc = it.desc
-                channelTitle = it.channelTitle
-                videoId = it.videoId
-                thumbnail = it.thumbnail
-                thumbnailSmall = it.thumbnailSmall
-                duration = it.duration
-            }
-            list.add(video)
+        val maxSize = RoomData_CurWatchedVideo.maxItem
+        if (watchedVideos.size > maxSize) {
+            for (i in maxSize until watchedVideos.size)
+                roomDB.youtubeDao().deleteWatchedVideos(watchedVideos[i])
+
+            val list = watchedVideos.subList(0, maxSize)
+            return extractWatchedVideos(list)
         }
 
-        return list
+        return extractWatchedVideos(watchedVideos)
+    }
+
+    private fun extractWatchedVideos(videos: List<RoomData_CurWatchedVideo>): List<YoutubeSearchData> {
+        return mutableListOf<YoutubeSearchData>().run {
+
+            videos.forEach {
+                val video = YoutubeSearchData().apply {
+                    title = it.title
+                    desc = it.desc
+                    channelTitle = it.channelTitle
+                    videoId = it.videoId
+                    thumbnail = it.thumbnail
+                    thumbnailSmall = it.thumbnailSmall
+                    duration = it.duration
+                }
+                add(video)
+            }
+            this
+        }
     }
 }

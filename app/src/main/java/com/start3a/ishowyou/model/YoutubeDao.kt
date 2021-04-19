@@ -34,8 +34,11 @@ interface YoutubeDao {
 
 
     // 최근 시청 영상
-    @Query("SELECT * FROM RoomData_CurWatchedVideo ORDER BY timeCreated DESC LIMIT 50")
+    @Query("SELECT * FROM RoomData_CurWatchedVideo ORDER BY timeCreated DESC")
     fun getCurWatchedVideos(): List<RoomData_CurWatchedVideo>
+
+    @Delete
+    fun deleteWatchedVideos(item: RoomData_CurWatchedVideo)
 
     @Query("DELETE FROM RoomData_CurWatchedVideo")
     fun removeAllCurWatchedVideo()

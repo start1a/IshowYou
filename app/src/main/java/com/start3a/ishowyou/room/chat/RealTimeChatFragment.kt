@@ -16,10 +16,12 @@ import androidx.fragment.app.Fragment
 import androidx.lifecycle.ViewModelProvider
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
+import com.google.android.material.bottomnavigation.BottomNavigationView
 import com.start3a.ishowyou.R
 import com.start3a.ishowyou.data.CurUser
 import com.start3a.ishowyou.room.ChatRoomViewModel
 import kotlinx.android.synthetic.main.fragment_real_time_chat.*
+import kotlinx.android.synthetic.main.layout_draggable_bottom.*
 
 class RealTimeChatFragment : Fragment() {
 
@@ -30,6 +32,7 @@ class RealTimeChatFragment : Fragment() {
     private var posLastItem = -1
 
     private lateinit var mContext: Context
+    private lateinit var curTab: BottomNavigationView
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
@@ -58,8 +61,21 @@ class RealTimeChatFragment : Fragment() {
         viewModel!!.let { vm ->
             initAdapter()
             initView()
+
+            curTab = requireActivity().bottom_navigation_chatroom
+            val badge = curTab.getOrCreateBadge(R.id.action_chat).run {
+                number = 0
+                isVisible = false
+                this
+            }
+
             vm.isJoinRoom.observe(viewLifecycleOwner) {
-                if (it) vm.initChatRoom()
+                if (it) vm.initChatRoom {
+                    if (curTab.selectedItemId != R.id.action_chat) {
+                        badge.number = badge.number + 1
+                        badge.isVisible = true
+                    }
+                }
             }
 
             btnSendMessage.setOnClickListener {

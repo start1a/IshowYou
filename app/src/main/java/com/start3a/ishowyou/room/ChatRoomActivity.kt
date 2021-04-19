@@ -16,7 +16,6 @@ import com.hoanganhtuan95ptit.draggable.DraggablePanel
 import com.hoanganhtuan95ptit.draggable.utils.reWidth
 import com.rw.keyboardlistener.KeyboardUtils
 import com.start3a.ishowyou.R
-import com.start3a.ishowyou.data.FullScreenController
 import com.start3a.ishowyou.room.chat.RealTimeChatFragment
 import com.start3a.ishowyou.room.content.YoutubeContentEditFragment
 import com.start3a.ishowyou.room.content.YoutubePlayerFragment
@@ -67,9 +66,9 @@ class ChatRoomActivity : AppCompatActivity() {
     override fun onBackPressed() {
         viewModel!!.let { vm ->
             if (vm.isJoinRoom.value!!) {
-                if (vm.isFullScreen) {
-                    vm.mFullScreenController.contentExitFullScreenMode?.invoke()
-                }
+
+                if (vm.isFullScreen)
+                    requestedOrientation = ActivityInfo.SCREEN_ORIENTATION_NOSENSOR
                 else {
                     val state = draggablePanel.mCurrentState
                     // 방 최대화 상태
@@ -114,13 +113,6 @@ class ChatRoomActivity : AppCompatActivity() {
                 }
             }
 
-            vm.mFullScreenController = FullScreenController(
-                this,
-                chatroom_layout,
-                frameTop,
-                frameTopRightTab,
-            )
-
             vm.openFullScreenChatView = { visible ->
                 if (visible) {
                     changeWeightContentFrame((vm.activity_width * 0.7).toInt(), (vm.activity_width * 0.3).toInt())
@@ -148,6 +140,7 @@ class ChatRoomActivity : AppCompatActivity() {
 
             // 룸 하단 메뉴
             bottom_navigation_chatroom.selectedItemId = R.id.action_contents
+            bottom_navigation_chatroom.getOrCreateBadge(R.id.action_contents).number = 0
             bottom_navigation_chatroom.setOnNavigationItemSelectedListener { item ->
                 val sfm = supportFragmentManager.beginTransaction()
                 when (item.itemId) {
@@ -235,14 +228,12 @@ class ChatRoomActivity : AppCompatActivity() {
             // 화면 회전 시 풀스크린 on / off
             if (resources.configuration.orientation == ORIENTATION_LANDSCAPE) {
                 vm.isFullScreen = true
-                requestedOrientation = ActivityInfo.SCREEN_ORIENTATION_SENSOR_LANDSCAPE
                 draggablePanel.getFrameSecond().visibility = View.GONE
                 hideSystemUI()
             }
             else if (resources.configuration.orientation == ORIENTATION_PORTRAIT) {
                 vm.isFullScreen = false
                 draggablePanel.getFrameSecond().visibility = View.VISIBLE
-                requestedOrientation = ActivityInfo.SCREEN_ORIENTATION_NOSENSOR
                 showSystemUI()
             }
             vm.isActivitySizeMeasured = false

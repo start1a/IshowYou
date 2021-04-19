@@ -4,6 +4,7 @@ import android.app.Activity
 import android.app.AlertDialog
 import android.content.Context
 import android.content.Intent
+import android.content.pm.ActivityInfo
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
@@ -110,9 +111,7 @@ class NoRoomFragment : Fragment() {
                         vm.setRoomAttr(true, false)
                         requireActivity().loading_layout.visibility = View.GONE
 
-                        vm.notifyDeleteRoom {
-                            Toast.makeText(requireContext(), "방장이 퇴장했습니다.", Toast.LENGTH_LONG).show()
-                        }
+                        notifyRoomDeleted()
                     },
                         // 방 없음
                     { Toast.makeText(requireContext(), "방이 존재하지 않습니다.", Toast.LENGTH_LONG).show() })
@@ -189,9 +188,7 @@ class NoRoomFragment : Fragment() {
                 vm.setRoomAttr(true, isHost)
                 vm.notifyPrevVideoPlayList()
 
-                vm.notifyDeleteRoom {
-                    Toast.makeText(requireContext(), "방장이 퇴장했습니다.", Toast.LENGTH_LONG).show()
-                }
+                notifyRoomDeleted()
             },
                 { requireActivity().loading_layout.visibility = View.GONE })
         }
@@ -202,5 +199,14 @@ class NoRoomFragment : Fragment() {
         val imm =
             requireActivity().getSystemService(Context.INPUT_METHOD_SERVICE) as InputMethodManager
         imm.toggleSoftInput(InputMethodManager.SHOW_FORCED, InputMethodManager.HIDE_IMPLICIT_ONLY)
+    }
+
+    private fun notifyRoomDeleted() {
+        val vm = viewModel!!
+        vm.notifyDeleteRoom {
+            if (vm.isFullScreen)
+                requireActivity().requestedOrientation = ActivityInfo.SCREEN_ORIENTATION_NOSENSOR
+            Toast.makeText(requireContext(), "방장이 퇴장했습니다.", Toast.LENGTH_LONG).show()
+        }
     }
 }

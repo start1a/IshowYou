@@ -1,5 +1,6 @@
 package com.start3a.ishowyou.room.content
 
+import android.content.pm.ActivityInfo
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
@@ -71,14 +72,13 @@ class YoutubePlayerFragment : Fragment() {
                     youtubePlayerView.addFullScreenListener(vm.customPlayerUiController)
 
                     // 풀스크린 뷰 설정
-                    youtubePlayerView.addFullScreenListener(object :
-                        YouTubePlayerFullScreenListener {
+                    youtubePlayerView.addFullScreenListener(object : YouTubePlayerFullScreenListener {
                         override fun onYouTubePlayerEnterFullScreen() {
-                            vm.mFullScreenController.rotate(true)
+                            requireActivity().requestedOrientation = ActivityInfo.SCREEN_ORIENTATION_SENSOR_LANDSCAPE
                         }
 
                         override fun onYouTubePlayerExitFullScreen() {
-                            vm.mFullScreenController.rotate(false)
+                            requireActivity().requestedOrientation = ActivityInfo.SCREEN_ORIENTATION_NOSENSOR
                         }
                     })
 
@@ -96,6 +96,7 @@ class YoutubePlayerFragment : Fragment() {
                             vm.setNewYoutubeVideoPlayed(it, vm.curSeekbarPos.value ?: 0.0f)
                             requireActivity().draggablePanel.getFrameFirst().curPlayVideoTitle.text =
                                 it.title
+                            vm.insertCurWatchedVideo(it)
                         }
                     }
 
@@ -159,12 +160,6 @@ class YoutubePlayerFragment : Fragment() {
 
     private fun initView() {
         viewModel!!.let { vm ->
-
-            // 백 버튼용 리스너
-            // 기기만 회전할 경우 유튜브 뷰의 크기가 줄어들지 않음
-            vm.mFullScreenController.contentExitFullScreenMode = {
-                youtubePlayerView.exitFullScreen()
-            }
 
             // 키보드가 표시되면 유튜브 클릭을 방지하는 버튼 생성
             vm.contentAvailability = { isKeyboardVisible ->

@@ -12,17 +12,21 @@ import androidx.activity.result.contract.ActivityResultContracts
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.ViewModelProvider
 import androidx.recyclerview.widget.LinearLayoutManager
+import com.google.android.material.bottomnavigation.BottomNavigationView
 import com.start3a.ishowyou.R
 import com.start3a.ishowyou.contentapi.YoutubeSearchData
 import com.start3a.ishowyou.room.ChatRoomViewModel
 import com.start3a.ishowyou.room.content.videoselection.YoutubeVideoSelectionActivity
 import kotlinx.android.synthetic.main.fragment_youtube_content_edit.*
+import kotlinx.android.synthetic.main.layout_draggable_bottom.*
 
 
 class YoutubeContentEditFragment : Fragment() {
 
     private var viewModel: ChatRoomViewModel? = null
     private var listVideoAdapter: YoutubePlayListAdapter? = null
+
+    private lateinit var curTab: BottomNavigationView
 
     // onAcitivityResult (deprecated)
     // -> ActivityResultContracts
@@ -72,9 +76,21 @@ class YoutubeContentEditFragment : Fragment() {
                 }
             }
 
+            curTab = requireActivity().bottom_navigation_chatroom
+            val badge = curTab.getOrCreateBadge(R.id.action_contents).run {
+                number = 0
+                isVisible = false
+                this
+            }
             vm.notifyPlayListChanged(
                 // 비디오 리스트에 추가
-                { vm.listPlayYoutube.add(it) },
+                {
+                    vm.listPlayYoutube.add(it)
+                    if (curTab.selectedItemId != R.id.action_contents && !vm.isHost) {
+                        badge.number = badge.number + 1
+                        badge.isVisible = true
+                    }
+                },
 
                 // 비디오 리스트에서 제거
                 {
@@ -109,6 +125,7 @@ class YoutubeContentEditFragment : Fragment() {
                         vm.curVideoPlayed.value = video
                     }
                 }
+
                 // 비디오 삭제 버튼 클릭
                 videoRemoved = {
                     val curVideo = vm.curVideoPlayed.value!!

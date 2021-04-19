@@ -39,7 +39,6 @@ class ChatRoomViewModel: ViewModel() {
 
     // View attr ----------------
     var isFullScreen = false
-    lateinit var mFullScreenController: FullScreenController
     var openFullScreenChatView: ((isVisible: Boolean) -> Unit)? = null
 
     var hideKeyboard: (() -> Unit)? = null
@@ -213,12 +212,15 @@ class ChatRoomViewModel: ViewModel() {
         curVideoSelected.value = YoutubeSearchData()
     }
 
-    fun initChatRoom() {
+    fun initChatRoom(newMessageNotifiedtoTab: () -> Unit) {
         repo.notifyChatMessage {
             // 메시지 감지
             val list = listMessage.value!!
             list.add(it)
             listMessage.value = list
+
+            if (CurUser.userName != it.userName && !isFullScreen)
+                newMessageNotifiedtoTab()
         }
     }
 

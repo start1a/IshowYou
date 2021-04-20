@@ -5,6 +5,7 @@ import androidx.lifecycle.ViewModel
 import com.start3a.ishowyou.contentapi.VideoSelectInfo
 import com.start3a.ishowyou.contentapi.YoutubeSearchData
 import com.start3a.ishowyou.data.ListLiveData
+import com.start3a.ishowyou.data.MyApplication
 import com.start3a.ishowyou.model.VideoSearchHistory
 import com.start3a.ishowyou.repository.RepoVideoSelection
 import java.util.*
@@ -13,6 +14,9 @@ class YoutubeVideoSelectionViewModel : ViewModel() {
 
     lateinit var context: Context
     lateinit var repo: RepoVideoSelection
+
+    var isStopSearchKeywords: Boolean =
+        MyApplication.prefs.getString("isStopSearchKeywords", "false").toBoolean()
 
     val listVideo: ListLiveData<YoutubeSearchData> by lazy {
         ListLiveData(mutableListOf())
@@ -61,11 +65,14 @@ class YoutubeVideoSelectionViewModel : ViewModel() {
         // 중복 없음
         val record = VideoSearchHistory(keyword, Date().time)
 
-        repo.insertSearchKeyword(record)
-        listSearchHistory.addFirst(record)
-        if (listSearchHistory.size > VideoSearchHistory.maxItem) {
-            repo.deleteHistory(listSearchHistory.last)
-            listSearchHistory.removeLast()
+        if (!isStopSearchKeywords) {
+            repo.insertSearchKeyword(record)
+
+            listSearchHistory.addFirst(record)
+            if (listSearchHistory.size > VideoSearchHistory.maxItem) {
+                repo.deleteHistory(listSearchHistory.last)
+                listSearchHistory.removeLast()
+            }
         }
     }
 
@@ -75,9 +82,12 @@ class YoutubeVideoSelectionViewModel : ViewModel() {
             this
         }
 
-        repo.insertSearchKeyword(record)
-        listSearchHistory.addFirst(record)
-        listSearchHistory.removeAt(index + 1)
+        if (!isStopSearchKeywords) {
+            repo.insertSearchKeyword(record)
+
+            listSearchHistory.addFirst(record)
+            listSearchHistory.removeAt(index + 1)
+        }
     }
 
     fun isQueryAvailable(keyword: String) =

@@ -1,12 +1,11 @@
 package com.start3a.ishowyou.room.lobby
 
 import android.os.Bundle
-import androidx.fragment.app.Fragment
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import android.widget.Toast
 import androidx.appcompat.app.AlertDialog
+import androidx.fragment.app.Fragment
 import androidx.lifecycle.ViewModelProvider
 import com.start3a.ishowyou.R
 import com.start3a.ishowyou.data.MyApplication
@@ -38,10 +37,8 @@ class SettingsFragment : Fragment() {
 
         val vm = viewModel!!
 
-        switchStopCurWatchedVideos.isChecked =
-            MyApplication.prefs.getString("isStopSavingCurWatchedVideo", "false").toBoolean()
-        switchStopSearchKeywords.isChecked =
-            MyApplication.prefs.getString("isStopSearchKeywords", "false").toBoolean()
+        switchStopCurWatchedVideos.isChecked = vm.isStopSavingCurWatchedVideo
+        switchStopSearchKeywords.isChecked = vm.isStopSearchKeywords
 
         switchStopCurWatchedVideos.setOnCheckedChangeListener { _, isChecked ->
             vm.isStopSavingCurWatchedVideo = isChecked

@@ -31,7 +31,7 @@ class ChatRoomViewModel: ViewModel() {
     var isStopSavingCurWatchedVideo: Boolean =
         MyApplication.prefs.getString("isStopSavingCurWatchedVideo", "false").toBoolean()
     var isStopSearchKeywords: Boolean =
-        MyApplication.prefs.getString("isStopCurWatchedVideos", "false").toBoolean()
+        MyApplication.prefs.getString("isStopSearchKeywords", "false").toBoolean()
 
     // Dao
     private lateinit var repo: RepoChatRoom

@@ -7,24 +7,25 @@
     <application
         android:name=".data.MyApplication"
         android:allowBackup="true"
-        android:icon="@mipmap/ic_launcher"
+        android:icon="@mipmap/ic_launcher_app_logo"
         android:label="@string/app_name"
         android:roundIcon="@mipmap/ic_launcher_round"
         android:supportsRtl="true"
         android:theme="@style/AppTheme.NoActionBar">
-        <activity
-            android:name=".room.content.videoselection.YoutubeVideoSelectionActivity"
-            android:theme="@style/AppTheme" />
-        <activity
-            android:name=".room.ChatRoomActivity"
-            android:configChanges="orientation|screenSize|screenLayout|keyboardHidden|smallestScreenSize" />
-        <activity android:name=".signin.SigninActivity">
+        <activity android:name=".IntroActivity">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
 
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
+        <activity
+            android:name=".room.content.videoselection.YoutubeVideoSelectionActivity"
+            android:theme="@style/AppTheme" />
+        <activity
+            android:name=".room.ChatRoomActivity"
+            android:configChanges="orientation|screenSize|screenLayout|keyboardHidden|smallestScreenSize" />
+        <activity android:name=".signin.SigninActivity" />
     </application>
 
 </manifest>

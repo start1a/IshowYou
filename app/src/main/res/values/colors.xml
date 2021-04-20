@@ -5,8 +5,7 @@
     <color name="colorAccent">#03DAC5</color>
     <color name="lightBlack">#1A000000</color>
     <color name="halfBlack">#99000000</color>
-    <color name="item_clicked">#ffffff</color>
     <color name="lightGray">#DCDCDC</color>
     <color name="red">#FF0000</color>
-    <color name="chat_bubble_my_message">#ffbb22dd</color>
+    <color name="pink">#ffbb22dd</color>
 </resources>

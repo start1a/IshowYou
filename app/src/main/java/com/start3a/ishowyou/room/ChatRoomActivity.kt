@@ -9,6 +9,7 @@ import android.content.res.Configuration.ORIENTATION_PORTRAIT
 import android.graphics.Rect
 import android.os.Bundle
 import android.view.View
+import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import androidx.lifecycle.ViewModelProvider
 import com.firebase.ui.auth.AuthUI
@@ -47,6 +48,8 @@ class ChatRoomActivity : AppCompatActivity() {
 
         viewModel!!.let { vm ->
             initView()
+            checkPrevRoomJoined()
+            vm.loadRoomList(null)
 
             supportFragmentManager.beginTransaction()
                 .replace(R.id.frameTopRightTab, RealTimeChatFragment())
@@ -218,6 +221,12 @@ class ChatRoomActivity : AppCompatActivity() {
 
             // 로딩 아래의 뷰 클릭 방지
             loading_layout.setOnClickListener {}
+
+            vm.notifyRoomDeletedListener = {
+                if (vm.isFullScreen)
+                    requestedOrientation = ActivityInfo.SCREEN_ORIENTATION_NOSENSOR
+                Toast.makeText(applicationContext, "방장이 퇴장했습니다.", Toast.LENGTH_LONG).show()
+            }
         }
     }
 
@@ -293,5 +302,21 @@ class ChatRoomActivity : AppCompatActivity() {
             .replace(R.id.frameBottom, fragBottom!!)
             .commit()
         bottom_navigation_chatroom.selectedItemId = R.id.action_contents
+    }
+
+    private fun checkPrevRoomJoined() {
+        val vm = viewModel!!
+
+        if (!vm.isJoinRoom.value!!) {
+            loading_layout.visibility = View.VISIBLE
+
+            vm.checkPrevRoomJoin({ isHost ->
+                vm.setRoomAttr(true, isHost)
+                vm.notifyPrevVideoPlayList()
+
+                vm.notifyDeleteRoom()
+            },
+                { loading_layout.visibility = View.GONE })
+        }
     }
 }

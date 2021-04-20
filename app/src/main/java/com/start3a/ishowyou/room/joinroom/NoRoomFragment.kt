@@ -4,7 +4,6 @@ import android.app.Activity
 import android.app.AlertDialog
 import android.content.Context
 import android.content.Intent
-import android.content.pm.ActivityInfo
 import android.graphics.Color
 import android.os.Bundle
 import android.view.LayoutInflater
@@ -55,8 +54,6 @@ class NoRoomFragment : Fragment() {
 
         viewModel!!.let { vm ->
             initRoomListAdapter()
-            checkPrevRoomJoined()
-            vm.loadRoomList(null)
 
             room_refresh_layout.setOnRefreshListener {
                 vm.loadRoomList {
@@ -114,7 +111,7 @@ class NoRoomFragment : Fragment() {
                         vm.setRoomAttr(true, false)
                         requireActivity().loading_layout.visibility = View.GONE
 
-                        notifyRoomDeleted()
+                        vm.notifyDeleteRoom()
                     },
                         // 방 없음
                     { Toast.makeText(requireContext(), "방이 존재하지 않습니다.", Toast.LENGTH_LONG).show() })
@@ -181,35 +178,10 @@ class NoRoomFragment : Fragment() {
             else Toast.makeText(requireContext(), "적어도 1개 이상의 영상이 필요합니다.", Toast.LENGTH_LONG).show()
         }
 
-    private fun checkPrevRoomJoined() {
-        val vm = viewModel!!
-
-        if (!vm.isJoinRoom.value!!) {
-            requireActivity().loading_layout.visibility = View.VISIBLE
-
-            vm.checkPrevRoomJoin({ isHost ->
-                vm.setRoomAttr(true, isHost)
-                vm.notifyPrevVideoPlayList()
-
-                notifyRoomDeleted()
-            },
-                { requireActivity().loading_layout.visibility = View.GONE })
-        }
-    }
-
     private fun EditText.showKeyboard() {
         requestFocus()
         val imm =
             requireActivity().getSystemService(Context.INPUT_METHOD_SERVICE) as InputMethodManager
         imm.toggleSoftInput(InputMethodManager.SHOW_FORCED, InputMethodManager.HIDE_IMPLICIT_ONLY)
-    }
-
-    private fun notifyRoomDeleted() {
-        val vm = viewModel!!
-        vm.notifyDeleteRoom {
-            if (vm.isFullScreen)
-                requireActivity().requestedOrientation = ActivityInfo.SCREEN_ORIENTATION_NOSENSOR
-            Toast.makeText(requireContext(), "방장이 퇴장했습니다.", Toast.LENGTH_LONG).show()
-        }
     }
 }

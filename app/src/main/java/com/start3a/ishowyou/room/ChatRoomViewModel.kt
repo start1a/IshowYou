@@ -46,6 +46,7 @@ class ChatRoomViewModel: ViewModel() {
 
     lateinit var showDraggablePanel: (isVisible: Boolean) -> Unit
     lateinit var setRoomAttr:((isOpen: Boolean, isHost: Boolean) -> Unit)
+    lateinit var notifyRoomDeletedListener: () -> Unit
 
     var isActivitySizeMeasured = false
     var activity_width = 0
@@ -224,11 +225,11 @@ class ChatRoomViewModel: ViewModel() {
         }
     }
 
-    fun notifyDeleteRoom(roomDeleted: () -> Unit) {
+    fun notifyDeleteRoom() {
         if (!isHost) {
             repo.notifyIsRoomDeleted {
                 leaveRoom(false)
-                roomDeleted()
+                notifyRoomDeletedListener()
                 setRoomAttr(false, false)
             }
         }

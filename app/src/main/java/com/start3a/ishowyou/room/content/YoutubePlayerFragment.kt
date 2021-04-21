@@ -182,9 +182,4 @@ class YoutubePlayerFragment : Fragment() {
             vm.customPlayerUiController.awayFromYoutubePlayer()
         }
     }
-
-    override fun onDestroy() {
-        super.onDestroy()
-        viewModel!!.contentAvailability = null
-    }
 }

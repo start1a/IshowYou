@@ -32,9 +32,6 @@ class ChatRoomActivity : AppCompatActivity() {
 
     private var viewModel: ChatRoomViewModel? = null
 
-    private var fragTop: YoutubePlayerFragment? = null
-    private var fragBottom: YoutubeContentEditFragment? = null
-
     private var isKeyboardUp = false
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -293,13 +290,8 @@ class ChatRoomActivity : AppCompatActivity() {
     private fun replaceRoom() {
         val sft = supportFragmentManager.beginTransaction()
 
-        if (fragTop != null && fragBottom != null)
-            sft.remove(fragTop!!).remove(fragBottom!!)
-
-        fragTop = YoutubePlayerFragment()
-        fragBottom = YoutubeContentEditFragment()
-        sft.replace(R.id.frameTop, fragTop!!)
-            .replace(R.id.frameBottom, fragBottom!!)
+        sft.replace(R.id.frameTop, YoutubePlayerFragment())
+            .replace(R.id.frameBottom, YoutubeContentEditFragment())
             .commit()
         bottom_navigation_chatroom.selectedItemId = R.id.action_contents
     }

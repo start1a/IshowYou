@@ -12,6 +12,7 @@ class IntroActivity : AppCompatActivity() {
     var runnable = Runnable {
         val intent = Intent(applicationContext, SigninActivity::class.java)
         startActivity(intent)
+        window.decorView.systemUiVisibility = View.SYSTEM_UI_FLAG_LAYOUT_STABLE
         finish()
     }
 

@@ -121,7 +121,7 @@ class YoutubeContentEditFragment : Fragment() {
                             vm.customPlayerUiController.checkRealtime(false)
 
                         vm.curSeekbarPos.value = 0.0f
-                        vm.curVideoSelected.value = video
+                        vm.curVideoSelected.value = video.createdTime
                         vm.curVideoPlayed.value = video
                     }
                 }

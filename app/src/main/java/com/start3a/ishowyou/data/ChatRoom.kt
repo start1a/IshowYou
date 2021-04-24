@@ -1,6 +1,7 @@
 package com.start3a.ishowyou.data
 
 import androidx.annotation.Keep
+import com.google.firebase.database.ServerValue
 import java.util.*
 
 @Keep
@@ -19,13 +20,16 @@ data class ChatMessage(
     var timeStamp: Long = Date().time
 )
 
+// Server Time 적용
+@Keep
+data class ChatMessageForSend(
+    var userName: String = "",
+    var content: String = "",
+    var timeStamp: Map<String, String> = ServerValue.TIMESTAMP
+)
+
 @Keep
 data class ChatMember(
     var userName: String = "",
     var isHost: Boolean = false
 )
-
-enum class RoomRequest(val num: Int) {
-    CREATE_ROOM(0),
-    JOIN_ROOM(1)
-}

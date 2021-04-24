@@ -84,8 +84,8 @@ class YoutubePlayerFragment : Fragment() {
 
                     // 영상 선택
                     vm.curVideoSelected.observe(viewLifecycleOwner) {
-                        if (it.duration != -1f)
-                            vm.setNewYoutubeVideoSelected(it.videoId)
+                        if (it != -1L)
+                            vm.setNewYoutubeVideoSelected(it)
                     }
 
                     // 새 영상이 실행됨
@@ -127,12 +127,13 @@ class YoutubePlayerFragment : Fragment() {
                                 youTubePlayer.seekTo(it)
                             }
                             // 영상 선택 감지
-                            vm.notifyNewVideoSelected { videoId ->
-                                vm.retriveVideoById(videoId)?.let {
-                                    vm.curSeekbarPos.value = 0f
-                                    vm.curVideoSelected.value = it
-                                    vm.curVideoPlayed.value = it
-                                }
+                            vm.notifyNewVideoSelected { videoCreatedTime ->
+                                if (vm.curVideoPlayed.value!!.createdTime != videoCreatedTime)
+                                    vm.retriveVideoById(videoCreatedTime)?.let {
+                                        vm.curSeekbarPos.value = 0f
+                                        vm.curVideoSelected.value = it.createdTime
+                                        vm.curVideoPlayed.value = it
+                                    }
                             }
                         }
                         else vm.inActiveYoutubeRealtimeListener()

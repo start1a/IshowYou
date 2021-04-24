@@ -63,8 +63,8 @@ class ChatRoomViewModel: ViewModel() {
     val listPlayYoutube: ListLiveData<YoutubeSearchData> by lazy {
         ListLiveData(mutableListOf())
     }
-    var curVideoSelected = MutableLiveData<YoutubeSearchData>()
-    var isRealtimeUsed = MutableLiveData<Boolean>().apply { value = true }
+    var curVideoSelected = MutableLiveData<Long>()
+    var isRealtimeUsed = MutableLiveData<Boolean>()
 
     // 재생 시간 복원 데이터
     val curVideoPlayed = MutableLiveData<YoutubeSearchData>()
@@ -126,15 +126,15 @@ class ChatRoomViewModel: ViewModel() {
         listPlayYoutube.removeAt(pos)
     }
 
-    fun setNewYoutubeVideoSelected(video: String) {
-        if (isControlMember()) repo.setNewYoutubeVideoSelected(video)
+    fun setNewYoutubeVideoSelected(videoCreatedTime: Long) {
+        if (isControlMember()) repo.setNewYoutubeVideoSelected(videoCreatedTime)
     }
 
     fun setNewYoutubeVideoPlayed(video: YoutubeSearchData, seekBar: Float) {
         if (isControlMember()) repo.setNewYoutubeVideoPlayed(video, seekBar)
     }
 
-    fun notifyNewVideoSelected(newVideoPlayed: (String) -> Unit) {
+    fun notifyNewVideoSelected(newVideoPlayed: (Long) -> Unit) {
         if (!isHost) repo.notifyNewVideoSelected(newVideoPlayed)
     }
 
@@ -154,11 +154,11 @@ class ChatRoomViewModel: ViewModel() {
         if (!isHost) repo.inActiveYoutubeRealtimeListener()
     }
 
-    fun retriveVideoById(videoId: String): YoutubeSearchData? {
+    fun retriveVideoById(videoCreatedTime: Long): YoutubeSearchData? {
         val list = listPlayYoutube.value!!
 
         for (i in 0 until list.size) {
-            if (list[i].videoId == videoId) {
+            if (list[i].createdTime == videoCreatedTime) {
                 return list[i]
             }
         }
@@ -182,7 +182,7 @@ class ChatRoomViewModel: ViewModel() {
         if (!isStopSavingCurWatchedVideo) repo.insertCurWatchedVideo(video)
     }
 
-    private fun isControlMember() = isHost && isRealtimeUsed.value!!
+    private fun isControlMember() = isHost && isRealtimeUsed.value?:true
 
 
 
@@ -210,7 +210,7 @@ class ChatRoomViewModel: ViewModel() {
 
         curSeekbarPos.value = -1f
         curVideoPlayed.value = YoutubeSearchData()
-        curVideoSelected.value = YoutubeSearchData()
+        curVideoSelected.value = -1L
     }
 
     fun initChatRoom(newMessageNotifiedtoTab: () -> Unit) {

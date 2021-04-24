@@ -6,11 +6,16 @@ import com.google.firebase.database.ktx.getValue
 import com.start3a.ishowyou.contentapi.PlayStateRequested
 import com.start3a.ishowyou.contentapi.YoutubeSearchData
 import com.start3a.ishowyou.data.*
+import java.util.*
 
 class RdbDao(private val db: DatabaseReference) {
 
     companion object {
         private var roomCode: String? = null
+
+        // 서버 시간 정보
+        private var diffTimeServerAndLocal = 0L
+        private var hasServerTime = false
     }
 
     inner class YoutubeDao : ContentSetting {
@@ -23,7 +28,7 @@ class RdbDao(private val db: DatabaseReference) {
         private val PATH_REALTIME_SEEKBAR
             get() = "content/$roomCode/youtube/RealtimeListenPlayState/seekbar"
         private val PATH_REALTIME_NEW_VIDEO
-            get() = "content/$roomCode/youtube/RealtimeListenPlayState/video"
+            get() = "content/$roomCode/youtube/RealtimeListenPlayState/videoCreatedTime"
         private val PATH_CURRENT_PLAY_STATE
             get() = "content/$roomCode/youtube/CurrentPlayState"
         private val PATH_PLAY_LIST
@@ -38,11 +43,7 @@ class RdbDao(private val db: DatabaseReference) {
 
             seekbarChangedListener =
                 db.child(PATH_REALTIME_SEEKBAR).addChildEventListener(object : ChildEventListener {
-                    override fun onChildAdded(snapshot: DataSnapshot, previousChildName: String?) {
-                        snapshot.getValue<Float>()?.let { time ->
-                            changeSeekbar(time)
-                        }
-                    }
+                    override fun onChildAdded(snapshot: DataSnapshot, previousChildName: String?) {}
 
                     override fun onChildChanged(snapshot: DataSnapshot, previousChildName: String?) {
                         snapshot.getValue<Float>()?.let { time ->
@@ -121,24 +122,20 @@ class RdbDao(private val db: DatabaseReference) {
             })
         }
 
-        fun setNewYoutubeVideoSelected(videoId: String) {
-            db.child("$PATH_REALTIME_NEW_VIDEO/video").setValue(videoId)
+        fun setNewYoutubeVideoSelected(videoCreatedTime: Long) {
+            db.child("$PATH_REALTIME_NEW_VIDEO/videoCreatedTime").setValue(videoCreatedTime)
         }
 
-        fun notifyNewVideoSelected(newVideoPlayed: (String) -> Unit) {
+        fun notifyNewVideoSelected(newVideoPlayed: (Long) -> Unit) {
             if (newVideoSelectedListener != null) return
 
             newVideoSelectedListener =
                 db.child(PATH_REALTIME_NEW_VIDEO).addChildEventListener(object : ChildEventListener {
-                    override fun onChildAdded(snapshot: DataSnapshot, previousChildName: String?) {
-                        snapshot.getValue<String>()?.let { videoId ->
-                            newVideoPlayed(videoId)
-                        }
-                    }
+                    override fun onChildAdded(snapshot: DataSnapshot, previousChildName: String?) {}
 
                     override fun onChildChanged(snapshot: DataSnapshot, previousChildName: String?) {
-                        snapshot.getValue<String>()?.let { videoId ->
-                            newVideoPlayed(videoId)
+                        snapshot.getValue<Long>()?.let { videoCreatedTime ->
+                            newVideoPlayed(videoCreatedTime)
                         }
                     }
                     override fun onChildRemoved(snapshot: DataSnapshot) {}
@@ -179,23 +176,38 @@ class RdbDao(private val db: DatabaseReference) {
                             val videoInfo = PlayStateRequested(video, seekBar)
                             var videoInfoSaveTime = snapshot.child("timeRecorded").getValue<Long>()?:0L
 
-                            // 현재 서버 시간 가져오기
-                            val serverTimeRef = db.child("ServerTime")
-                            serverTimeRef.setValue(ServerValue.TIMESTAMP).addOnSuccessListener {
-                                serverTimeRef.addListenerForSingleValueEvent(object : ValueEventListener {
-                                    override fun onDataChange(snapshot: DataSnapshot) {
-                                        snapshot.getValue<Long>()?.let { serverTime ->
-                                            if (videoInfoSaveTime == 0L)
-                                                videoInfoSaveTime = serverTime
-                                            requestPlayState(videoInfo, serverTime, videoInfoSaveTime)
+                            // 현재 시간 가져오기
+                            if (hasServerTime) {
+                                val serverTime = Date().time + diffTimeServerAndLocal
+
+                                if (videoInfoSaveTime == 0L)
+                                    videoInfoSaveTime = serverTime
+                                requestPlayState(videoInfo, serverTime, videoInfoSaveTime)
+                            }
+                            else {
+                                // 서버 시간이 초기화되어있지 않음
+                                val serverTimeRef = db.child("ServerTime")
+                                serverTimeRef.setValue(ServerValue.TIMESTAMP).addOnSuccessListener {
+                                    serverTimeRef.addListenerForSingleValueEvent(object :
+                                        ValueEventListener {
+                                        override fun onDataChange(snapshot: DataSnapshot) {
+                                            snapshot.getValue<Long>()?.let { serverTime ->
+
+                                                hasServerTime = true
+                                                diffTimeServerAndLocal = serverTime - Date().time
+
+                                                if (videoInfoSaveTime == 0L)
+                                                    videoInfoSaveTime = serverTime
+                                                requestPlayState(videoInfo, serverTime, videoInfoSaveTime)
+                                            }
                                         }
-                                    }
 
-                                    override fun onCancelled(error: DatabaseError) {
-                                        Log.d(TAG, "getting serverTime is Cancelled.\n$error")
-                                    }
+                                        override fun onCancelled(error: DatabaseError) {
+                                            Log.d(TAG, "getting serverTime is Cancelled.\n$error")
+                                        }
 
-                                })
+                                    })
+                                }
                             }
                         }
                     }
@@ -303,7 +315,6 @@ class RdbDao(private val db: DatabaseReference) {
             memberNotifyListener = null
 
             db.child("user/${CurUser.userName}").removeValue()
-
             roomCode = null
         }
 
@@ -367,11 +378,9 @@ class RdbDao(private val db: DatabaseReference) {
 
         fun sendChatMessage(message: String) {
             val ref = db.child("message/$roomCode").push()
-            val messageObj = ChatMessage(CurUser.userName, message, 0)
+            val messageObj = ChatMessageForSend(CurUser.userName, message)
 
-            ref.setValue(messageObj).addOnSuccessListener {
-                ref.child("timeStamp").setValue(ServerValue.TIMESTAMP)
-            }
+            ref.setValue(messageObj)
         }
 
         fun requestUserChatRoomList(firstRequestRoomListSucceed: (MutableList<ChatRoom>) -> Unit) {
@@ -454,23 +463,55 @@ class RdbDao(private val db: DatabaseReference) {
         }
 
         fun checkPrevRoomJoin(requestJoin: (Boolean) -> Unit, loadingOff: () -> Unit) {
-            db.child("user/${CurUser.userName}")
-                .addListenerForSingleValueEvent(object : ValueEventListener {
+            val serverTimeRef = db.child("ServerTime")
+            // 서버 시간 저장
+            serverTimeRef.setValue(ServerValue.TIMESTAMP).addOnSuccessListener {
+                // 서버 시간 가져오기
+                serverTimeRef.addListenerForSingleValueEvent(object : ValueEventListener {
                     override fun onDataChange(snapshot: DataSnapshot) {
-                        loadingOff()
-                        if (snapshot.exists()) {
-                            val userRoomCode = snapshot.child("room").getValue<String>()!!
-                            val isHost = snapshot.child("isHost").getValue<Boolean>()!!
-                            roomCode = userRoomCode
-                            requestJoin(isHost)
+
+                        snapshot.getValue<Long>()?.let { serverTime ->
+                            hasServerTime = true
+                            diffTimeServerAndLocal = serverTime - Date().time
                         }
+
+                        db.child("user/${CurUser.userName}")
+                            .addListenerForSingleValueEvent(object : ValueEventListener {
+                                override fun onDataChange(snapshot: DataSnapshot) {
+                                    loadingOff()
+                                    if (snapshot.exists()) {
+                                        val userRoomCode = snapshot.child("room").getValue<String>()!!
+                                        val isHost = snapshot.child("isHost").getValue<Boolean>()!!
+                                        // 방 존재 확인
+                                        db.child("chat/$userRoomCode").addListenerForSingleValueEvent(object : ValueEventListener {
+                                            override fun onDataChange(snapshot: DataSnapshot) {
+                                                if (snapshot.exists()) {
+                                                    roomCode = userRoomCode
+                                                    requestJoin(isHost)
+                                                }
+                                            }
+
+                                            override fun onCancelled(error: DatabaseError) {
+                                                Log.d(TAG, "re-Entering room is Cancelled.")
+                                            }
+                                        })
+                                    }
+                                }
+
+                                override fun onCancelled(error: DatabaseError) {
+                                    Log.d(TAG, "Checking previous room join is Cancelled.\n$error")
+                                    loadingOff()
+                                }
+                            })
                     }
 
                     override fun onCancelled(error: DatabaseError) {
-                        Log.d(TAG, "Checking previous room join is Cancelled.\n$error")
-                        loadingOff()
+                        Log.d(TAG, "getting serverTime is Cancelled.\n$error")
                     }
+
                 })
+
+            }
         }
 
         // 사용자 방 접속 기록 업데이트

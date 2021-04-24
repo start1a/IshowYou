@@ -54,15 +54,15 @@ class RepoChatRoom(context: Context) {
         dbYoutube.removeVideoToPlaylist(createdTime)
     }
 
-    fun setNewYoutubeVideoSelected(video: String) {
-        dbYoutube.setNewYoutubeVideoSelected(video)
+    fun setNewYoutubeVideoSelected(videoCreatedTime: Long) {
+        dbYoutube.setNewYoutubeVideoSelected(videoCreatedTime)
     }
 
     fun setNewYoutubeVideoPlayed(video: YoutubeSearchData, seekBar: Float) {
         dbYoutube.setNewYoutubeVideoPlayed(video, seekBar)
     }
 
-    fun notifyNewVideoSelected(newVideoPlayed: (String) -> Unit) {
+    fun notifyNewVideoSelected(newVideoPlayed: (Long) -> Unit) {
         dbYoutube.notifyNewVideoSelected(newVideoPlayed)
     }
 

@@ -167,6 +167,8 @@ class NoRoomFragment : Fragment() {
                             vm.addVideoToPlaylist_Youtube(videos)
                             vm.setRoomAttr(true, true)
                             vm.curVideoPlayed.value = vm.listPlayYoutube.value!![0]
+                            vm.curVideoSelected.value = 0L
+                            vm.seekbarYoutubeClicked(0f)
                         },
                         // 방 정보 변경
                         {

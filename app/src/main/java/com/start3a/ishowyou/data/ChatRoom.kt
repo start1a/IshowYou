@@ -1,7 +1,9 @@
 package com.start3a.ishowyou.data
 
+import androidx.annotation.Keep
 import java.util.*
 
+@Keep
 data class ChatRoom(
     var id: String = "",
     var title: String = "",
@@ -10,12 +12,14 @@ data class ChatRoom(
     var timeCreated: Long = Date().time
 )
 
+@Keep
 data class ChatMessage(
     var userName: String = "",
     var content: String = "",
     var timeStamp: Long = Date().time
 )
 
+@Keep
 data class ChatMember(
     var userName: String = "",
     var isHost: Boolean = false

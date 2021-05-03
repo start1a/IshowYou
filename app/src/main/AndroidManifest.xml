@@ -12,20 +12,19 @@
         android:roundIcon="@mipmap/ic_launcher_round"
         android:supportsRtl="true"
         android:theme="@style/AppTheme.NoActionBar">
-        <activity android:name=".IntroActivity">
-            <intent-filter>
-                <action android:name="android.intent.action.MAIN" />
-
-                <category android:name="android.intent.category.LAUNCHER" />
-            </intent-filter>
-        </activity>
         <activity
             android:name=".room.content.videoselection.YoutubeVideoSelectionActivity"
             android:theme="@style/AppTheme" />
         <activity
             android:name=".room.ChatRoomActivity"
             android:configChanges="orientation|screenSize|screenLayout|keyboardHidden|smallestScreenSize" />
-        <activity android:name=".signin.SigninActivity" />
+        <activity android:name=".signin.SigninActivity" >
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+
+                <category android:name="android.intent.category.LAUNCHER" />
+            </intent-filter>
+        </activity>
     </application>
 
 </manifest>

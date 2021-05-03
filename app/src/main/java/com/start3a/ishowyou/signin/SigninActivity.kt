@@ -6,12 +6,11 @@ import android.os.Bundle
 import androidx.activity.result.ActivityResultLauncher
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AppCompatActivity
-import androidx.lifecycle.ViewModelProvider
 import com.firebase.ui.auth.AuthUI
 import com.google.firebase.auth.FirebaseAuth
 import com.start3a.ishowyou.R
-import com.start3a.ishowyou.contentapi.YoutubeSearchData
 import com.start3a.ishowyou.room.ChatRoomActivity
+import kotlinx.android.synthetic.main.activity_signin.*
 
 class SigninActivity : AppCompatActivity() {
 
@@ -20,15 +19,26 @@ class SigninActivity : AppCompatActivity() {
         AuthUI.IdpConfig.GoogleBuilder().build()
     )
 
+    var runnable = Runnable {
+        if (!shouldStartSignIn())
+            navigateToMain()
+        else
+            startSignInWithGoogle()
+    }
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_signin)
     }
 
-    override fun onStart() {
-        super.onStart()
-        if (!shouldStartSignIn()) navigateToMain()
-        else startSignInWithGoogle()
+    override fun onResume() {
+        super.onResume()
+        intro_image.postDelayed(runnable, 1500)
+    }
+
+    override fun onPause() {
+        super.onPause()
+        intro_image.removeCallbacks(runnable)
     }
 
     private fun shouldStartSignIn(): Boolean {
@@ -53,12 +63,9 @@ class SigninActivity : AppCompatActivity() {
     }
 
     private val requestActivityForSignIn: ActivityResultLauncher<Intent> =
-        registerForActivityResult(
-            ActivityResultContracts.StartActivityForResult()
-        ) { activityResult ->
+        registerForActivityResult(ActivityResultContracts.StartActivityForResult()) { activityResult ->
             // 비디오 리스트
             if (activityResult.resultCode == Activity.RESULT_OK)
                 navigateToMain()
-            else startSignInWithGoogle()
         }
 }

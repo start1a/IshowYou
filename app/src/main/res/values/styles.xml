@@ -22,4 +22,14 @@
         <item name="android:minHeight">48dp</item>
     </style>
 
+    <style name="blackAccent" parent="Widget.AppCompat.TextView">
+        <item name="android:textStyle">bold</item>
+        <item name="android:textColor">#000000</item>
+    </style>
+
+    <style name="primaryAccent" parent="Widget.AppCompat.TextView">
+        <item name="android:textStyle">bold</item>
+        <item name="android:textColor">@color/colorPrimary</item>
+    </style>
+
 </resources>
